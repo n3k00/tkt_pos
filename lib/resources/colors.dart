@@ -20,6 +20,8 @@ class AppColor {
   // Background
   static const Color background = Color(0xFFF1F8E9); // Light Green BG
   static const Color card = Color(0xFFE8F5E9);
+  // Neutral surface used by some pages (e.g., inventory)
+  static const Color surfaceBackground = Color(0xFFF8FAFC);
 
   // Border / Line
   static const Color border = Color(0xFFB2DFDB);
@@ -29,6 +31,10 @@ class AppColor {
 
   // Success
   static const Color success = Color(0xFF2E7D32);
+
+  // Common neutrals
+  static const Color textDefault = Colors.black87;
+  static const Color white = Colors.white;
 
   // Warning
   static const Color warning = Color(0xFFFFA726);

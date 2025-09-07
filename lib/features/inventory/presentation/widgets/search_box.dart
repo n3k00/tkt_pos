@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
+import 'package:tkt_pos/resources/strings.dart';
 
 class SearchBox extends StatelessWidget {
   const SearchBox({super.key, required this.controller});
@@ -9,8 +10,8 @@ class SearchBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       decoration: const InputDecoration(
-        labelText: 'Search',
-        hintText: 'Type to filter transactions...',
+        labelText: AppString.searchLabel,
+        hintText: AppString.searchHint,
         prefixIcon: Icon(Icons.search),
         border: OutlineInputBorder(),
       ),
@@ -18,4 +19,3 @@ class SearchBox extends StatelessWidget {
     );
   }
 }
-

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
-import 'package:drift/drift.dart' as drift;
-import 'package:flutter/services.dart';
 import 'package:tkt_pos/resources/table_widths.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/features/inventory/presentation/dialogs/driver_dialogs.dart';
 import 'package:tkt_pos/features/inventory/presentation/dialogs/transaction_dialogs.dart';
@@ -19,8 +19,8 @@ class InventoryPage extends GetView<InventoryController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(title: const Text('Inventory')),
+      backgroundColor: AppColor.surfaceBackground,
+      appBar: AppBar(title: const Text(AppString.inventory)),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddDriverDialog(context, controller),
@@ -41,7 +41,7 @@ class InventoryPage extends GetView<InventoryController> {
                 final list = controller.drivers;
                 if (list.isEmpty) {
                   return const Center(
-                    child: Text('No drivers yet. Tap + to add.'),
+                    child: Text(AppString.noDrivers),
                   );
                 }
                 return ListView.separated(
@@ -80,7 +80,7 @@ class _DriverSection extends StatelessWidget {
                 dateStr,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: AppColor.textDefault,
                 ),
               ),
             ),
@@ -89,7 +89,7 @@ class _DriverSection extends StatelessWidget {
                 driver.name,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: AppColor.textDefault,
                 ),
               ),
             ),
@@ -99,7 +99,7 @@ class _DriverSection extends StatelessWidget {
                   onPressed: () =>
                       showAddTransactionDialog(context, controller, driver.id),
                   icon: const Icon(Icons.add),
-                  label: const Text('Add Transaction'),
+                  label: const Text(AppString.addTransaction),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -190,7 +190,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
         widget.driverId,
       );
       return Card(
-        color: Colors.white,
+        color: AppColor.white,
         clipBehavior: Clip.antiAlias,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -199,11 +199,11 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final headerStyle = const TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-            );
-            final cellStyle = const TextStyle(color: Colors.black87);
+              final headerStyle = const TextStyle(
+                color: AppColor.textDefault,
+                fontWeight: FontWeight.w600,
+              );
+              final cellStyle = const TextStyle(color: AppColor.textDefault);
             return Scrollbar(
               controller: _vCtrl,
               thumbVisibility: true,
@@ -214,17 +214,17 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   child: DataTable(
                     columnSpacing: 12,
                     columns: [
-                      DataColumn(label: Text('No', style: headerStyle)),
+                      DataColumn(label: Text(AppString.colNo, style: headerStyle)),
                       DataColumn(
                         label: Center(
-                          child: Text('Customer Name', style: headerStyle),
+                            child: Text(AppString.colCustomerName, style: headerStyle),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.phone,
                           child: Center(
-                            child: Text('Phone', style: headerStyle),
+                              child: Text(AppString.colPhone, style: headerStyle),
                           ),
                         ),
                       ),
@@ -232,7 +232,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         label: SizedBox(
                           width: AppTableWidths.parcelType,
                           child: Center(
-                            child: Text('Parcel Type', style: headerStyle),
+                              child: Text(AppString.colParcelType, style: headerStyle),
                           ),
                         ),
                       ),
@@ -240,45 +240,45 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         label: SizedBox(
                           width: AppTableWidths.number,
                           child: Center(
-                            child: Text('Number', style: headerStyle),
+                              child: Text(AppString.colNumber, style: headerStyle),
                           ),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.charges,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text('Charges', style: headerStyle),
-                          ),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(AppString.colCharges, style: headerStyle),
+                              ),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.paymentStatus,
                           child: Center(
-                            child: Text('Payment Status', style: headerStyle),
+                            child: Text(AppString.colPaymentStatus, style: headerStyle),
                           ),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.cashAdvance,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text('Cash Advance', style: headerStyle),
-                          ),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(AppString.colCashAdvance, style: headerStyle),
+                              ),
                         ),
                       ),
                       DataColumn(
                         label: Center(
-                          child: Text('Picked Up', style: headerStyle),
+                          child: Text(AppString.colPickedUp, style: headerStyle),
                         ),
                       ),
-                      DataColumn(label: Text('Comment', style: headerStyle)),
+                      DataColumn(label: Text(AppString.colComment, style: headerStyle)),
                       DataColumn(
                         label: Center(
-                          child: Text('Actions', style: headerStyle),
+                            child: Text(AppString.colActions, style: headerStyle),
                         ),
                       ),
                     ],
