@@ -5,6 +5,7 @@ import 'package:tkt_pos/resources/table_widths.dart';
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/strings.dart';
+import 'package:tkt_pos/resources/styles.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/features/inventory/presentation/dialogs/driver_dialogs.dart';
 import 'package:tkt_pos/features/inventory/presentation/dialogs/transaction_dialogs.dart';
@@ -78,19 +79,13 @@ class _DriverSection extends StatelessWidget {
             Expanded(
               child: Text(
                 dateStr,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColor.textDefault,
-                ),
+                style: AppTextStyles.sectionTitle(context),
               ),
             ),
             Expanded(
               child: Text(
                 driver.name,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColor.textDefault,
-                ),
+                style: AppTextStyles.sectionTitle(context),
               ),
             ),
             Row(
@@ -199,11 +194,8 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
-              final headerStyle = const TextStyle(
-                color: AppColor.textDefault,
-                fontWeight: FontWeight.w600,
-              );
-              final cellStyle = const TextStyle(color: AppColor.textDefault);
+              final headerStyle = AppTextStyles.tableHeader;
+              final cellStyle = AppTextStyles.tableCell;
             return Scrollbar(
               controller: _vCtrl,
               thumbVisibility: true,
