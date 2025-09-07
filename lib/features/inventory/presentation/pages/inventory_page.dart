@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
-import 'package:drift/drift.dart' as drift;
-import 'package:flutter/services.dart';
 import 'package:tkt_pos/resources/table_widths.dart';
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
@@ -46,7 +44,8 @@ class InventoryPage extends GetView<InventoryController> {
                 }
                 return ListView.separated(
                   itemCount: list.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: Dimens.d24),
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: Dimens.d24),
                   itemBuilder: (context, index) {
                     final d = list[index];
                     return _DriverSection(driver: d, controller: controller);
@@ -399,139 +398,6 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
 // moved: TransactionActionsMenu to widgets/transaction_actions_menu.dart
 
 // moved: confirmDeleteTransaction to dialogs/transaction_dialogs.dart
-
-Future<void> _showEditTransactionDialog(
-  BuildContext context,
-  InventoryController controller,
-  int driverId,
-  DbTransaction t,
-) async {
-  final customerCtrl = TextEditingController(text: t.customerName ?? '');
-  final phoneCtrl = TextEditingController(text: t.phone);
-  final parcelCtrl = TextEditingController(text: t.parcelType);
-  final numberCtrl = TextEditingController(text: t.number);
-  final chargesCtrl = TextEditingController(text: t.charges.toString());
-  final cashAdvanceCtrl = TextEditingController(text: t.cashAdvance.toString());
-  String paymentStatus = t.paymentStatus;
-
-  await showDialog(
-    context: context,
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, setState) {
-        return AlertDialog(
-          title: const Text('Edit Transaction'),
-          content: SizedBox(
-            width: 600,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: customerCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Customer Name',
-                    ),
-                  ),
-                  TextFormField(
-                    controller: phoneCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(labelText: 'Phone'),
-                  ),
-                  TextFormField(
-                    controller: parcelCtrl,
-                    decoration: const InputDecoration(labelText: 'Parcel Type'),
-                  ),
-                  TextFormField(
-                    controller: numberCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(labelText: 'Number'),
-                  ),
-                  TextFormField(
-                    controller: chargesCtrl,
-                    keyboardType: TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
-                    ],
-                    decoration: const InputDecoration(labelText: 'Charges'),
-                  ),
-                  DropdownButtonFormField<String>(
-                    value: paymentStatus,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'ငွေရှင်းပြီး',
-                        child: Text('ငွေရှင်းပြီး'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'ငွေတောင်းရန်',
-                        child: Text('ငွေတောင်းရန်'),
-                      ),
-                    ],
-                    onChanged: (v) =>
-                        setState(() => paymentStatus = v ?? paymentStatus),
-                    decoration: const InputDecoration(
-                      labelText: 'Payment Status',
-                    ),
-                  ),
-                  TextFormField(
-                    controller: cashAdvanceCtrl,
-                    keyboardType: TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'Cash Advance',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final charges = double.tryParse(chargesCtrl.text.trim()) ?? 0.0;
-                final cashAdvance =
-                    double.tryParse(cashAdvanceCtrl.text.trim()) ?? 0.0;
-                await controller.updateTransaction(
-                  TransactionsCompanion(
-                    id: drift.Value(t.id),
-                    customerName: drift.Value(
-                      customerCtrl.text.trim().isEmpty
-                          ? null
-                          : customerCtrl.text.trim(),
-                    ),
-                    phone: drift.Value(phoneCtrl.text.trim()),
-                    parcelType: drift.Value(parcelCtrl.text.trim()),
-                    number: drift.Value(numberCtrl.text.trim()),
-                    charges: drift.Value(charges),
-                    paymentStatus: drift.Value(paymentStatus),
-                    cashAdvance: drift.Value(cashAdvance),
-                    pickedUp: drift.Value(t.pickedUp),
-                    comment: const drift.Value.absent(),
-                    driverId: drift.Value(t.driverId),
-                  ),
-                );
-                // ignore: use_build_context_synchronously
-                Navigator.of(ctx).pop();
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-}
 
 // moved: DriverActionsMenu to widgets/driver_actions_menu.dart
 
