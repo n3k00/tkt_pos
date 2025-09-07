@@ -1,0 +1,10 @@
+# Codex TODO — minimal run steps for this project
+# Ask Codex to "Run codex.todo" to execute in order.
+
+# Instructions
+- Use GetX for state management
+- Use get_storage for local key-value
+- Use sqlite3_flutter_libs for SQLite desktop
+- Use drift (+ drift_dev, build_runner) if ORM needed
+- Use path_provider for filesystem paths
+

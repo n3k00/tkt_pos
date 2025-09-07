@@ -38,7 +38,18 @@ class AppDrawer extends StatelessWidget {
                 }
               },
             ),
-            // Only keep Home and Settings in the drawer
+            ListTile(
+              leading: const Icon(Icons.inventory_2),
+              title: const Text('Inventory'),
+              selected: currentRoute == '/inventory',
+              onTap: () {
+                Get.back();
+                if (currentRoute != '/inventory') {
+                  Get.offAllNamed('/inventory');
+                }
+              },
+            ),
+            // Divider between main and settings
             const Divider(),
             ListTile(
               leading: const Icon(Icons.settings),

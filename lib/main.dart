@@ -4,11 +4,14 @@ import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:get_storage/get_storage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Windows app configuration only
   await windowManager.ensureInitialized();
+  // Initialize local key-value storage
+  await GetStorage.init();
 
   final options = WindowOptions(backgroundColor: AppColor.background);
   windowManager.waitUntilReadyToShow(options, () async {
