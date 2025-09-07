@@ -4,7 +4,13 @@ import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/services.dart';
 import 'package:tkt_pos/resources/table_widths.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
+import 'package:tkt_pos/features/inventory/presentation/dialogs/driver_dialogs.dart';
+import 'package:tkt_pos/features/inventory/presentation/dialogs/transaction_dialogs.dart';
+import 'package:tkt_pos/features/inventory/presentation/widgets/search_box.dart';
+import 'package:tkt_pos/features/inventory/presentation/widgets/transaction_actions_menu.dart';
+import 'package:tkt_pos/features/inventory/presentation/widgets/driver_actions_menu.dart';
 import 'package:tkt_pos/widgets/appdrawer.dart';
 
 class InventoryPage extends GetView<InventoryController> {
@@ -17,16 +23,16 @@ class InventoryPage extends GetView<InventoryController> {
       appBar: AppBar(title: const Text('Inventory')),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddDriverDialog(context, controller),
+        onPressed: () => showAddDriverDialog(context, controller),
         child: const Icon(Icons.add),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: Dimens.screen,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SearchBox(controller: controller),
-            const SizedBox(height: 16),
+            SearchBox(controller: controller),
+            const SizedBox(height: Dimens.d16),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.value) {
@@ -40,7 +46,7 @@ class InventoryPage extends GetView<InventoryController> {
                 }
                 return ListView.separated(
                   itemCount: list.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 24),
+                  separatorBuilder: (_, __) => const SizedBox(height: Dimens.d24),
                   itemBuilder: (context, index) {
                     final d = list[index];
                     return _DriverSection(driver: d, controller: controller);
@@ -90,7 +96,7 @@ class _DriverSection extends StatelessWidget {
               children: [
                 ElevatedButton.icon(
                   onPressed: () =>
-                      _showAddTransactionDialog(context, controller, driver.id),
+                      showAddTransactionDialog(context, controller, driver.id),
                   icon: const Icon(Icons.add),
                   label: const Text('Add Transaction'),
                   style: ElevatedButton.styleFrom(
@@ -104,13 +110,13 @@ class _DriverSection extends StatelessWidget {
                     textStyle: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
-                const SizedBox(width: 8),
-                _DriverActionsMenu(driver: driver, controller: controller),
+                const SizedBox(width: Dimens.d8),
+                DriverActionsMenu(driver: driver, controller: controller),
               ],
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: Dimens.d8),
         _DriverTransactionsTable(controller: controller, driverId: driver.id),
       ],
     );
@@ -149,11 +155,31 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
   }
 
   String _fmtMoney(double v) {
-    var s = v.toStringAsFixed(2);
+    final isNegative = v < 0;
+    var s = v.abs().toStringAsFixed(2);
     if (s.contains('.')) {
       s = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
     }
-    return s;
+    final parts = s.split('.');
+    final intPart = parts[0];
+    final fracPart = parts.length > 1 && parts[1].isNotEmpty
+        ? '.${parts[1]}'
+        : '';
+
+    String groupThousands(String digits) {
+      if (digits.length <= 3) return digits;
+      final firstLen = digits.length % 3 == 0 ? 3 : digits.length % 3;
+      final buf = StringBuffer();
+      buf.write(digits.substring(0, firstLen));
+      for (int i = firstLen; i < digits.length; i += 3) {
+        buf.write(',');
+        buf.write(digits.substring(i, i + 3));
+      }
+      return buf.toString();
+    }
+
+    final withCommas = groupThousands(intPart);
+    return (isNegative ? '-' : '') + withCommas + fracPart;
   }
 
   @override
@@ -170,290 +196,209 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
           side: BorderSide(color: Colors.black12.withValues(alpha: 0.08)),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: SizedBox(
-          height: 240,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final headerStyle = const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              );
-              final cellStyle = const TextStyle(color: Colors.black87);
-              return Scrollbar(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final headerStyle = const TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            );
+            final cellStyle = const TextStyle(color: Colors.black87);
+            return Scrollbar(
+              controller: _vCtrl,
+              thumbVisibility: true,
+              child: SingleChildScrollView(
                 controller: _vCtrl,
-                thumbVisibility: true,
-                child: SingleChildScrollView(
-                  controller: _vCtrl,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                    child: DataTable(
-                      columnSpacing: 12,
-                      columns: [
-                        DataColumn(label: Text('No', style: headerStyle)),
-                        DataColumn(
-                          label: Center(
-                            child: Text('Customer Name', style: headerStyle),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                  child: DataTable(
+                    columnSpacing: 12,
+                    columns: [
+                      DataColumn(label: Text('No', style: headerStyle)),
+                      DataColumn(
+                        label: Center(
+                          child: Text('Customer Name', style: headerStyle),
+                        ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: AppTableWidths.phone,
+                          child: Center(
+                            child: Text('Phone', style: headerStyle),
                           ),
                         ),
-                        DataColumn(
-                          label: SizedBox(
-                            width: AppTableWidths.phone,
-                            child: Center(
-                              child: Text('Phone', style: headerStyle),
-                            ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: AppTableWidths.parcelType,
+                          child: Center(
+                            child: Text('Parcel Type', style: headerStyle),
                           ),
                         ),
-                        DataColumn(
-                          label: SizedBox(
-                            width: AppTableWidths.parcelType,
-                            child: Center(
-                              child: Text('Parcel Type', style: headerStyle),
-                            ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: AppTableWidths.number,
+                          child: Center(
+                            child: Text('Number', style: headerStyle),
                           ),
                         ),
-                        DataColumn(
-                          label: SizedBox(
-                            width: AppTableWidths.number,
-                            child: Center(
-                              child: Text('Number', style: headerStyle),
-                            ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: AppTableWidths.charges,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text('Charges', style: headerStyle),
                           ),
                         ),
-                        DataColumn(
-                          label: SizedBox(
-                            width: AppTableWidths.charges,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Text('Charges', style: headerStyle),
-                            ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: AppTableWidths.paymentStatus,
+                          child: Center(
+                            child: Text('Payment Status', style: headerStyle),
                           ),
                         ),
-                        DataColumn(
-                          label: SizedBox(
-                            width: AppTableWidths.paymentStatus,
-                            child: Center(
-                              child: Text('Payment Status', style: headerStyle),
-                            ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: AppTableWidths.cashAdvance,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text('Cash Advance', style: headerStyle),
                           ),
                         ),
-                        DataColumn(
-                          label: SizedBox(
-                            width: AppTableWidths.cashAdvance,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Text('Cash Advance', style: headerStyle),
-                            ),
-                          ),
+                      ),
+                      DataColumn(
+                        label: Center(
+                          child: Text('Picked Up', style: headerStyle),
                         ),
-                        DataColumn(
-                          label: Center(
-                            child: Text('Picked Up', style: headerStyle),
-                          ),
+                      ),
+                      DataColumn(label: Text('Comment', style: headerStyle)),
+                      DataColumn(
+                        label: Center(
+                          child: Text('Actions', style: headerStyle),
                         ),
-                        DataColumn(label: Text('Comment', style: headerStyle)),
-                        DataColumn(
-                          label: Center(
-                            child: Text('Actions', style: headerStyle),
+                      ),
+                    ],
+                    rows: rows.asMap().entries.map((e) {
+                      final idx = e.key + 1;
+                      final t = e.value;
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(idx.toString(), style: cellStyle)),
+                          DataCell(
+                            Text(t.customerName ?? '-', style: cellStyle),
                           ),
-                        ),
-                      ],
-                      rows: rows.asMap().entries.map((e) {
-                        final idx = e.key + 1;
-                        final t = e.value;
-                        return DataRow(
-                          cells: [
-                            DataCell(Text(idx.toString(), style: cellStyle)),
-                            DataCell(
-                              Text(t.customerName ?? '-', style: cellStyle),
-                            ),
-                            DataCell(
-                              SizedBox(
-                                width: AppTableWidths.phone,
-                                child: Center(
-                                  child: Text(
-                                    t.phone,
-                                    style: cellStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.phone,
+                              child: Center(
+                                child: Text(
+                                  t.phone,
+                                  style: cellStyle,
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
-                            DataCell(
-                              SizedBox(
-                                width: AppTableWidths.parcelType,
-                                child: Center(
-                                  child: Text(
-                                    t.parcelType,
-                                    style: cellStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.parcelType,
+                              child: Center(
+                                child: Text(
+                                  t.parcelType,
+                                  style: cellStyle,
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
-                            DataCell(
-                              SizedBox(
-                                width: AppTableWidths.number,
-                                child: Center(
-                                  child: Text(
-                                    t.number,
-                                    style: cellStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.number,
+                              child: Center(
+                                child: Text(
+                                  t.number,
+                                  style: cellStyle,
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
-                            DataCell(
-                              SizedBox(
-                                width: AppTableWidths.charges,
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                    _fmtMoney(t.charges),
-                                    style: cellStyle,
-                                    textAlign: TextAlign.right,
-                                  ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.charges,
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  _fmtMoney(t.charges),
+                                  style: cellStyle,
+                                  textAlign: TextAlign.right,
                                 ),
                               ),
                             ),
-                            DataCell(
-                              SizedBox(
-                                width: AppTableWidths.paymentStatus,
-                                child: Center(
-                                  child: Text(
-                                    t.paymentStatus,
-                                    style: cellStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.paymentStatus,
+                              child: Center(
+                                child: Text(
+                                  t.paymentStatus,
+                                  style: cellStyle,
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
-                            DataCell(
-                              SizedBox(
-                                width: AppTableWidths.cashAdvance,
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                    _fmtMoney(t.cashAdvance),
-                                    style: cellStyle,
-                                    textAlign: TextAlign.right,
-                                  ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.cashAdvance,
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  _fmtMoney(t.cashAdvance),
+                                  style: cellStyle,
+                                  textAlign: TextAlign.right,
                                 ),
                               ),
                             ),
-                            DataCell(
-                              Center(
-                                child: Icon(
-                                  t.pickedUp ? Icons.check : Icons.close,
-                                  color: t.pickedUp ? Colors.green : Colors.red,
-                                ),
+                          ),
+                          DataCell(
+                            Center(
+                              child: Icon(
+                                t.pickedUp ? Icons.check : Icons.close,
+                                color: t.pickedUp ? Colors.green : Colors.red,
                               ),
                             ),
-                            DataCell(Text(t.comment ?? '-', style: cellStyle)),
-                            DataCell(
-                              _TransactionActionsMenu(
-                                transaction: t,
-                                driverId: widget.driverId,
-                                controller: widget.controller,
-                              ),
+                          ),
+                          DataCell(Text(t.comment ?? '-', style: cellStyle)),
+                          DataCell(
+                            TransactionActionsMenu(
+                              transaction: t,
+                              driverId: widget.driverId,
+                              controller: widget.controller,
                             ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       );
     });
   }
 }
 
-class _SearchBox extends StatelessWidget {
-  const _SearchBox({required this.controller});
-  final InventoryController controller;
+// moved: SearchBox to widgets/search_box.dart
 
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      decoration: const InputDecoration(
-        labelText: 'Search',
-        hintText: 'Type to filter transactions...',
-        prefixIcon: Icon(Icons.search),
-        border: OutlineInputBorder(),
-      ),
-      onChanged: controller.setSearch,
-    );
-  }
-}
+// moved: TransactionActionsMenu to widgets/transaction_actions_menu.dart
 
-class _TransactionActionsMenu extends StatelessWidget {
-  const _TransactionActionsMenu({
-    required this.transaction,
-    required this.driverId,
-    required this.controller,
-  });
-  final DbTransaction transaction;
-  final int driverId;
-  final InventoryController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      tooltip: 'Transaction actions',
-      itemBuilder: (context) => const [
-        PopupMenuItem(value: 'edit', child: Text('Edit')),
-        PopupMenuItem(value: 'delete', child: Text('Delete')),
-      ],
-      onSelected: (value) async {
-        switch (value) {
-          case 'edit':
-            await _showEditTransactionDialog(
-              context,
-              controller,
-              driverId,
-              transaction,
-            );
-            break;
-          case 'delete':
-            final ok = await _confirmDeleteTransaction(context);
-            if (ok == true) {
-              await controller.db.deleteTransactionById(transaction.id);
-              await controller.loadTransactionsByDriverToMap(driverId);
-            }
-            break;
-        }
-      },
-      icon: const Icon(Icons.more_vert),
-    );
-  }
-}
-
-Future<bool?> _confirmDeleteTransaction(BuildContext context) async {
-  return showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Delete Transaction?'),
-      content: const Text('This action cannot be undone.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.of(ctx).pop(true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('Delete'),
-        ),
-      ],
-    ),
-  );
-}
+// moved: confirmDeleteTransaction to dialogs/transaction_dialogs.dart
 
 Future<void> _showEditTransactionDialog(
   BuildContext context,
@@ -588,42 +533,7 @@ Future<void> _showEditTransactionDialog(
   );
 }
 
-class _DriverActionsMenu extends StatelessWidget {
-  const _DriverActionsMenu({required this.driver, required this.controller});
-  final Driver driver;
-  final InventoryController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      tooltip: 'More actions',
-      itemBuilder: (context) => [
-        const PopupMenuItem(value: 'edit', child: Text('Edit')),
-        PopupMenuItem(
-          value: 'delete',
-          child: Text(
-            'Delete',
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        ),
-      ],
-      onSelected: (value) async {
-        switch (value) {
-          case 'edit':
-            await _showEditDriverDialog(context, controller, driver);
-            break;
-          case 'delete':
-            final confirmed = await _confirmDeleteDriver(context, driver);
-            if (confirmed == true) {
-              await controller.deleteDriver(driver.id);
-            }
-            break;
-        }
-      },
-      icon: const Icon(Icons.more_vert),
-    );
-  }
-}
+// moved: DriverActionsMenu to widgets/driver_actions_menu.dart
 
 Future<void> _showEditDriverDialog(
   BuildContext context,
@@ -773,15 +683,34 @@ Future<bool?> _confirmDeleteDriver(BuildContext context, Driver driver) async {
                     'This will remove driver "${driver.name}" and all of their transactions. This cannot be undone.',
                   ),
                   const SizedBox(height: 12),
-                  const Text('Type "confirm" to proceed:'),
+                  RichText(
+                    text: TextSpan(
+                      style: DefaultTextStyle.of(ctx).style,
+                      children: [
+                        const TextSpan(text: 'Type '),
+                        TextSpan(
+                          text: '"confirm"',
+                          style: TextStyle(
+                            color: Theme.of(ctx).colorScheme.error,
+                          ),
+                        ),
+                        const TextSpan(text: ' to proceed:'),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: controller,
                     autofocus: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'confirm',
-                    ),
+                    decoration:
+                        const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ).copyWith(
+                          hintText: 'confirm',
+                          hintStyle: TextStyle(
+                            color: Theme.of(ctx).colorScheme.error,
+                          ),
+                        ),
                     onChanged: (t) => setState(() => value = t),
                   ),
                 ],
@@ -987,10 +916,7 @@ Future<void> _showAddTransactionDialog(
                           ),
                         ),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 16,
-                        ),
+                        contentPadding: Dimens.inputPadding16,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -1028,10 +954,7 @@ Future<void> _showAddTransactionDialog(
                           ),
                         ),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 16,
-                        ),
+                        contentPadding: Dimens.inputPadding16,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -1067,10 +990,7 @@ Future<void> _showAddTransactionDialog(
                           ),
                         ),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 16,
-                        ),
+                        contentPadding: Dimens.inputPadding16,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -1110,10 +1030,7 @@ Future<void> _showAddTransactionDialog(
                           ),
                         ),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 16,
-                        ),
+                        contentPadding: Dimens.inputPadding16,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -1155,10 +1072,7 @@ Future<void> _showAddTransactionDialog(
                           ),
                         ),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 16,
-                        ),
+                        contentPadding: Dimens.inputPadding16,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -1201,10 +1115,7 @@ Future<void> _showAddTransactionDialog(
                           ),
                         ),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 14,
-                        ),
+                        contentPadding: Dimens.inputPadding14,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -1246,10 +1157,7 @@ Future<void> _showAddTransactionDialog(
                           ),
                         ),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 16,
-                        ),
+                        contentPadding: Dimens.inputPadding16,
                       ),
                     ),
                     // Comment removed
