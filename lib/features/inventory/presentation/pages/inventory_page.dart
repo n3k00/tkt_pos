@@ -214,6 +214,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   constraints: BoxConstraints(minWidth: constraints.maxWidth),
                   child: DataTable(
                     columnSpacing: 12,
+                    horizontalMargin: 0,
                     columns: [
                       DataColumn(label: Text(AppString.colNo, style: headerStyle)),
                       DataColumn(
@@ -394,10 +395,13 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                           ),
                           DataCell(Text(t.comment ?? '-', style: cellStyle)),
                           DataCell(
-                            TransactionActionsMenu(
-                              transaction: t,
-                              driverId: widget.driverId,
-                              controller: widget.controller,
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TransactionActionsMenu(
+                                transaction: t,
+                                driverId: widget.driverId,
+                                controller: widget.controller,
+                              ),
                             ),
                           ),
                         ],
