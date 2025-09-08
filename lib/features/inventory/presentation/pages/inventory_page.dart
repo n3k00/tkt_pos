@@ -286,9 +286,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                       ),
                       DataColumn(label: Text(AppString.colComment, style: headerStyle)),
                       DataColumn(
-                        label: Center(
-                            child: Text(AppString.colActions, style: headerStyle),
-                        ),
+                        label: SizedBox.shrink(),
                       ),
                     ],
                     rows: rows.asMap().entries.map((e) {
