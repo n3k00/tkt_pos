@@ -38,8 +38,37 @@ Future<void> showEditTransactionDialog(
                   children: [
                     TextFormField(
                       controller: customerCtrl,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.4,
+                        color: Colors.black87,
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Customer Name',
+                        prefixIcon: const Icon(Icons.person_outline),
+                        filled: true,
+                        fillColor: Theme.of(ctx)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        isDense: true,
+                        contentPadding: Dimens.inputPadding16,
                       ),
                     ),
                     TextFormField(
@@ -53,17 +82,112 @@ Future<void> showEditTransactionDialog(
                         }
                         return null;
                       },
-                      decoration: const InputDecoration(labelText: 'Phone'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.4,
+                        color: Colors.black87,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Phone',
+                        prefixIcon: const Icon(Icons.phone_outlined),
+                        filled: true,
+                        fillColor: Theme.of(ctx)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        isDense: true,
+                        contentPadding: Dimens.inputPadding16,
+                      ),
                     ),
                     TextFormField(
                       controller: parcelCtrl,
-                      decoration: const InputDecoration(labelText: 'Parcel Type'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.4,
+                        color: Colors.black87,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Parcel Type',
+                        prefixIcon: const Icon(Icons.local_shipping_outlined),
+                        filled: true,
+                        fillColor: Theme.of(ctx)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        isDense: true,
+                        contentPadding: Dimens.inputPadding16,
+                      ),
                     ),
                     TextFormField(
                       controller: numberCtrl,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(labelText: 'Number'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.4,
+                        color: Colors.black87,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Number',
+                        prefixIcon: const Icon(
+                          Icons.confirmation_number_outlined,
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(ctx)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        isDense: true,
+                        contentPadding: Dimens.inputPadding16,
+                      ),
                     ),
                     TextFormField(
                       controller: chargesCtrl,
@@ -73,7 +197,38 @@ Future<void> showEditTransactionDialog(
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
                       ],
-                      decoration: const InputDecoration(labelText: 'Charges'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.4,
+                        color: Colors.black87,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Charges',
+                        prefixIcon: const Icon(Icons.attach_money),
+                        filled: true,
+                        fillColor: Theme.of(ctx)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        isDense: true,
+                        contentPadding: Dimens.inputPadding16,
+                      ),
                     ),
                     DropdownButtonFormField<String>(
                       value: paymentStatus,
@@ -88,8 +243,32 @@ Future<void> showEditTransactionDialog(
                         ),
                       ],
                       onChanged: (v) => setState(() => paymentStatus = v ?? paymentStatus),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Payment Status',
+                        prefixIcon: const Icon(Icons.payments_outlined),
+                        filled: true,
+                        fillColor: Theme.of(ctx)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        isDense: true,
+                        contentPadding: Dimens.inputPadding14,
                       ),
                     ),
                     TextFormField(
@@ -100,8 +279,37 @@ Future<void> showEditTransactionDialog(
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
                       ],
-                      decoration: const InputDecoration(
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.4,
+                        color: Colors.black87,
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Cash Advance',
+                        prefixIcon: const Icon(Icons.savings_outlined),
+                        filled: true,
+                        fillColor: Theme.of(ctx)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(ctx).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        isDense: true,
+                        contentPadding: Dimens.inputPadding16,
                       ),
                     ),
                   ],
