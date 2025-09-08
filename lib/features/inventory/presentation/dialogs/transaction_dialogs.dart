@@ -157,6 +157,13 @@ Future<void> showEditTransactionDialog(
                       controller: numberCtrl,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Number is required';
+                        }
+                        return null;
+                      },
                       style: const TextStyle(
                         fontSize: 18,
                         height: 1.4,
@@ -554,6 +561,13 @@ Future<void> showAddTransactionDialog(
                         controller: numberCtrl,
                         keyboardType: TextInputType.number,
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Number is required';
+                          }
+                          return null;
+                        },
                         style: const TextStyle(fontSize: 18, height: 1.4, color: Colors.black87),
                         decoration: InputDecoration(
                           labelText: 'Number',
