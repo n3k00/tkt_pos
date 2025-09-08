@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:drift/drift.dart' as drift;
 
 import 'package:tkt_pos/data/local/app_database.dart';
@@ -445,11 +446,14 @@ Future<void> showAddTransactionDialog(
               ElevatedButton(
                 onPressed: () async {
                   if (!(formKey.currentState?.validate() ?? false)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('ဖုန်းနံပါတ် ထည့်ပါ'),
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                      ),
+                    Get.snackbar(
+                      'Warning',
+                      'ဖုန်းနံပါတ် ထည့်ပါ',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                      colorText: Colors.white,
+                      margin: const EdgeInsets.all(12),
+                      duration: const Duration(seconds: 2),
                     );
                     return;
                   }
@@ -483,4 +487,3 @@ Future<void> showAddTransactionDialog(
     },
   );
 }
-
