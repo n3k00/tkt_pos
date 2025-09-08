@@ -285,7 +285,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                           ),
                         ),
                       ),
-                      DataColumn(label: Text(AppString.colComment, style: headerStyle)),
+                      // Comment column removed per request
                       DataColumn(
                         label: SizedBox.shrink(),
                       ),
@@ -393,7 +393,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                               ),
                             ),
                           ),
-                          DataCell(Text(t.comment ?? '-', style: cellStyle)),
+                          // Comment cell removed per request
                           DataCell(
                             Align(
                               alignment: Alignment.centerRight,
