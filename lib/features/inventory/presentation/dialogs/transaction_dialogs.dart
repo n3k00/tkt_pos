@@ -71,6 +71,7 @@ Future<void> showEditTransactionDialog(
                         contentPadding: Dimens.inputPadding16,
                       ),
                     ),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: phoneCtrl,
                       keyboardType: TextInputType.number,
@@ -115,6 +116,7 @@ Future<void> showEditTransactionDialog(
                         contentPadding: Dimens.inputPadding16,
                       ),
                     ),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: parcelCtrl,
                       style: const TextStyle(
@@ -150,6 +152,7 @@ Future<void> showEditTransactionDialog(
                         contentPadding: Dimens.inputPadding16,
                       ),
                     ),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: numberCtrl,
                       keyboardType: TextInputType.number,
@@ -189,6 +192,7 @@ Future<void> showEditTransactionDialog(
                         contentPadding: Dimens.inputPadding16,
                       ),
                     ),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: chargesCtrl,
                       keyboardType: const TextInputType.numberWithOptions(
@@ -230,6 +234,7 @@ Future<void> showEditTransactionDialog(
                         contentPadding: Dimens.inputPadding16,
                       ),
                     ),
+                    const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: paymentStatus,
                       items: const [
@@ -271,6 +276,7 @@ Future<void> showEditTransactionDialog(
                         contentPadding: Dimens.inputPadding14,
                       ),
                     ),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: cashAdvanceCtrl,
                       keyboardType: const TextInputType.numberWithOptions(
