@@ -13,6 +13,7 @@ import 'package:tkt_pos/features/inventory/presentation/widgets/search_box.dart'
 import 'package:tkt_pos/features/inventory/presentation/widgets/transaction_actions_menu.dart';
 import 'package:tkt_pos/features/inventory/presentation/widgets/driver_actions_menu.dart';
 import 'package:tkt_pos/widgets/appdrawer.dart';
+import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 
 class InventoryPage extends GetView<InventoryController> {
   const InventoryPage({super.key});
@@ -21,41 +22,51 @@ class InventoryPage extends GetView<InventoryController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.surfaceBackground,
-      appBar: AppBar(title: const Text(AppString.inventory)),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text(AppString.inventory),
+      ),
       drawer: const AppDrawer(),
+      drawerEnableOpenDragGesture: true,
+      drawerEdgeDragWidth: 80,
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddDriverDialog(context, controller),
         child: const Icon(Icons.add),
       ),
-      body: Padding(
-        padding: Dimens.screen,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SearchBox(controller: controller),
-            const SizedBox(height: Dimens.d16),
-            Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final list = controller.drivers;
-                if (list.isEmpty) {
-                  return const Center(child: Text(AppString.noDrivers));
-                }
-                return ListView.separated(
-                  itemCount: list.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: Dimens.d24),
-                  itemBuilder: (context, index) {
-                    final d = list[index];
-                    return _DriverSection(driver: d, controller: controller);
-                  },
-                );
-              }),
+      body: Stack(
+        children: [
+          Padding(
+            padding: Dimens.screen,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SearchBox(controller: controller),
+                const SizedBox(height: Dimens.d16),
+                Expanded(
+                  child: Obx(() {
+                    if (controller.isLoading.value) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final list = controller.drivers;
+                    if (list.isEmpty) {
+                      return const Center(child: Text(AppString.noDrivers));
+                    }
+                    return ListView.separated(
+                      itemCount: list.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: Dimens.d24),
+                      itemBuilder: (context, index) {
+                        final d = list[index];
+                        return _DriverSection(driver: d, controller: controller);
+                      },
+                    );
+                  }),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          EdgeDrawerOpener(),
+        ],
       ),
     );
   }

@@ -36,22 +36,40 @@ class MyApp extends StatelessWidget {
       title: AppString.title,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        useMaterial3: true,
         primaryColor: AppColor.primary,
         scaffoldBackgroundColor: AppColor.background,
         cardColor: AppColor.card,
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColor.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColor.card,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: AppColor.textPrimary,
+          iconTheme: IconThemeData(color: AppColor.textPrimary),
+          titleTextStyle: TextStyle(
+            color: AppColor.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColor.primary,
             foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         ),
+        dividerColor: AppColor.border,
         textTheme: const TextTheme(
           bodyLarge: TextStyle(color: AppColor.textPrimary),
           bodyMedium: TextStyle(color: AppColor.textSecondary),
+          titleLarge: TextStyle(
+            color: AppColor.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       initialRoute: Routes.home,
