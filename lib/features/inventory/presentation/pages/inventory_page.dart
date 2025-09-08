@@ -41,9 +41,7 @@ class InventoryPage extends GetView<InventoryController> {
                 }
                 final list = controller.drivers;
                 if (list.isEmpty) {
-                  return const Center(
-                    child: Text(AppString.noDrivers),
-                  );
+                  return const Center(child: Text(AppString.noDrivers));
                 }
                 return ListView.separated(
                   itemCount: list.length,
@@ -77,10 +75,7 @@ class _DriverSection extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(
-                dateStr,
-                style: AppTextStyles.sectionTitle(context),
-              ),
+              child: Text(dateStr, style: AppTextStyles.sectionTitle(context)),
             ),
             Expanded(
               child: Text(
@@ -182,9 +177,12 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
     final dd = d.day.toString().padLeft(2, '0');
     final mm = d.month.toString().padLeft(2, '0');
     final yyyy = d.year.toString().padLeft(4, '0');
-    final hh = d.hour.toString().padLeft(2, '0');
+    final hour24 = d.hour;
+    final ampm = hour24 >= 12 ? 'PM' : 'AM';
+    final hour12 = (hour24 % 12 == 0) ? 12 : hour24 % 12;
+    final hh = hour12.toString().padLeft(2, '0');
     final min = d.minute.toString().padLeft(2, '0');
-    return '$dd/$mm/$yyyy $hh:$min';
+    return '$dd/$mm/$yyyy $hh:$min $ampm';
   }
 
   @override
@@ -203,8 +201,8 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
-              final headerStyle = AppTextStyles.tableHeader;
-              final cellStyle = AppTextStyles.tableCell;
+            final headerStyle = AppTextStyles.tableHeader;
+            final cellStyle = AppTextStyles.tableCell;
             return Scrollbar(
               controller: _vCtrl,
               thumbVisibility: true,
@@ -216,17 +214,25 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                     columnSpacing: 12,
                     horizontalMargin: 0,
                     columns: [
-                      DataColumn(label: Text(AppString.colNo, style: headerStyle)),
+                      DataColumn(
+                        label: Padding(
+                          padding: const EdgeInsets.only(left: Dimens.d16),
+                          child: Text(AppString.colNo, style: headerStyle),
+                        ),
+                      ),
                       DataColumn(
                         label: Center(
-                            child: Text(AppString.colCustomerName, style: headerStyle),
+                          child: Text(
+                            AppString.colCustomerName,
+                            style: headerStyle,
+                          ),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.phone,
                           child: Center(
-                              child: Text(AppString.colPhone, style: headerStyle),
+                            child: Text(AppString.colPhone, style: headerStyle),
                           ),
                         ),
                       ),
@@ -234,7 +240,10 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         label: SizedBox(
                           width: AppTableWidths.parcelType,
                           child: Center(
-                              child: Text(AppString.colParcelType, style: headerStyle),
+                            child: Text(
+                              AppString.colParcelType,
+                              style: headerStyle,
+                            ),
                           ),
                         ),
                       ),
@@ -242,60 +251,84 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         label: SizedBox(
                           width: AppTableWidths.number,
                           child: Center(
-                              child: Text(AppString.colNumber, style: headerStyle),
+                            child: Text(
+                              AppString.colNumber,
+                              style: headerStyle,
+                            ),
                           ),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.charges,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(AppString.colCharges, style: headerStyle),
-                              ),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              AppString.colCharges,
+                              style: headerStyle,
+                            ),
+                          ),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.paymentStatus,
                           child: Center(
-                            child: Text(AppString.colPaymentStatus, style: headerStyle),
+                            child: Text(
+                              AppString.colPaymentStatus,
+                              style: headerStyle,
+                            ),
                           ),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.cashAdvance,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(AppString.colCashAdvance, style: headerStyle),
-                              ),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              AppString.colCashAdvance,
+                              style: headerStyle,
+                            ),
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Center(
-                          child: Text(AppString.colPickedUp, style: headerStyle),
+                        label: SizedBox(
+                          width: AppTableWidths.pickedUp,
+                          child: Center(
+                            child: Text(
+                              AppString.colPickedUp,
+                              style: headerStyle,
+                            ),
+                          ),
                         ),
                       ),
                       DataColumn(
                         label: SizedBox(
                           width: AppTableWidths.collectTime,
                           child: Center(
-                            child: Text(AppString.colCollectTime, style: headerStyle),
+                            child: Text(
+                              AppString.colCollectTime,
+                              style: headerStyle,
+                            ),
                           ),
                         ),
                       ),
                       // Comment column removed per request
-                      DataColumn(
-                        label: SizedBox.shrink(),
-                      ),
+                      DataColumn(label: SizedBox.shrink()),
                     ],
                     rows: rows.asMap().entries.map((e) {
                       final idx = e.key + 1;
                       final t = e.value;
                       return DataRow(
                         cells: [
-                          DataCell(Text(idx.toString(), style: cellStyle)),
+                          DataCell(
+                            Padding(
+                              padding: const EdgeInsets.only(left: Dimens.d16),
+                              child: Text(idx.toString(), style: cellStyle),
+                            ),
+                          ),
                           DataCell(
                             Text(t.customerName ?? '-', style: cellStyle),
                           ),
@@ -374,10 +407,26 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                             ),
                           ),
                           DataCell(
-                            Center(
-                              child: Icon(
-                                t.pickedUp ? Icons.check : Icons.close,
-                                color: t.pickedUp ? Colors.green : Colors.red,
+                            SizedBox(
+                              width: AppTableWidths.pickedUp,
+                              child: Center(
+                                child: t.pickedUp
+                                    ? Icon(Icons.check, color: Colors.green)
+                                    : ElevatedButton(
+                                        onPressed: () =>
+                                            showClaimTransactionDialog(
+                                              context,
+                                              widget.controller,
+                                              t,
+                                            ),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                        ),
+                                        child: const Text('Claim'),
+                                      ),
                               ),
                             ),
                           ),
@@ -386,7 +435,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                               width: AppTableWidths.collectTime,
                               child: Center(
                                 child: Text(
-                                  _fmtDateTime(t.updatedAt),
+                                  t.pickedUp ? _fmtDateTime(t.updatedAt) : '-',
                                   style: cellStyle,
                                   textAlign: TextAlign.center,
                                 ),

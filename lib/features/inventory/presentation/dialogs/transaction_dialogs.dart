@@ -381,6 +381,61 @@ Future<void> showEditTransactionDialog(
   );
 }
 
+Future<void> showClaimTransactionDialog(
+  BuildContext context,
+  InventoryController controller,
+  DbTransaction t,
+) async {
+  final commentCtrl = TextEditingController();
+  await showDialog(
+    context: context,
+    builder: (ctx) {
+      return AlertDialog(
+        title: const Text('Claim Transaction'),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Customer: ${t.customerName ?? '-'}'),
+              const SizedBox(height: 4),
+              Text('Phone: ${t.phone}'),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: commentCtrl,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Comment (optional)',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await controller.claimTransaction(
+                tx: t,
+                comment: commentCtrl.text,
+              );
+              // ignore: use_build_context_synchronously
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Claim'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 Future<bool?> confirmDeleteTransaction(
   BuildContext context,
   DbTransaction t,

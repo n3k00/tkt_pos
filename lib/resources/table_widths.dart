@@ -7,4 +7,5 @@ class AppTableWidths {
   static const double cashAdvance = 90;
   static const double paymentStatus = 100;
   static const double collectTime = 140;
+  static const double pickedUp = 80;
 }

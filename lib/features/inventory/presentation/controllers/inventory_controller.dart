@@ -201,6 +201,20 @@ class InventoryController extends GetxController {
     }
   }
 
+  Future<void> claimTransaction({required DbTransaction tx, String? comment}) async {
+    // Partial update: only set pickedUp/comment/updatedAt
+    await (db.update(db.transactions)..where((t) => t.id.equals(tx.id))).write(
+      TransactionsCompanion(
+        pickedUp: const drift.Value(true),
+        comment: (comment == null || comment.trim().isEmpty)
+            ? const drift.Value.absent()
+            : drift.Value(comment.trim()),
+        updatedAt: drift.Value(DateTime.now()),
+      ),
+    );
+    await loadTransactionsByDriverToMap(tx.driverId);
+  }
+
   @override
   void onClose() {
     db.close();
