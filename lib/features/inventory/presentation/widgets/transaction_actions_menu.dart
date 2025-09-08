@@ -21,6 +21,7 @@ class TransactionActionsMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       tooltip: 'Transaction actions',
       itemBuilder: (context) => [
+        const PopupMenuItem(value: 'view', child: Text('View')),
         const PopupMenuItem(value: 'edit', child: Text('Edit')),
         PopupMenuItem(
           value: 'delete',
@@ -32,6 +33,9 @@ class TransactionActionsMenu extends StatelessWidget {
       ],
       onSelected: (value) async {
         switch (value) {
+          case 'view':
+            await showViewTransactionDialog(context, transaction);
+            break;
           case 'edit':
             await showEditTransactionDialog(
               context,
@@ -53,4 +57,3 @@ class TransactionActionsMenu extends StatelessWidget {
     );
   }
 }
-

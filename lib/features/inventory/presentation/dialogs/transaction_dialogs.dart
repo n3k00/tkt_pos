@@ -381,6 +381,78 @@ Future<void> showEditTransactionDialog(
   );
 }
 
+Future<void> showViewTransactionDialog(
+  BuildContext context,
+  DbTransaction t,
+) async {
+  String _fmtMoney(double v) {
+    var s = v.toStringAsFixed(2);
+    if (s.contains('.')) {
+      s = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    }
+    return s;
+  }
+
+  String _fmtDateTime12(DateTime d) {
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final yyyy = d.year.toString().padLeft(4, '0');
+    final h24 = d.hour;
+    final ampm = h24 >= 12 ? 'PM' : 'AM';
+    final h12 = (h24 % 12 == 0) ? 12 : h24 % 12;
+    final hh = h12.toString().padLeft(2, '0');
+    final min = d.minute.toString().padLeft(2, '0');
+    return '$dd/$mm/$yyyy $hh:$min $ampm';
+  }
+
+  await showDialog(
+    context: context,
+    builder: (ctx) {
+      return AlertDialog(
+        title: const Text('Transaction Details'),
+        content: SizedBox(
+          width: 480,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Customer: ${t.customerName ?? '-'}'),
+              const SizedBox(height: 4),
+              Text('Phone: ${t.phone}'),
+              const SizedBox(height: 4),
+              Text('Parcel Type: ${t.parcelType}'),
+              const SizedBox(height: 4),
+              Text('Number: ${t.number}'),
+              const SizedBox(height: 4),
+              Text('Charges: ${_fmtMoney(t.charges)}'),
+              const SizedBox(height: 4),
+              Text('Cash Advance: ${_fmtMoney(t.cashAdvance)}'),
+              const SizedBox(height: 4),
+              Text('Payment Status: ${t.paymentStatus}'),
+              const SizedBox(height: 4),
+              Text('Picked Up: ${t.pickedUp ? 'Yes' : 'No'}'),
+              const SizedBox(height: 4),
+              Text('Collect Time: ${t.pickedUp ? _fmtDateTime12(t.updatedAt) : '-'}'),
+              const SizedBox(height: 8),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text('Comment:'),
+              const SizedBox(height: 4),
+              Text(t.comment ?? '-', style: const TextStyle(color: Colors.black87)),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 Future<void> showClaimTransactionDialog(
   BuildContext context,
   InventoryController controller,
