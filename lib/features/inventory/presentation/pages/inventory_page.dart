@@ -178,6 +178,15 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
     return (isNegative ? '-' : '') + withCommas + fracPart;
   }
 
+  String _fmtDateTime(DateTime d) {
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final yyyy = d.year.toString().padLeft(4, '0');
+    final hh = d.hour.toString().padLeft(2, '0');
+    final min = d.minute.toString().padLeft(2, '0');
+    return '$dd/$mm/$yyyy $hh:$min';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -265,6 +274,14 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                       DataColumn(
                         label: Center(
                           child: Text(AppString.colPickedUp, style: headerStyle),
+                        ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: AppTableWidths.collectTime,
+                          child: Center(
+                            child: Text(AppString.colCollectTime, style: headerStyle),
+                          ),
                         ),
                       ),
                       DataColumn(label: Text(AppString.colComment, style: headerStyle)),
@@ -362,6 +379,18 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                               child: Icon(
                                 t.pickedUp ? Icons.check : Icons.close,
                                 color: t.pickedUp ? Colors.green : Colors.red,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.collectTime,
+                              child: Center(
+                                child: Text(
+                                  _fmtDateTime(t.updatedAt),
+                                  style: cellStyle,
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
                           ),

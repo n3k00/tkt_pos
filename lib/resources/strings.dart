@@ -16,6 +16,7 @@ class AppString {
   static const String colPickedUp = 'Picked Up';
   static const String colComment = 'Comment';
   static const String colActions = 'Actions';
+  static const String colCollectTime = 'Collect Time';
   // Search
   static const String searchLabel = 'Search';
   static const String searchHint = 'Type to filter transactions...';
