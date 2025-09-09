@@ -9,7 +9,6 @@ import 'package:tkt_pos/resources/styles.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/features/inventory/presentation/dialogs/driver_dialogs.dart';
 import 'package:tkt_pos/features/inventory/presentation/dialogs/transaction_dialogs.dart';
-import 'package:tkt_pos/features/inventory/presentation/widgets/search_box.dart';
 import 'package:tkt_pos/features/inventory/presentation/widgets/transaction_actions_menu.dart';
 import 'package:tkt_pos/features/inventory/presentation/widgets/driver_actions_menu.dart';
 import 'package:tkt_pos/widgets/appdrawer.dart';
