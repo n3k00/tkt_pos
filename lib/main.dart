@@ -40,6 +40,13 @@ class MyApp extends StatelessWidget {
         primaryColor: AppColor.primary,
         scaffoldBackgroundColor: AppColor.background,
         cardColor: AppColor.card,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColor.primary,
+          brightness: Brightness.light,
+          primary: AppColor.primary,
+          surface: AppColor.card,
+          background: AppColor.background,
+        ),
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColor.card,
           elevation: 0,
