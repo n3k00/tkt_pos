@@ -58,12 +58,14 @@ class InventoryPage extends GetView<InventoryController> {
                         child: Obx(() {
                           if (controller.isLoading.value) {
                             return const Center(
-                                child: CircularProgressIndicator());
+                              child: CircularProgressIndicator(),
+                            );
                           }
                           final list = controller.drivers;
                           if (list.isEmpty) {
                             return const Center(
-                                child: Text(AppString.noDrivers));
+                              child: Text(AppString.noDrivers),
+                            );
                           }
                           return ListView.separated(
                             itemCount: list.length,
@@ -72,7 +74,9 @@ class InventoryPage extends GetView<InventoryController> {
                             itemBuilder: (context, index) {
                               final d = list[index];
                               return _DriverSection(
-                                  driver: d, controller: controller);
+                                driver: d,
+                                controller: controller,
+                              );
                             },
                           );
                         }),
@@ -232,9 +236,13 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
           builder: (context, constraints) {
             final headerStyle = AppTextStyles.tableHeader;
             final cellStyle = AppTextStyles.tableCell;
-            final totalCharges = rows.fold<double>(0, (s, t) => s + t.charges);
-            final totalAdvance =
-                rows.fold<double>(0, (s, t) => s + t.cashAdvance);
+            final totalCharges = rows
+                .where((t) => t.paymentStatus.trim() == 'ငွေတောင်းရန်')
+                .fold<double>(0, (s, t) => s + t.charges);
+            final totalAdvance = rows.fold<double>(
+              0,
+              (s, t) => s + t.cashAdvance,
+            );
             return Scrollbar(
               controller: _vCtrl,
               thumbVisibility: true,
@@ -246,295 +254,311 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       DataTable(
-                    columnSpacing: 12,
-                    horizontalMargin: 0,
-                    columns: [
-                      DataColumn(
-                        label: Padding(
-                          padding: const EdgeInsets.only(left: Dimens.d16),
-                          child: Text(AppString.colNo, style: headerStyle),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Center(
-                          child: Text(
-                            AppString.colCustomerName,
-                            style: headerStyle,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: AppTableWidths.phone,
-                          child: Center(
-                            child: Text(AppString.colPhone, style: headerStyle),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: AppTableWidths.parcelType,
-                          child: Center(
-                            child: Text(
-                              AppString.colParcelType,
-                              style: headerStyle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: AppTableWidths.number,
-                          child: Center(
-                            child: Text(
-                              AppString.colNumber,
-                              style: headerStyle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: AppTableWidths.charges,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              AppString.colCharges,
-                              style: headerStyle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: AppTableWidths.paymentStatus,
-                          child: Center(
-                            child: Text(
-                              AppString.colPaymentStatus,
-                              style: headerStyle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: AppTableWidths.cashAdvance,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              AppString.colCashAdvance,
-                              style: headerStyle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: AppTableWidths.pickedUp,
-                          child: Center(
-                            child: Text(
-                              AppString.colPickedUp,
-                              style: headerStyle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: AppTableWidths.collectTime,
-                          child: Center(
-                            child: Text(
-                              AppString.colCollectTime,
-                              style: headerStyle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Comment column removed per request
-                      DataColumn(label: SizedBox.shrink()),
-                    ],
-                    rows: [
-                      ...rows.asMap().entries.map((e) {
-                      final idx = e.key + 1;
-                      final t = e.value;
-                      return DataRow(
-                        cells: [
-                          DataCell(
-                            Padding(
+                        columnSpacing: 12,
+                        horizontalMargin: 0,
+                        columns: [
+                          DataColumn(
+                            label: Padding(
                               padding: const EdgeInsets.only(left: Dimens.d16),
-                              child: Text(idx.toString(), style: cellStyle),
+                              child: Text(AppString.colNo, style: headerStyle),
                             ),
                           ),
-                          DataCell(
-                            Text(t.customerName ?? '-', style: cellStyle),
+                          DataColumn(
+                            label: Center(
+                              child: Text(
+                                AppString.colCustomerName,
+                                style: headerStyle,
+                              ),
+                            ),
                           ),
-                          DataCell(
-                            SizedBox(
+                          DataColumn(
+                            label: SizedBox(
                               width: AppTableWidths.phone,
                               child: Center(
                                 child: Text(
-                                  t.phone,
-                                  style: cellStyle,
-                                  textAlign: TextAlign.center,
+                                  AppString.colPhone,
+                                  style: headerStyle,
                                 ),
                               ),
                             ),
                           ),
-                          DataCell(
-                            SizedBox(
+                          DataColumn(
+                            label: SizedBox(
                               width: AppTableWidths.parcelType,
                               child: Center(
                                 child: Text(
-                                  t.parcelType,
-                                  style: cellStyle,
-                                  textAlign: TextAlign.center,
+                                  AppString.colParcelType,
+                                  style: headerStyle,
                                 ),
                               ),
                             ),
                           ),
-                          DataCell(
-                            SizedBox(
+                          DataColumn(
+                            label: SizedBox(
                               width: AppTableWidths.number,
                               child: Center(
                                 child: Text(
-                                  t.number,
-                                  style: cellStyle,
-                                  textAlign: TextAlign.center,
+                                  AppString.colNumber,
+                                  style: headerStyle,
                                 ),
                               ),
                             ),
                           ),
-                          DataCell(
-                            SizedBox(
+                          DataColumn(
+                            label: SizedBox(
                               width: AppTableWidths.charges,
                               child: Align(
                                 alignment: Alignment.centerRight,
                                 child: Text(
-                                  _fmtMoney(t.charges),
-                                  style: cellStyle,
-                                  textAlign: TextAlign.right,
+                                  AppString.colCharges,
+                                  style: headerStyle,
                                 ),
                               ),
                             ),
                           ),
-                          DataCell(
-                            SizedBox(
+                          DataColumn(
+                            label: SizedBox(
                               width: AppTableWidths.paymentStatus,
                               child: Center(
                                 child: Text(
-                                  t.paymentStatus,
-                                  style: cellStyle,
-                                  textAlign: TextAlign.center,
+                                  AppString.colPaymentStatus,
+                                  style: headerStyle,
                                 ),
                               ),
                             ),
                           ),
-                          DataCell(
-                            SizedBox(
+                          DataColumn(
+                            label: SizedBox(
                               width: AppTableWidths.cashAdvance,
                               child: Align(
                                 alignment: Alignment.centerRight,
                                 child: Text(
-                                  _fmtMoney(t.cashAdvance),
-                                  style: cellStyle,
-                                  textAlign: TextAlign.right,
+                                  AppString.colCashAdvance,
+                                  style: headerStyle,
                                 ),
                               ),
                             ),
                           ),
-                          DataCell(
-                            SizedBox(
+                          DataColumn(
+                            label: SizedBox(
                               width: AppTableWidths.pickedUp,
                               child: Center(
-                                child: t.pickedUp
-                                    ? Icon(Icons.check, color: Colors.green)
-                                    : ElevatedButton(
-                                        onPressed: () =>
-                                            showClaimTransactionDialog(
-                                              context,
-                                              widget.controller,
-                                              t,
-                                            ),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 8,
-                                          ),
-                                        ),
-                                        child: const Text('Claim'),
-                                      ),
+                                child: Text(
+                                  AppString.colPickedUp,
+                                  style: headerStyle,
+                                ),
                               ),
                             ),
                           ),
-                          DataCell(
-                            SizedBox(
+                          DataColumn(
+                            label: SizedBox(
                               width: AppTableWidths.collectTime,
                               child: Center(
                                 child: Text(
-                                  t.pickedUp ? _fmtDateTime(t.updatedAt) : '-',
-                                  style: cellStyle,
-                                  textAlign: TextAlign.center,
+                                  AppString.colCollectTime,
+                                  style: headerStyle,
                                 ),
                               ),
                             ),
                           ),
-                          // Comment cell removed per request
-                          DataCell(
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TransactionActionsMenu(
-                                transaction: t,
-                                driverId: widget.driverId,
-                                controller: widget.controller,
-                              ),
-                            ),
-                          ),
+                          // Comment column removed per request
+                          DataColumn(label: SizedBox.shrink()),
                         ],
-                      );
-                      }),
-                      DataRow(
-                        cells: [
-                          const DataCell(SizedBox()), // No
-                          const DataCell(SizedBox()), // Name
-                          const DataCell(SizedBox()), // Phone placeholder
-                          const DataCell(SizedBox()), // Parcel type
-                          const DataCell(SizedBox()), // Number
-                          DataCell(
-                            SizedBox(
-                              width: AppTableWidths.charges,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  _fmtMoney(totalCharges),
-                                  style: headerStyle.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColor.textPrimary,
+                        rows: [
+                          ...rows.asMap().entries.map((e) {
+                            final idx = e.key + 1;
+                            final t = e.value;
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: Dimens.d16,
+                                    ),
+                                    child: Text(
+                                      idx.toString(),
+                                      style: cellStyle,
+                                    ),
                                   ),
-                                  textAlign: TextAlign.right,
+                                ),
+                                DataCell(
+                                  Text(t.customerName ?? '-', style: cellStyle),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: AppTableWidths.phone,
+                                    child: Center(
+                                      child: Text(
+                                        t.phone,
+                                        style: cellStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: AppTableWidths.parcelType,
+                                    child: Center(
+                                      child: Text(
+                                        t.parcelType,
+                                        style: cellStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: AppTableWidths.number,
+                                    child: Center(
+                                      child: Text(
+                                        t.number,
+                                        style: cellStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: AppTableWidths.charges,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        _fmtMoney(t.charges),
+                                        style: cellStyle,
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: AppTableWidths.paymentStatus,
+                                    child: Center(
+                                      child: Text(
+                                        t.paymentStatus,
+                                        style: cellStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: AppTableWidths.cashAdvance,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        _fmtMoney(t.cashAdvance),
+                                        style: cellStyle,
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: AppTableWidths.pickedUp,
+                                    child: Center(
+                                      child: t.pickedUp
+                                          ? Icon(
+                                              Icons.check,
+                                              color: Colors.green,
+                                            )
+                                          : ElevatedButton(
+                                              onPressed: () =>
+                                                  showClaimTransactionDialog(
+                                                    context,
+                                                    widget.controller,
+                                                    t,
+                                                  ),
+                                              style: ElevatedButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 8,
+                                                    ),
+                                              ),
+                                              child: const Text('Claim'),
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: AppTableWidths.collectTime,
+                                    child: Center(
+                                      child: Text(
+                                        t.pickedUp
+                                            ? _fmtDateTime(t.updatedAt)
+                                            : '-',
+                                        style: cellStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Comment cell removed per request
+                                DataCell(
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TransactionActionsMenu(
+                                      transaction: t,
+                                      driverId: widget.driverId,
+                                      controller: widget.controller,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                          DataRow(
+                            cells: [
+                              const DataCell(SizedBox()), // No
+                              const DataCell(SizedBox()), // Name
+                              const DataCell(SizedBox()), // Phone placeholder
+                              const DataCell(SizedBox()), // Parcel type
+                              const DataCell(SizedBox()), // Number
+                              DataCell(
+                                SizedBox(
+                                  width: AppTableWidths.charges,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      _fmtMoney(totalCharges),
+                                      style: headerStyle.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColor.textPrimary,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                          const DataCell(SizedBox()), // Payment status
-                          DataCell(
-                            SizedBox(
-                              width: AppTableWidths.cashAdvance,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  _fmtMoney(totalAdvance),
-                                  style: headerStyle.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColor.textPrimary,
+                              const DataCell(SizedBox()), // Payment status
+                              DataCell(
+                                SizedBox(
+                                  width: AppTableWidths.cashAdvance,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      _fmtMoney(totalAdvance),
+                                      style: headerStyle.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColor.textPrimary,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    ),
                                   ),
-                                  textAlign: TextAlign.right,
                                 ),
                               ),
-                            ),
+                              const DataCell(SizedBox()), // Picked up
+                              const DataCell(SizedBox()), // Collect time
+                              const DataCell(SizedBox()), // Actions
+                            ],
                           ),
-                          const DataCell(SizedBox()), // Picked up
-                          const DataCell(SizedBox()), // Collect time
-                          const DataCell(SizedBox()), // Actions
                         ],
                       ),
                     ],
