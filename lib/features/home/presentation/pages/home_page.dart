@@ -4,6 +4,7 @@ import 'package:tkt_pos/features/home/presentation/controllers/home_controller.d
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/widgets/appdrawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
+import 'package:tkt_pos/widgets/page_header.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -11,16 +12,24 @@ class HomePage extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(AppString.title),
-      ),
       drawer: const AppDrawer(),
       drawerEnableOpenDragGesture: true,
       drawerEdgeDragWidth: 80,
       body: Stack(
         children: [
-          Center(child: Text(AppString.title)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              PageHeader(
+                title: AppString.title,
+                crumbs: ['Home'],
+                showBack: false,
+              ),
+              Expanded(
+                child: Center(child: Text(AppString.title)),
+              ),
+            ],
+          ),
           EdgeDrawerOpener(),
         ],
       ),

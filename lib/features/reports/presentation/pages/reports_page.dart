@@ -4,7 +4,7 @@ import 'package:tkt_pos/features/reports/presentation/controllers/reports_contro
 import 'package:tkt_pos/widgets/appdrawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/resources/colors.dart';
-import 'package:tkt_pos/widgets/page_header.dart';
+import 'package:tkt_pos/resources/colors.dart';
 
 class ReportsPage extends GetView<ReportsController> {
   const ReportsPage({super.key});
@@ -14,42 +14,27 @@ class ReportsPage extends GetView<ReportsController> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text('Reports'),
+          bottom: TabBar(
+            onTap: controller.setTab,
+            labelColor: AppColor.primary,
+            unselectedLabelColor: AppColor.textSecondary,
+            indicatorColor: AppColor.primary,
+            tabs: const [
+              Tab(text: 'Daily'),
+              Tab(text: 'Monthly'),
+            ],
+          ),
+        ),
         drawer: const AppDrawer(),
         drawerEnableOpenDragGesture: true,
         drawerEdgeDragWidth: 80,
         body: Stack(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const PageHeader(
-                  title: 'Reports 📊',
-                  crumbs: ['Home', 'Reports'],
-                  trailing: HeaderSearchField(hint: 'Search reports...'),
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TabBar(
-                    onTap: controller.setTab,
-                    labelColor: AppColor.primary,
-                    unselectedLabelColor: AppColor.textSecondary,
-                    indicatorColor: AppColor.primary,
-                    tabs: const [
-                      Tab(text: 'Daily'),
-                      Tab(text: 'Monthly'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Expanded(
-                  child: TabBarView(
-                    children: [
-                      _DailyReportsView(),
-                      _MonthlyReportsView(),
-                    ],
-                  ),
-                ),
-              ],
+            const TabBarView(
+              children: [_DailyReportsView(), _MonthlyReportsView()],
             ),
             EdgeDrawerOpener(),
           ],

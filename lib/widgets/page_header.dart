@@ -9,12 +9,14 @@ class PageHeader extends StatelessWidget {
     this.crumbs = const <String>[],
     this.trailing,
     this.onBack,
+    this.showBack = true,
   });
 
   final String title;
   final List<String> crumbs;
   final Widget? trailing;
   final VoidCallback? onBack;
+  final bool showBack;
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +44,10 @@ class PageHeader extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _BackButton(onTap: onBack ?? () => Get.back()),
-                    const SizedBox(width: 8),
+                    if (showBack) ...[
+                      _BackButton(onTap: onBack ?? () => Get.back()),
+                      const SizedBox(width: 8),
+                    ],
                     Flexible(
                       child: Text(
                         crumbs.isEmpty ? 'Home' : crumbs.join('  >  '),
