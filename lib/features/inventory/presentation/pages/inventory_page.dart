@@ -35,10 +35,17 @@ class InventoryPage extends GetView<InventoryController> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const PageHeader(
+              PageHeader(
                 title: AppString.inventory,
-                crumbs: ['Inventory'],
+                crumbs: const ['Inventory'],
                 showBack: false,
+                trailing: SizedBox(
+                  width: 360,
+                  child: HeaderSearchField(
+                    hint: AppString.searchHint,
+                    onChanged: controller.setSearch,
+                  ),
+                ),
               ),
               Expanded(
                 child: Padding(
@@ -46,7 +53,6 @@ class InventoryPage extends GetView<InventoryController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SearchBox(controller: controller),
                       const SizedBox(height: Dimens.d16),
                       Expanded(
                         child: Obx(() {
