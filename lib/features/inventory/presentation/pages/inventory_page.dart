@@ -232,6 +232,9 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
           builder: (context, constraints) {
             final headerStyle = AppTextStyles.tableHeader;
             final cellStyle = AppTextStyles.tableCell;
+            final totalCharges = rows.fold<double>(0, (s, t) => s + t.charges);
+            final totalAdvance =
+                rows.fold<double>(0, (s, t) => s + t.cashAdvance);
             return Scrollbar(
               controller: _vCtrl,
               thumbVisibility: true,
@@ -239,7 +242,10 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 controller: _vCtrl,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                  child: DataTable(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DataTable(
                     columnSpacing: 12,
                     horizontalMargin: 0,
                     columns: [
@@ -485,6 +491,51 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ],
                       );
                     }).toList(),
+                  ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          margin: const EdgeInsets.only(right: Dimens.d16),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppColor.card,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: Colors.black12.withValues(alpha: 0.06)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Total Charges: ',
+                                style: headerStyle,
+                              ),
+                              Text(
+                                _fmtMoney(totalCharges),
+                                style: headerStyle.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColor.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                'Total Advance: ',
+                                style: headerStyle,
+                              ),
+                              Text(
+                                _fmtMoney(totalAdvance),
+                                style: headerStyle.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColor.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
