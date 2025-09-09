@@ -102,6 +102,7 @@ class _EdgeDrawerOpenerState extends State<EdgeDrawerOpener> {
                           ),
                         ),
                       ),
+                    ),
                   ),
               ],
             ),
@@ -111,4 +112,3 @@ class _EdgeDrawerOpenerState extends State<EdgeDrawerOpener> {
     );
   }
 }
-
