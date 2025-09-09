@@ -10,6 +10,7 @@ class PageHeader extends StatelessWidget {
     this.trailing,
     this.onBack,
     this.showBack = true,
+    this.showBreadcrumbs = false,
   });
 
   final String title;
@@ -17,6 +18,7 @@ class PageHeader extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onBack;
   final bool showBack;
+  final bool showBreadcrumbs;
 
   @override
   Widget build(BuildContext context) {
@@ -42,25 +44,27 @@ class PageHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    if (showBack) ...[
-                      _BackButton(onTap: onBack ?? () => Get.back()),
-                      const SizedBox(width: 8),
-                    ],
-                    Flexible(
-                      child: Text(
-                        crumbs.isEmpty ? 'Home' : crumbs.join('  >  '),
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColor.textSecondary,
-                          fontSize: 13,
+                if (showBreadcrumbs) ...[
+                  Row(
+                    children: [
+                      if (showBack) ...[
+                        _BackButton(onTap: onBack ?? () => Get.back()),
+                        const SizedBox(width: 8),
+                      ],
+                      Flexible(
+                        child: Text(
+                          crumbs.isEmpty ? 'Home' : crumbs.join('  >  '),
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColor.textSecondary,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 Text(
                   title,
                   style: const TextStyle(
