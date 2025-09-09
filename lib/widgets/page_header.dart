@@ -113,31 +113,67 @@ class _BackButton extends StatelessWidget {
 }
 
 class HeaderSearchField extends StatelessWidget {
-  const HeaderSearchField({super.key, this.hint = 'Search...'});
+  const HeaderSearchField({
+    super.key,
+    this.hint = 'Enter your search request...',
+    this.onChanged,
+  });
   final String hint;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: hint,
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        filled: true,
-        fillColor: AppColor.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: AppColor.border),
+    return Container
+        (
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: TextField(
+        onChanged: onChanged,
+        style: const TextStyle(fontSize: 14, color: AppColor.textPrimary),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: AppColor.textSecondary),
+          isDense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          filled: true,
+          fillColor: AppColor.surfaceBackground,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(28),
+            borderSide: const BorderSide(color: AppColor.border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(28),
+            borderSide: const BorderSide(color: AppColor.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(28),
+            borderSide: const BorderSide(color: AppColor.primaryDark, width: 1.2),
+          ),
+          // No leading icon as requested
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColor.border),
+                color: AppColor.white,
+              ),
+              child: const Icon(Icons.search, size: 16, color: AppColor.textSecondary),
+            ),
+          ),
+          suffixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: AppColor.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: AppColor.primaryDark),
-        ),
-        prefixIcon: const Icon(Icons.search, size: 20, color: AppColor.textSecondary),
       ),
     );
   }
