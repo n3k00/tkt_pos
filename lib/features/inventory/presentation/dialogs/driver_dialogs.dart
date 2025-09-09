@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
+import 'package:tkt_pos/resources/colors.dart';
 
 Future<void> showEditDriverDialog(
   BuildContext context,
@@ -36,34 +37,33 @@ Future<void> showEditDriverDialog(
                         color: Colors.black87,
                       ),
                       decoration: InputDecoration(
-                        labelText: 'Driver name',
-                        hintText: 'e.g. Ko Aung',
-                        prefixIcon: const Icon(Icons.person_outline),
-                        filled: true,
-                        fillColor: Theme.of(ctx)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.25),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                            color: Theme.of(ctx).colorScheme.outline,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                            color: Theme.of(ctx).colorScheme.primary,
-                            width: 2,
-                          ),
-                        ),
+                        hintText: 'Driver name',
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
+                          horizontal: 16,
                           vertical: 14,
+                        ),
+                        filled: true,
+                        fillColor: AppColor.surfaceBackground,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(28),
+                          borderSide: const BorderSide(color: AppColor.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(28),
+                          borderSide: const BorderSide(color: AppColor.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(28),
+                          borderSide: const BorderSide(
+                            color: AppColor.primaryDark,
+                            width: 1.5,
+                          ),
+                        ),
+                        suffixIcon: const Icon(
+                          Icons.person_outline,
+                          size: 18,
+                          color: AppColor.textSecondary,
                         ),
                       ),
                       validator: (v) => (v == null || v.trim().isEmpty)
@@ -234,34 +234,33 @@ Future<void> showAddDriverDialog(
                       color: Colors.black87,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Driver name',
-                      hintText: 'e.g. Ko Aung',
-                      prefixIcon: const Icon(Icons.person_outline),
-                      filled: true,
-                      fillColor: Theme.of(ctx)
-                          .colorScheme
-                          .surfaceContainerHighest
-                          .withValues(alpha: 0.25),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Theme.of(ctx).colorScheme.outline,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Theme.of(ctx).colorScheme.primary,
-                          width: 2,
-                        ),
-                      ),
+                      hintText: 'Driver name',
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
+                        horizontal: 16,
                         vertical: 14,
+                      ),
+                      filled: true,
+                      fillColor: AppColor.surfaceBackground,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(28),
+                        borderSide: const BorderSide(color: AppColor.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(28),
+                        borderSide: const BorderSide(color: AppColor.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(28),
+                        borderSide: const BorderSide(
+                          color: AppColor.primaryDark,
+                          width: 1.5,
+                        ),
+                      ),
+                      suffixIcon: const Icon(
+                        Icons.person_outline,
+                        size: 18,
+                        color: AppColor.textSecondary,
                       ),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty)
@@ -322,4 +321,3 @@ Future<void> showAddDriverDialog(
     },
   );
 }
-
