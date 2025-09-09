@@ -353,7 +353,8 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                       // Comment column removed per request
                       DataColumn(label: SizedBox.shrink()),
                     ],
-                    rows: rows.asMap().entries.map((e) {
+                    rows: [
+                      ...rows.asMap().entries.map((e) {
                       final idx = e.key + 1;
                       final t = e.value;
                       return DataRow(
@@ -490,50 +491,51 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                           ),
                         ],
                       );
-                    }).toList(),
-                  ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                          margin: const EdgeInsets.only(right: Dimens.d16),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: AppColor.card,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: Colors.black12.withValues(alpha: 0.06)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Total Charges: ',
-                                style: headerStyle,
-                              ),
-                              Text(
-                                _fmtMoney(totalCharges),
-                                style: headerStyle.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColor.textPrimary,
+                      }),
+                      DataRow(
+                        cells: [
+                          const DataCell(SizedBox()), // No
+                          const DataCell(SizedBox()), // Name
+                          const DataCell(SizedBox()), // Phone placeholder
+                          const DataCell(SizedBox()), // Parcel type
+                          const DataCell(SizedBox()), // Number
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.charges,
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  _fmtMoney(totalCharges),
+                                  style: headerStyle.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColor.textPrimary,
+                                  ),
+                                  textAlign: TextAlign.right,
                                 ),
                               ),
-                              const SizedBox(width: 16),
-                              Text(
-                                'Total Advance: ',
-                                style: headerStyle,
-                              ),
-                              Text(
-                                _fmtMoney(totalAdvance),
-                                style: headerStyle.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColor.textPrimary,
+                            ),
+                          ),
+                          const DataCell(SizedBox()), // Payment status
+                          DataCell(
+                            SizedBox(
+                              width: AppTableWidths.cashAdvance,
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  _fmtMoney(totalAdvance),
+                                  style: headerStyle.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColor.textPrimary,
+                                  ),
+                                  textAlign: TextAlign.right,
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                          const DataCell(SizedBox()), // Picked up
+                          const DataCell(SizedBox()), // Collect time
+                          const DataCell(SizedBox()), // Actions
+                        ],
                       ),
                     ],
                   ),
