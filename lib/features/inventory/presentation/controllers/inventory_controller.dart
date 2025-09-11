@@ -212,12 +212,11 @@ class InventoryController extends GetxController {
         updatedAt: drift.Value(DateTime.now()),
       ),
     );
+    // Record this claim event into report_transactions
+    await db.insertReportTransaction(
+      driverId: tx.driverId,
+      transactionId: tx.id,
+    );
     await loadTransactionsByDriverToMap(tx.driverId);
-  }
-
-  @override
-  void onClose() {
-    db.close();
-    super.onClose();
   }
 }

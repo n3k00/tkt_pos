@@ -7,17 +7,20 @@ import 'package:path_provider/path_provider.dart';
 import 'tables/app_settings.dart';
 import 'tables/drivers.dart';
 import 'tables/transactions.dart';
+import 'tables/report_transactions.dart';
 
 part 'app_database.g.dart';
 
 // Tables are now split into separate files under tables/
 
-@DriftDatabase(tables: [AppSettings, Drivers, Transactions])
+@DriftDatabase(tables: [AppSettings, Drivers, Transactions, ReportTransactions])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase._internal() : super(_openConnection());
+  static final AppDatabase _instance = AppDatabase._internal();
+  factory AppDatabase() => _instance;
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   // Migrations: create new tables when upgrading from v1
   @override
@@ -86,6 +89,9 @@ class AppDatabase extends _$AppDatabase {
             ''');
             await customStatement('DROP TABLE transactions_old');
           }
+          if (from < 6) {
+            await m.createTable(reportTransactions);
+          }
         },
       );
 
@@ -132,6 +138,67 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> deleteTransactionById(int id) {
     return (delete(transactions)..where((t) => t.id.equals(id))).go();
+  }
+
+  // ------ ReportTransactions CRUD ------
+  Future<int> insertReportTransaction({
+    required int driverId,
+    required int transactionId,
+  }) {
+    return into(reportTransactions).insert(
+      ReportTransactionsCompanion.insert(
+        driverId: driverId,
+        transactionId: transactionId,
+      ),
+    );
+  }
+
+  Future<List<DbTransaction>> getReportedTransactions(
+    DateTime start,
+    DateTime end,
+  ) async {
+    final rt = reportTransactions;
+    final t = transactions;
+    // Convert local day range to UTC because report_transactions timestamps
+    // are stored with SQLite's CURRENT_TIMESTAMP (UTC) by default.
+    final startUtc = start.toUtc();
+    final endUtc = end.toUtc();
+    final query = select(t).join([
+      innerJoin(rt, rt.transactionId.equalsExp(t.id)),
+    ])
+      ..where(rt.createdAt.isBiggerOrEqualValue(startUtc) &
+          rt.createdAt.isSmallerThanValue(endUtc));
+
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(t)).toList(growable: false);
+  }
+
+  Future<void> backfillReportTransactionsForDay(DateTime day) async {
+    final start = DateTime(day.year, day.month, day.day).toUtc();
+    final end = start.add(const Duration(days: 1));
+    // Fetch picked-up transactions in the selected day (by their updatedAt)
+    final picked = await (select(transactions)
+          ..where((t) => t.pickedUp.equals(true) &
+              t.updatedAt.isBiggerOrEqualValue(start) &
+              t.updatedAt.isSmallerThanValue(end)))
+        .get();
+    if (picked.isEmpty) return;
+
+    for (final tx in picked) {
+      final exists = await (select(reportTransactions)
+            ..where((rt) => rt.transactionId.equals(tx.id)))
+          .getSingleOrNull();
+      if (exists == null) {
+        await into(reportTransactions).insert(
+          ReportTransactionsCompanion.insert(
+            driverId: tx.driverId,
+            transactionId: tx.id,
+            createdAt: Value(tx.updatedAt.toUtc()),
+            updatedAt: Value(DateTime.now().toUtc()),
+          ),
+        );
+      }
+    }
   }
 }
 

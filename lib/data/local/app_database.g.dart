@@ -1214,12 +1214,375 @@ class TransactionsCompanion extends UpdateCompanion<DbTransaction> {
   }
 }
 
+class $ReportTransactionsTable extends ReportTransactions
+    with TableInfo<$ReportTransactionsTable, ReportTransaction> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReportTransactionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _driverIdMeta = const VerificationMeta(
+    'driverId',
+  );
+  @override
+  late final GeneratedColumn<int> driverId = GeneratedColumn<int>(
+    'driver_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES drivers (id)',
+    ),
+  );
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<int> transactionId = GeneratedColumn<int>(
+    'transaction_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transactions (id)',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    driverId,
+    transactionId,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'report_transactions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReportTransaction> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('driver_id')) {
+      context.handle(
+        _driverIdMeta,
+        driverId.isAcceptableOrUnknown(data['driver_id']!, _driverIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_driverIdMeta);
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ReportTransaction map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReportTransaction(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      driverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}driver_id'],
+      )!,
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}transaction_id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ReportTransactionsTable createAlias(String alias) {
+    return $ReportTransactionsTable(attachedDatabase, alias);
+  }
+}
+
+class ReportTransaction extends DataClass
+    implements Insertable<ReportTransaction> {
+  final int id;
+  final int driverId;
+  final int transactionId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ReportTransaction({
+    required this.id,
+    required this.driverId,
+    required this.transactionId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['driver_id'] = Variable<int>(driverId);
+    map['transaction_id'] = Variable<int>(transactionId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ReportTransactionsCompanion toCompanion(bool nullToAbsent) {
+    return ReportTransactionsCompanion(
+      id: Value(id),
+      driverId: Value(driverId),
+      transactionId: Value(transactionId),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ReportTransaction.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReportTransaction(
+      id: serializer.fromJson<int>(json['id']),
+      driverId: serializer.fromJson<int>(json['driverId']),
+      transactionId: serializer.fromJson<int>(json['transactionId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'driverId': serializer.toJson<int>(driverId),
+      'transactionId': serializer.toJson<int>(transactionId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ReportTransaction copyWith({
+    int? id,
+    int? driverId,
+    int? transactionId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ReportTransaction(
+    id: id ?? this.id,
+    driverId: driverId ?? this.driverId,
+    transactionId: transactionId ?? this.transactionId,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ReportTransaction copyWithCompanion(ReportTransactionsCompanion data) {
+    return ReportTransaction(
+      id: data.id.present ? data.id.value : this.id,
+      driverId: data.driverId.present ? data.driverId.value : this.driverId,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReportTransaction(')
+          ..write('id: $id, ')
+          ..write('driverId: $driverId, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, driverId, transactionId, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReportTransaction &&
+          other.id == this.id &&
+          other.driverId == this.driverId &&
+          other.transactionId == this.transactionId &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ReportTransactionsCompanion extends UpdateCompanion<ReportTransaction> {
+  final Value<int> id;
+  final Value<int> driverId;
+  final Value<int> transactionId;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const ReportTransactionsCompanion({
+    this.id = const Value.absent(),
+    this.driverId = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  ReportTransactionsCompanion.insert({
+    this.id = const Value.absent(),
+    required int driverId,
+    required int transactionId,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : driverId = Value(driverId),
+       transactionId = Value(transactionId);
+  static Insertable<ReportTransaction> custom({
+    Expression<int>? id,
+    Expression<int>? driverId,
+    Expression<int>? transactionId,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (driverId != null) 'driver_id': driverId,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  ReportTransactionsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? driverId,
+    Value<int>? transactionId,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return ReportTransactionsCompanion(
+      id: id ?? this.id,
+      driverId: driverId ?? this.driverId,
+      transactionId: transactionId ?? this.transactionId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (driverId.present) {
+      map['driver_id'] = Variable<int>(driverId.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<int>(transactionId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReportTransactionsCompanion(')
+          ..write('id: $id, ')
+          ..write('driverId: $driverId, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   late final $DriversTable drivers = $DriversTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final $ReportTransactionsTable reportTransactions =
+      $ReportTransactionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1228,6 +1591,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appSettings,
     drivers,
     transactions,
+    reportTransactions,
   ];
 }
 
@@ -1404,6 +1768,30 @@ final class $$DriversTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$ReportTransactionsTable, List<ReportTransaction>>
+  _reportTransactionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.reportTransactions,
+        aliasName: $_aliasNameGenerator(
+          db.drivers.id,
+          db.reportTransactions.driverId,
+        ),
+      );
+
+  $$ReportTransactionsTableProcessedTableManager get reportTransactionsRefs {
+    final manager = $$ReportTransactionsTableTableManager(
+      $_db,
+      $_db.reportTransactions,
+    ).filter((f) => f.driverId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _reportTransactionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$DriversTableFilterComposer
@@ -1446,6 +1834,31 @@ class $$DriversTableFilterComposer
           }) => $$TransactionsTableFilterComposer(
             $db: $db,
             $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> reportTransactionsRefs(
+    Expression<bool> Function($$ReportTransactionsTableFilterComposer f) f,
+  ) {
+    final $$ReportTransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reportTransactions,
+      getReferencedColumn: (t) => t.driverId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReportTransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.reportTransactions,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1523,6 +1936,32 @@ class $$DriversTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> reportTransactionsRefs<T extends Object>(
+    Expression<T> Function($$ReportTransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$ReportTransactionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.reportTransactions,
+          getReferencedColumn: (t) => t.driverId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ReportTransactionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.reportTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$DriversTableTableManager
@@ -1538,7 +1977,10 @@ class $$DriversTableTableManager
           $$DriversTableUpdateCompanionBuilder,
           (Driver, $$DriversTableReferences),
           Driver,
-          PrefetchHooks Function({bool transactionsRefs})
+          PrefetchHooks Function({
+            bool transactionsRefs,
+            bool reportTransactionsRefs,
+          })
         > {
   $$DriversTableTableManager(_$AppDatabase db, $DriversTable table)
     : super(
@@ -1571,35 +2013,63 @@ class $$DriversTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({transactionsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (transactionsRefs) db.transactions],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (transactionsRefs)
-                    await $_getPrefetchedData<
-                      Driver,
-                      $DriversTable,
-                      DbTransaction
-                    >(
-                      currentTable: table,
-                      referencedTable: $$DriversTableReferences
-                          ._transactionsRefsTable(db),
-                      managerFromTypedResult: (p0) => $$DriversTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).transactionsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.driverId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({transactionsRefs = false, reportTransactionsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (transactionsRefs) db.transactions,
+                    if (reportTransactionsRefs) db.reportTransactions,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (transactionsRefs)
+                        await $_getPrefetchedData<
+                          Driver,
+                          $DriversTable,
+                          DbTransaction
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DriversTableReferences
+                              ._transactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DriversTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.driverId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (reportTransactionsRefs)
+                        await $_getPrefetchedData<
+                          Driver,
+                          $DriversTable,
+                          ReportTransaction
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DriversTableReferences
+                              ._reportTransactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DriversTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reportTransactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.driverId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -1616,7 +2086,10 @@ typedef $$DriversTableProcessedTableManager =
       $$DriversTableUpdateCompanionBuilder,
       (Driver, $$DriversTableReferences),
       Driver,
-      PrefetchHooks Function({bool transactionsRefs})
+      PrefetchHooks Function({
+        bool transactionsRefs,
+        bool reportTransactionsRefs,
+      })
     >;
 typedef $$TransactionsTableCreateCompanionBuilder =
     TransactionsCompanion Function({
@@ -1671,6 +2144,30 @@ final class $$TransactionsTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ReportTransactionsTable, List<ReportTransaction>>
+  _reportTransactionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.reportTransactions,
+        aliasName: $_aliasNameGenerator(
+          db.transactions.id,
+          db.reportTransactions.transactionId,
+        ),
+      );
+
+  $$ReportTransactionsTableProcessedTableManager get reportTransactionsRefs {
+    final manager = $$ReportTransactionsTableTableManager(
+      $_db,
+      $_db.reportTransactions,
+    ).filter((f) => f.transactionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _reportTransactionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -1765,6 +2262,31 @@ class $$TransactionsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> reportTransactionsRefs(
+    Expression<bool> Function($$ReportTransactionsTableFilterComposer f) f,
+  ) {
+    final $$ReportTransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reportTransactions,
+      getReferencedColumn: (t) => t.transactionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReportTransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.reportTransactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -1936,6 +2458,32 @@ class $$TransactionsTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> reportTransactionsRefs<T extends Object>(
+    Expression<T> Function($$ReportTransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$ReportTransactionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.reportTransactions,
+          getReferencedColumn: (t) => t.transactionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ReportTransactionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.reportTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$TransactionsTableTableManager
@@ -1951,7 +2499,7 @@ class $$TransactionsTableTableManager
           $$TransactionsTableUpdateCompanionBuilder,
           (DbTransaction, $$TransactionsTableReferences),
           DbTransaction,
-          PrefetchHooks Function({bool driverId})
+          PrefetchHooks Function({bool driverId, bool reportTransactionsRefs})
         > {
   $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
     : super(
@@ -2032,7 +2580,439 @@ class $$TransactionsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({driverId = false}) {
+          prefetchHooksCallback:
+              ({driverId = false, reportTransactionsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (reportTransactionsRefs) db.reportTransactions,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (driverId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.driverId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._driverIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._driverIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (reportTransactionsRefs)
+                        await $_getPrefetchedData<
+                          DbTransaction,
+                          $TransactionsTable,
+                          ReportTransaction
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransactionsTableReferences
+                              ._reportTransactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransactionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reportTransactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transactionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TransactionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TransactionsTable,
+      DbTransaction,
+      $$TransactionsTableFilterComposer,
+      $$TransactionsTableOrderingComposer,
+      $$TransactionsTableAnnotationComposer,
+      $$TransactionsTableCreateCompanionBuilder,
+      $$TransactionsTableUpdateCompanionBuilder,
+      (DbTransaction, $$TransactionsTableReferences),
+      DbTransaction,
+      PrefetchHooks Function({bool driverId, bool reportTransactionsRefs})
+    >;
+typedef $$ReportTransactionsTableCreateCompanionBuilder =
+    ReportTransactionsCompanion Function({
+      Value<int> id,
+      required int driverId,
+      required int transactionId,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$ReportTransactionsTableUpdateCompanionBuilder =
+    ReportTransactionsCompanion Function({
+      Value<int> id,
+      Value<int> driverId,
+      Value<int> transactionId,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$ReportTransactionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ReportTransactionsTable,
+          ReportTransaction
+        > {
+  $$ReportTransactionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $DriversTable _driverIdTable(_$AppDatabase db) =>
+      db.drivers.createAlias(
+        $_aliasNameGenerator(db.reportTransactions.driverId, db.drivers.id),
+      );
+
+  $$DriversTableProcessedTableManager get driverId {
+    final $_column = $_itemColumn<int>('driver_id')!;
+
+    final manager = $$DriversTableTableManager(
+      $_db,
+      $_db.drivers,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_driverIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $TransactionsTable _transactionIdTable(_$AppDatabase db) =>
+      db.transactions.createAlias(
+        $_aliasNameGenerator(
+          db.reportTransactions.transactionId,
+          db.transactions.id,
+        ),
+      );
+
+  $$TransactionsTableProcessedTableManager get transactionId {
+    final $_column = $_itemColumn<int>('transaction_id')!;
+
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transactionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ReportTransactionsTableFilterComposer
+    extends Composer<_$AppDatabase, $ReportTransactionsTable> {
+  $$ReportTransactionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$DriversTableFilterComposer get driverId {
+    final $$DriversTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableFilterComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransactionsTableFilterComposer get transactionId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReportTransactionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReportTransactionsTable> {
+  $$ReportTransactionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$DriversTableOrderingComposer get driverId {
+    final $$DriversTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableOrderingComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransactionsTableOrderingComposer get transactionId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReportTransactionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReportTransactionsTable> {
+  $$ReportTransactionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$DriversTableAnnotationComposer get driverId {
+    final $$DriversTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableAnnotationComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransactionsTableAnnotationComposer get transactionId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReportTransactionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ReportTransactionsTable,
+          ReportTransaction,
+          $$ReportTransactionsTableFilterComposer,
+          $$ReportTransactionsTableOrderingComposer,
+          $$ReportTransactionsTableAnnotationComposer,
+          $$ReportTransactionsTableCreateCompanionBuilder,
+          $$ReportTransactionsTableUpdateCompanionBuilder,
+          (ReportTransaction, $$ReportTransactionsTableReferences),
+          ReportTransaction,
+          PrefetchHooks Function({bool driverId, bool transactionId})
+        > {
+  $$ReportTransactionsTableTableManager(
+    _$AppDatabase db,
+    $ReportTransactionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReportTransactionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReportTransactionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReportTransactionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> driverId = const Value.absent(),
+                Value<int> transactionId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => ReportTransactionsCompanion(
+                id: id,
+                driverId: driverId,
+                transactionId: transactionId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int driverId,
+                required int transactionId,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => ReportTransactionsCompanion.insert(
+                id: id,
+                driverId: driverId,
+                transactionId: transactionId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ReportTransactionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({driverId = false, transactionId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -2057,11 +3037,28 @@ class $$TransactionsTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.driverId,
-                                referencedTable: $$TransactionsTableReferences
-                                    ._driverIdTable(db),
-                                referencedColumn: $$TransactionsTableReferences
-                                    ._driverIdTable(db)
-                                    .id,
+                                referencedTable:
+                                    $$ReportTransactionsTableReferences
+                                        ._driverIdTable(db),
+                                referencedColumn:
+                                    $$ReportTransactionsTableReferences
+                                        ._driverIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (transactionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.transactionId,
+                                referencedTable:
+                                    $$ReportTransactionsTableReferences
+                                        ._transactionIdTable(db),
+                                referencedColumn:
+                                    $$ReportTransactionsTableReferences
+                                        ._transactionIdTable(db)
+                                        .id,
                               )
                               as T;
                     }
@@ -2077,19 +3074,19 @@ class $$TransactionsTableTableManager
       );
 }
 
-typedef $$TransactionsTableProcessedTableManager =
+typedef $$ReportTransactionsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $TransactionsTable,
-      DbTransaction,
-      $$TransactionsTableFilterComposer,
-      $$TransactionsTableOrderingComposer,
-      $$TransactionsTableAnnotationComposer,
-      $$TransactionsTableCreateCompanionBuilder,
-      $$TransactionsTableUpdateCompanionBuilder,
-      (DbTransaction, $$TransactionsTableReferences),
-      DbTransaction,
-      PrefetchHooks Function({bool driverId})
+      $ReportTransactionsTable,
+      ReportTransaction,
+      $$ReportTransactionsTableFilterComposer,
+      $$ReportTransactionsTableOrderingComposer,
+      $$ReportTransactionsTableAnnotationComposer,
+      $$ReportTransactionsTableCreateCompanionBuilder,
+      $$ReportTransactionsTableUpdateCompanionBuilder,
+      (ReportTransaction, $$ReportTransactionsTableReferences),
+      ReportTransaction,
+      PrefetchHooks Function({bool driverId, bool transactionId})
     >;
 
 class $AppDatabaseManager {
@@ -2101,4 +3098,6 @@ class $AppDatabaseManager {
       $$DriversTableTableManager(_db, _db.drivers);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
+  $$ReportTransactionsTableTableManager get reportTransactions =>
+      $$ReportTransactionsTableTableManager(_db, _db.reportTransactions);
 }
