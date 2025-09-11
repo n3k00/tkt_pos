@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:drift/drift.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
+import 'package:tkt_pos/resources/strings.dart';
 
 class ReportsController extends GetxController {
   final AppDatabase db = AppDatabase();
@@ -21,28 +22,28 @@ class ReportsController extends GetxController {
     final base = selectedDate.value;
     final start = DateTime(base.year, base.month, base.day);
     final end = start.add(const Duration(days: 1));
-    final list = await db.getReportedTransactions(start, end);
+    var list = await db.getReportedTransactions(start, end);
     if (list.isEmpty) {
       // Backfill once for this day from picked-up transactions, then reload
       await db.backfillReportTransactionsForDay(base);
-      final list2 = await db.getReportedTransactions(start, end);
-      all.assignAll(list2);
-    } else {
-      all.assignAll(list);
+      list = await db.getReportedTransactions(start, end);
     }
+    all.assignAll(list);
+
     // fetch driver names for displayed rows in one query
-    final ids = list.map((e) => e.driverId).toSet().toList();
-    if (all.isNotEmpty) {
-      final ids = all.map((e) => e.driverId).toSet().toList();
-      final ds = await (db.select(db.drivers)
-            ..where((d) => d.id.isIn(ids)))
-          .get();
-      driverMap
-        ..clear()
-        ..addEntries(ds.map((d) => MapEntry(d.id, d)));
-    } else {
+    if (all.isEmpty) {
       driverMap.clear();
+      update();
+      return;
     }
+    final ids = all.map((e) => e.driverId).toSet().toList();
+    final ds = await (db.select(
+      db.drivers,
+    )..where((d) => d.id.isIn(ids))).get();
+    driverMap
+      ..clear()
+      ..addEntries(ds.map((d) => MapEntry(d.id, d)));
+    update();
   }
 
   void setTab(int index) {
@@ -58,25 +59,37 @@ class ReportsController extends GetxController {
   List<DbTransaction> get filtered {
     final q = search.value.trim().toLowerCase();
     final src = all;
+
     if (q.isEmpty) return src;
-    return src.where((t) {
-      final f = <String?>[
-        t.customerName,
-        t.phone,
-        t.parcelType,
-        t.number,
-        t.paymentStatus,
-        driverNameFor(t.driverId),
-      ];
-      return f.any((s) => (s ?? '').toLowerCase().contains(q));
-    }).toList(growable: false);
+    return src
+        .where((t) {
+          final f = <String?>[
+            t.customerName,
+            t.phone,
+            t.parcelType,
+            t.number,
+            t.paymentStatus,
+            driverNameFor(t.driverId),
+          ];
+          return f.any((s) => (s ?? '').toLowerCase().contains(q));
+        })
+        .toList(growable: false);
   }
 
   double get totalChargesAll => filtered.fold(0.0, (s, t) => s + t.charges);
   double get totalChargesPending => filtered
-      .where((t) => t.paymentStatus.trim() == 'ငွေတောင်းရန်')
+      .where((t) => _isPending(t.paymentStatus))
       .fold(0.0, (s, t) => s + t.charges);
   int get totalCount => filtered.length;
 
   String driverNameFor(int driverId) => driverMap[driverId]?.name ?? '-';
+
+  bool _isPending(String status) {
+    final s = status.trim();
+    // Support multiple encodings / fallbacks
+    if (s.toLowerCase() == 'pending') return true;
+    // AppString constant (may differ by encoding on some setups)
+    if (s == AppString.paymentPending) return true;
+    return false;
+  }
 }

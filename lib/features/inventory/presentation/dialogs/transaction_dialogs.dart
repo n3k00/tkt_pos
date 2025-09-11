@@ -6,6 +6,8 @@ import 'package:drift/drift.dart' as drift;
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/utils/format.dart';
+import 'package:tkt_pos/resources/strings.dart';
 
 Future<void> showEditTransactionDialog(
   BuildContext context,
@@ -250,8 +252,8 @@ Future<void> showEditTransactionDialog(
                           child: Text('ငွေရှင်းပြီး'),
                         ),
                         DropdownMenuItem(
-                          value: 'ငွေတောင်းရန်',
-                          child: Text('ငွေတောင်းရန်'),
+                          value: AppString.paymentPending,
+                          child: Text(AppString.paymentPending),
                         ),
                       ],
                       onChanged: (v) =>
@@ -385,25 +387,8 @@ Future<void> showViewTransactionDialog(
   BuildContext context,
   DbTransaction t,
 ) async {
-  String _fmtMoney(double v) {
-    var s = v.toStringAsFixed(2);
-    if (s.contains('.')) {
-      s = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
-    }
-    return s;
-  }
-
-  String _fmtDateTime12(DateTime d) {
-    final dd = d.day.toString().padLeft(2, '0');
-    final mm = d.month.toString().padLeft(2, '0');
-    final yyyy = d.year.toString().padLeft(4, '0');
-    final h24 = d.hour;
-    final ampm = h24 >= 12 ? 'PM' : 'AM';
-    final h12 = (h24 % 12 == 0) ? 12 : h24 % 12;
-    final hh = h12.toString().padLeft(2, '0');
-    final min = d.minute.toString().padLeft(2, '0');
-    return '$dd/$mm/$yyyy $hh:$min $ampm';
-  }
+  String _fmtMoney(double v) => Format.money(v);
+  String _fmtDateTime12(DateTime d) => Format.dateTime12(d);
 
   await showDialog(
     context: context,
@@ -602,7 +587,7 @@ Future<void> showAddTransactionDialog(
   final numberCtrl = TextEditingController();
   final chargesCtrl = TextEditingController(text: '0');
   final cashAdvanceCtrl = TextEditingController(text: '0');
-  String paymentStatus = 'ငွေတောင်းရန်';
+  String paymentStatus = AppString.paymentPending;
   const bool pickedUp = false;
   final formKey = GlobalKey<FormState>();
 
@@ -839,8 +824,8 @@ Future<void> showAddTransactionDialog(
                             child: Text('ငွေရှင်းပြီး'),
                           ),
                           DropdownMenuItem(
-                            value: 'ငွေတောင်းရန်',
-                            child: Text('ငွေတောင်းရန်'),
+                            value: AppString.paymentPending,
+                            child: Text(AppString.paymentPending),
                           ),
                         ],
                         onChanged: (v) =>

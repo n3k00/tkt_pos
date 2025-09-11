@@ -42,6 +42,95 @@ class SettingsPage extends GetView<SettingsController> {
                         )),
                     const Divider(height: 32),
                     Text(
+                      'Database',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      leading: const Icon(Icons.backup_outlined),
+                      title: const Text('Backup database'),
+                      subtitle: const Text('Saves a copy into app backups folder'),
+                      onTap: () async {
+                        try {
+                          final path = await controller.backupDb();
+                          if (!context.mounted) return;
+                          if (path == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Backup cancelled.')),
+                            );
+                            return;
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Backup saved: $path')),
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Backup failed: $e')),
+                          );
+                        }
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.restore_outlined),
+                      title: const Text('Restore latest backup (replace)'),
+                      subtitle: const Text('Replaces current DB with most recent backup'),
+                      onTap: () async {
+                        try {
+                          final ok = await controller.restoreLatestBackup();
+                          if (!context.mounted) return;
+                          if (ok) {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Restore complete'),
+                                content: const Text('Please restart the app to use the restored database.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No backup found or restore failed.')),
+                            );
+                          }
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Restore failed: $e')),
+                          );
+                        }
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.merge_type_outlined),
+                      title: const Text('Restore from file (merge)'),
+                      subtitle: const Text('Choose a .db file and merge into current database'),
+                      onTap: () async {
+                        try {
+                          final ok = await controller.restoreFromFileMerge();
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ok ? 'Merge completed successfully.' : 'Restore cancelled.',
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Merge failed: $e')),
+                          );
+                        }
+                      },
+                    ),
+                    const Divider(height: 32),
+                    Text(
                       'About',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),

@@ -25,23 +25,25 @@ class AppDatabase extends _$AppDatabase {
   // Migrations: create new tables when upgrading from v1
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-        },
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            // Create any newly added tables (drivers, transactions)
-            await m.createTable(drivers);
-            await m.createTable(transactions);
-          }
-          if (from < 3) {
-            // Rebuild transactions to relax NOT NULL on customer_name and cash_advance
-            // 1) Rename old table
-            await customStatement('ALTER TABLE transactions RENAME TO transactions_old');
-            // 2) Create new table with updated schema
-            await m.createTable(transactions);
-            // 3) Copy data across
-            await customStatement('''
+    onCreate: (m) async {
+      await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // Create any newly added tables (drivers, transactions)
+        await m.createTable(drivers);
+        await m.createTable(transactions);
+      }
+      if (from < 3) {
+        // Rebuild transactions to relax NOT NULL on customer_name and cash_advance
+        // 1) Rename old table
+        await customStatement(
+          'ALTER TABLE transactions RENAME TO transactions_old',
+        );
+        // 2) Create new table with updated schema
+        await m.createTable(transactions);
+        // 3) Copy data across
+        await customStatement('''
               INSERT INTO transactions (
                 id, customer_name, phone, parcel_type, number, charges,
                 payment_status, cash_advance, picked_up, comment, driver_id,
@@ -52,14 +54,16 @@ class AppDatabase extends _$AppDatabase {
                      created_at, updated_at
               FROM transactions_old
             ''');
-            // 4) Drop old table
-            await customStatement('DROP TABLE transactions_old');
-          }
-          if (from < 4) {
-            // Remove column `no` from transactions by rebuilding
-            await customStatement('ALTER TABLE transactions RENAME TO transactions_old');
-            await m.createTable(transactions);
-            await customStatement('''
+        // 4) Drop old table
+        await customStatement('DROP TABLE transactions_old');
+      }
+      if (from < 4) {
+        // Remove column `no` from transactions by rebuilding
+        await customStatement(
+          'ALTER TABLE transactions RENAME TO transactions_old',
+        );
+        await m.createTable(transactions);
+        await customStatement('''
               INSERT INTO transactions (
                 id, customer_name, phone, parcel_type, number, charges,
                 payment_status, cash_advance, picked_up, comment, driver_id,
@@ -70,13 +74,15 @@ class AppDatabase extends _$AppDatabase {
                      created_at, updated_at
               FROM transactions_old
             ''');
-            await customStatement('DROP TABLE transactions_old');
-          }
-          if (from < 5) {
-            // Make cash_advance NOT NULL with default 0.0
-            await customStatement('ALTER TABLE transactions RENAME TO transactions_old');
-            await m.createTable(transactions);
-            await customStatement('''
+        await customStatement('DROP TABLE transactions_old');
+      }
+      if (from < 5) {
+        // Make cash_advance NOT NULL with default 0.0
+        await customStatement(
+          'ALTER TABLE transactions RENAME TO transactions_old',
+        );
+        await m.createTable(transactions);
+        await customStatement('''
               INSERT INTO transactions (
                 id, customer_name, phone, parcel_type, number, charges,
                 payment_status, cash_advance, picked_up, comment, driver_id,
@@ -87,27 +93,30 @@ class AppDatabase extends _$AppDatabase {
                      created_at, updated_at
               FROM transactions_old
             ''');
-            await customStatement('DROP TABLE transactions_old');
-          }
-          if (from < 6) {
-            await m.createTable(reportTransactions);
-          }
-        },
-      );
+        await customStatement('DROP TABLE transactions_old');
+      }
+      if (from < 6) {
+        await m.createTable(reportTransactions);
+      }
+    },
+  );
 
   Future<void> setSetting(String key, String? value) async {
-    await into(appSettings).insertOnConflictUpdate(
-      AppSetting(key: key, value: value),
-    );
+    await into(
+      appSettings,
+    ).insertOnConflictUpdate(AppSetting(key: key, value: value));
   }
 
   Future<String?> getSetting(String key) async {
-    final row = await (select(appSettings)..where((t) => t.key.equals(key))).getSingleOrNull();
+    final row = await (select(
+      appSettings,
+    )..where((t) => t.key.equals(key))).getSingleOrNull();
     return row?.value;
   }
 
   // ------ Drivers CRUD ------
-  Future<int> insertDriver(DriversCompanion companion) => into(drivers).insert(companion);
+  Future<int> insertDriver(DriversCompanion companion) =>
+      into(drivers).insert(companion);
 
   Future<List<Driver>> getAllDrivers() => select(drivers).get();
 
@@ -115,26 +124,34 @@ class AppDatabase extends _$AppDatabase {
     return (select(drivers)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
-  Future<bool> updateDriver(DriversCompanion companion) => update(drivers).replace(companion);
+  Future<bool> updateDriver(DriversCompanion companion) =>
+      update(drivers).replace(companion);
 
   Future<int> deleteDriverById(int id) {
     return (delete(drivers)..where((t) => t.id.equals(id))).go();
   }
 
   // ------ Transactions CRUD ------
-  Future<int> insertTransaction(TransactionsCompanion companion) => into(transactions).insert(companion);
+  Future<int> insertTransaction(TransactionsCompanion companion) =>
+      into(transactions).insert(companion);
 
-  Future<List<DbTransaction>> getAllTransactions() => select(transactions).get();
+  Future<List<DbTransaction>> getAllTransactions() =>
+      select(transactions).get();
 
   Future<List<DbTransaction>> getTransactionsByDriver(int driverId) async {
-    return (select(transactions)..where((t) => t.driverId.equals(driverId))).get();
+    return (select(
+      transactions,
+    )..where((t) => t.driverId.equals(driverId))).get();
   }
 
   Future<DbTransaction?> getTransactionById(int id) async {
-    return (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
+    return (select(
+      transactions,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
-  Future<bool> updateTransaction(TransactionsCompanion companion) => update(transactions).replace(companion);
+  Future<bool> updateTransaction(TransactionsCompanion companion) =>
+      update(transactions).replace(companion);
 
   Future<int> deleteTransactionById(int id) {
     return (delete(transactions)..where((t) => t.id.equals(id))).go();
@@ -163,11 +180,12 @@ class AppDatabase extends _$AppDatabase {
     // are stored with SQLite's CURRENT_TIMESTAMP (UTC) by default.
     final startUtc = start.toUtc();
     final endUtc = end.toUtc();
-    final query = select(t).join([
-      innerJoin(rt, rt.transactionId.equalsExp(t.id)),
-    ])
-      ..where(rt.createdAt.isBiggerOrEqualValue(startUtc) &
-          rt.createdAt.isSmallerThanValue(endUtc));
+    final query =
+        select(t).join([innerJoin(rt, rt.transactionId.equalsExp(t.id))])
+          ..where(
+            rt.createdAt.isBiggerOrEqualValue(startUtc) &
+                rt.createdAt.isSmallerThanValue(endUtc),
+          );
 
     final rows = await query.get();
     return rows.map((row) => row.readTable(t)).toList(growable: false);
@@ -177,17 +195,20 @@ class AppDatabase extends _$AppDatabase {
     final start = DateTime(day.year, day.month, day.day).toUtc();
     final end = start.add(const Duration(days: 1));
     // Fetch picked-up transactions in the selected day (by their updatedAt)
-    final picked = await (select(transactions)
-          ..where((t) => t.pickedUp.equals(true) &
-              t.updatedAt.isBiggerOrEqualValue(start) &
-              t.updatedAt.isSmallerThanValue(end)))
-        .get();
+    final picked =
+        await (select(transactions)..where(
+              (t) =>
+                  t.pickedUp.equals(true) &
+                  t.updatedAt.isBiggerOrEqualValue(start) &
+                  t.updatedAt.isSmallerThanValue(end),
+            ))
+            .get();
     if (picked.isEmpty) return;
 
     for (final tx in picked) {
-      final exists = await (select(reportTransactions)
-            ..where((rt) => rt.transactionId.equals(tx.id)))
-          .getSingleOrNull();
+      final exists = await (select(
+        reportTransactions,
+      )..where((rt) => rt.transactionId.equals(tx.id))).getSingleOrNull();
       if (exists == null) {
         await into(reportTransactions).insert(
           ReportTransactionsCompanion.insert(
@@ -198,6 +219,108 @@ class AppDatabase extends _$AppDatabase {
           ),
         );
       }
+    }
+  }
+
+  // ------ Backup & Restore ------
+  Future<String> backupDatabaseToPath(String destinationPath) async {
+    // Ensure the destination directory exists
+    final dirPath = p.dirname(destinationPath);
+    final d = Directory(dirPath);
+    if (!await d.exists()) {
+      await d.create(recursive: true);
+    }
+    // Use SQLite to write a consistent backup without closing the db
+    final escaped = destinationPath.replaceAll("'", "''");
+    await customStatement("VACUUM INTO '" + escaped + "'");
+    return destinationPath;
+  }
+
+  Future<String> backupDatabase() async {
+    final Directory dir = await getApplicationSupportDirectory();
+    final Directory backupsDir = Directory(p.join(dir.path, 'backups'));
+    if (!await backupsDir.exists()) {
+      await backupsDir.create(recursive: true);
+    }
+    final ts = DateTime.now()
+        .toIso8601String()
+        .replaceAll(':', '-')
+        .replaceAll('.', '-');
+    final String dest = p.join(backupsDir.path, 'app-$ts.db');
+    // Use SQLite to write a consistent backup without closing the db
+    await customStatement("VACUUM INTO '" + dest.replaceAll("'", "''") + "'");
+    return dest;
+  }
+
+  static Future<String?> restoreFromBackup(String backupPath) async {
+    try {
+      final Directory dir = await getApplicationSupportDirectory();
+      final File dbFile = File(p.join(dir.path, 'app.db'));
+      // Close current connection to release file lock
+      try {
+        await AppDatabase().close();
+      } catch (_) {}
+      await File(backupPath).copy(dbFile.path);
+      return dbFile.path;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Merge data from another sqlite database file into the current one.
+  // This keeps existing rows and inserts missing ones by primary key.
+  Future<void> mergeFromDatabaseFile(String backupPath) async {
+    final escaped = backupPath.replaceAll("'", "''");
+    // Ensure operations run sequentially
+    await customStatement("ATTACH DATABASE '" + escaped + "' AS src");
+    try {
+      await customStatement('PRAGMA foreign_keys=OFF');
+      await customStatement('BEGIN');
+
+      // Drivers
+      await customStatement('''
+        INSERT INTO drivers (id, date, name)
+        SELECT id, date, name FROM src.drivers s
+        WHERE NOT EXISTS (SELECT 1 FROM drivers d WHERE d.id = s.id)
+      ''');
+
+      // Transactions
+      await customStatement('''
+        INSERT INTO transactions (
+          id, customer_name, phone, parcel_type, number, charges,
+          payment_status, cash_advance, picked_up, comment, driver_id,
+          created_at, updated_at
+        )
+        SELECT id, customer_name, phone, parcel_type, number, charges,
+               payment_status, cash_advance, picked_up, comment, driver_id,
+               created_at, updated_at
+        FROM src.transactions s
+        WHERE NOT EXISTS (SELECT 1 FROM transactions t WHERE t.id = s.id)
+      ''');
+
+      // Report transactions
+      await customStatement('''
+        INSERT INTO report_transactions (
+          id, driver_id, transaction_id, created_at, updated_at
+        )
+        SELECT id, driver_id, transaction_id, created_at, updated_at
+        FROM src.report_transactions s
+        WHERE NOT EXISTS (SELECT 1 FROM report_transactions r WHERE r.id = s.id)
+      ''');
+
+      // App settings: use INSERT OR REPLACE for broader SQLite compatibility
+      await customStatement('''
+        INSERT OR REPLACE INTO app_settings (key, value)
+        SELECT key, value FROM src.app_settings
+      ''');
+
+      await customStatement('COMMIT');
+    } catch (_) {
+      await customStatement('ROLLBACK');
+      rethrow;
+    } finally {
+      await customStatement('PRAGMA foreign_keys=ON');
+      await customStatement('DETACH DATABASE src');
     }
   }
 }

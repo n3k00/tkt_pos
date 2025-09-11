@@ -14,6 +14,7 @@ import 'package:tkt_pos/features/inventory/presentation/widgets/driver_actions_m
 import 'package:tkt_pos/widgets/appdrawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
+import 'package:tkt_pos/utils/format.dart';
 
 class InventoryPage extends GetView<InventoryController> {
   const InventoryPage({super.key});
@@ -100,7 +101,7 @@ class _DriverSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = _formatDate(driver.date);
+    final dateStr = Format.date(driver.date);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -145,12 +146,7 @@ class _DriverSection extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime d) {
-    final dd = d.day.toString().padLeft(2, '0');
-    final mm = d.month.toString().padLeft(2, '0');
-    final yyyy = d.year.toString().padLeft(4, '0');
-    return '$dd/$mm/$yyyy';
-  }
+  // Date formatting moved to Format.date
 }
 
 class _DriverTransactionsTable extends StatefulWidget {
@@ -177,45 +173,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
     super.dispose();
   }
 
-  String _fmtMoney(double v) {
-    final isNegative = v < 0;
-    var s = v.abs().toStringAsFixed(2);
-    if (s.contains('.')) {
-      s = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
-    }
-    final parts = s.split('.');
-    final intPart = parts[0];
-    final fracPart = parts.length > 1 && parts[1].isNotEmpty
-        ? '.${parts[1]}'
-        : '';
-
-    String groupThousands(String digits) {
-      if (digits.length <= 3) return digits;
-      final firstLen = digits.length % 3 == 0 ? 3 : digits.length % 3;
-      final buf = StringBuffer();
-      buf.write(digits.substring(0, firstLen));
-      for (int i = firstLen; i < digits.length; i += 3) {
-        buf.write(',');
-        buf.write(digits.substring(i, i + 3));
-      }
-      return buf.toString();
-    }
-
-    final withCommas = groupThousands(intPart);
-    return (isNegative ? '-' : '') + withCommas + fracPart;
-  }
-
-  String _fmtDateTime(DateTime d) {
-    final dd = d.day.toString().padLeft(2, '0');
-    final mm = d.month.toString().padLeft(2, '0');
-    final yyyy = d.year.toString().padLeft(4, '0');
-    final hour24 = d.hour;
-    final ampm = hour24 >= 12 ? 'PM' : 'AM';
-    final hour12 = (hour24 % 12 == 0) ? 12 : hour24 % 12;
-    final hh = hour12.toString().padLeft(2, '0');
-    final min = d.minute.toString().padLeft(2, '0');
-    return '$dd/$mm/$yyyy $hh:$min $ampm';
-  }
+  // Money/date formatting moved to Format.money/dateTime12
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +194,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
             final headerStyle = AppTextStyles.tableHeader;
             final cellStyle = AppTextStyles.tableCell;
             final totalCharges = rows
-                .where((t) => t.paymentStatus.trim() == 'ငွေတောင်းရန်')
+                .where((t) => t.paymentStatus.trim() == AppString.paymentPending)
                 .fold<double>(0, (s, t) => s + t.charges);
             final totalAdvance = rows.fold<double>(
               0,
@@ -425,7 +383,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        _fmtMoney(t.charges),
+                                        Format.money(t.charges),
                                         style: cellStyle,
                                         textAlign: TextAlign.right,
                                       ),
@@ -450,7 +408,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        _fmtMoney(t.cashAdvance),
+                                        Format.money(t.cashAdvance),
                                         style: cellStyle,
                                         textAlign: TextAlign.right,
                                       ),
@@ -491,7 +449,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                                     child: Center(
                                       child: Text(
                                         t.pickedUp
-                                            ? _fmtDateTime(t.updatedAt)
+                                            ? Format.dateTime12(t.updatedAt)
                                             : '-',
                                         style: cellStyle,
                                         textAlign: TextAlign.center,
@@ -526,7 +484,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                                   child: Align(
                                     alignment: Alignment.centerRight,
                                     child: Text(
-                                      _fmtMoney(totalCharges),
+                                      Format.money(totalCharges),
                                       style: headerStyle.copyWith(
                                         fontWeight: FontWeight.w700,
                                         color: AppColor.textPrimary,
@@ -543,7 +501,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                                   child: Align(
                                     alignment: Alignment.centerRight,
                                     child: Text(
-                                      _fmtMoney(totalAdvance),
+                                      Format.money(totalAdvance),
                                       style: headerStyle.copyWith(
                                         fontWeight: FontWeight.w700,
                                         color: AppColor.textPrimary,

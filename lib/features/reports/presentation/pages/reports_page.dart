@@ -5,59 +5,58 @@ import 'package:tkt_pos/widgets/appdrawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
+import 'package:tkt_pos/resources/strings.dart';
+import 'package:tkt_pos/utils/format.dart';
 
 class ReportsPage extends GetView<ReportsController> {
   const ReportsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        drawer: const AppDrawer(),
-        drawerEnableOpenDragGesture: true,
-        drawerEdgeDragWidth: 80,
-        body: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PageHeader(
-                  title: 'Reports',
-                  crumbs: const ['Home', 'Reports'],
-                  showBack: false,
-                  trailing: HeaderSearchField(
-                    hint: 'Search reports...',
-                    onChanged: controller.setSearch,
-                  ),
+    return Scaffold(
+      drawer: const AppDrawer(),
+      drawerEnableOpenDragGesture: true,
+      drawerEdgeDragWidth: 80,
+      body: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PageHeader(
+                title: AppString.reports,
+                crumbs: const [AppString.home, AppString.reports],
+                showBack: false,
+                trailing: HeaderSearchField(
+                  hint: AppString.searchReportsHint,
+                  onChanged: controller.setSearch,
                 ),
-                const SizedBox(height: 4),
-                _StatCards(controller: controller),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'Report Transaction List',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColor.textPrimary,
-                        ),
+              ),
+              const SizedBox(height: 4),
+              _StatCards(controller: controller),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    const Text(
+                      AppString.reportTransactionsTitle,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.textPrimary,
                       ),
-                      const Spacer(),
-                      _DatePickerButton(controller: controller),
-                    ],
-                  ),
+                    ),
+                    const Spacer(),
+                    _DatePickerButton(controller: controller),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Expanded(child: _ReportsTable(controller: controller)),
-              ],
-            ),
-            EdgeDrawerOpener(),
-          ],
-        ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(child: _ReportsTable(controller: controller)),
+            ],
+          ),
+          EdgeDrawerOpener(),
+        ],
       ),
     );
   }
@@ -75,13 +74,13 @@ class _StatCards extends StatelessWidget {
         return Row(
           children: [
             _StatCard(
-              title: 'Total Count',
+              title: AppString.totalCount,
               value: controller.totalCount.toString(),
             ),
             const SizedBox(width: 12),
             _StatCard(
-              title: 'Total Charges',
-              value: _fmt(controller.totalChargesAll),
+              title: AppString.totalCharges,
+              value: Format.money(controller.totalChargesPending),
             ),
           ],
         );
@@ -89,7 +88,7 @@ class _StatCards extends StatelessWidget {
     );
   }
 
-  static String _fmt(double v) => _money(v);
+  static String _fmt(double v) => Format.money(v);
 }
 
 class _StatCard extends StatelessWidget {
@@ -141,62 +140,104 @@ class _ReportsTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final rows = controller.filtered;
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Card(
-          margin: EdgeInsets.zero,
-          color: AppColor.card,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: AppColor.border),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                  child: DataTable(
-                    columnSpacing: 20,
-                    columns: const [
-                      DataColumn(label: Text('No')),
-                      DataColumn(label: Text('Driver')),
-                      DataColumn(label: Text('Customer')),
-                      DataColumn(label: Text('Phone')),
-                      DataColumn(label: Text('Parcel')),
-                      DataColumn(label: Text('Number')),
-                      DataColumn(label: Text('Charges')),
-                      DataColumn(label: Text('Status')),
-                      DataColumn(label: Text('Cash Advance')),
-                    ],
-                    rows: [
-                      ...rows.asMap().entries.map((e) {
-                        final i = e.key + 1;
-                        final t = e.value;
-                        return DataRow(
-                          cells: [
-                            DataCell(Text('$i')),
-                            DataCell(
-                              Text(controller.driverNameFor(t.driverId)),
-                            ),
-                            DataCell(Text(t.customerName ?? '-')),
-                            DataCell(Text(t.phone)),
-                            DataCell(Text(t.parcelType)),
-                            DataCell(Text(t.number)),
-                            DataCell(Text(_money(t.charges))),
-                            DataCell(Text(t.paymentStatus)),
-                            DataCell(Text(_money(t.cashAdvance))),
-                          ],
-                        );
-                      }),
-                    ],
-                  ),
+      if (rows.isEmpty) {
+        final d = controller.selectedDate.value;
+        final dd = d.day.toString().padLeft(2, '0');
+        final mm = d.month.toString().padLeft(2, '0');
+        final yyyy = d.year.toString();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Card(
+            margin: EdgeInsets.zero,
+            color: AppColor.card,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColor.border),
+            ),
+            child: SizedBox(
+              height: 160,
+              child: Center(
+                child: Text(
+                  '${AppString.noReportsForDate} $dd/$mm/$yyyy',
+                  style: const TextStyle(color: AppColor.textSecondary),
                 ),
-              );
-            },
+              ),
+            ),
           ),
-        ),
-      );
+        );
+      }
+      return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Card(
+            margin: EdgeInsets.zero,
+            color: AppColor.card,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColor.border),
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: DataTable(
+                      columnSpacing: 20,
+                      columns: const [
+                        DataColumn(label: Text(AppString.colNo)),
+                        DataColumn(label: Text(AppString.colDriver)),
+                        DataColumn(label: Text(AppString.colCustomerName)),
+                        DataColumn(label: Text(AppString.colPhone)),
+                        DataColumn(label: Text(AppString.colParcelType)),
+                        DataColumn(label: Text(AppString.colNumber)),
+                        DataColumn(label: Center(child: Text(AppString.colCharges))),
+                        DataColumn(label: Text(AppString.colPaymentStatus)),
+                        DataColumn(label: Center(child: Text(AppString.colCashAdvance))),
+                      ],
+                      rows: [
+                        ...rows.asMap().entries.map((e) {
+                          final i = e.key + 1;
+                          final t = e.value;
+                          return DataRow(
+                            cells: [
+                              DataCell(Text('$i')),
+                              DataCell(
+                                Text(controller.driverNameFor(t.driverId)),
+                              ),
+                              DataCell(Text(t.customerName ?? '-')),
+                              DataCell(Text(t.phone)),
+                              DataCell(Text(t.parcelType)),
+                              DataCell(Text(t.number)),
+                              DataCell(
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    Format.money(t.charges),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                ),
+                              ),
+                              DataCell(Text(t.paymentStatus)),
+                              DataCell(
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    Format.money(t.cashAdvance),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
     });
   }
 }
@@ -258,45 +299,4 @@ class _DatePickerButton extends StatelessWidget {
   }
 }
 
-String _money(double v) {
-  final isNegative = v < 0;
-  // Convert the absolute value of v to a string with two decimal places
-  var s = v.abs().toStringAsFixed(2);
-
-  // Remove trailing zeros and the decimal point if it becomes the last character
-  s = s.replaceAll(RegExp(r'0*$'), '');
-  if (s.endsWith('.')) {
-    s = s.substring(0, s.length - 1);
-  }
-
-  // Split the string into integer and fractional parts
-  final parts = s.split('.');
-  final intPart = parts[0];
-  final fracPart = parts.length > 1 ? '.${parts[1]}' : '';
-
-  // Add commas to the integer part
-  String group(String d) {
-    if (d.length <= 3) return d;
-    final first = d.length % 3 == 0 ? 3 : d.length % 3;
-    final buf = StringBuffer(d.substring(0, first));
-    for (int i = first; i < d.length; i += 3) {
-      buf.write(',');
-      buf.write(d.substring(i, i + 3));
-    }
-    return buf.toString();
-  }
-
-  final withCommas = group(intPart);
-
-  // Return the formatted string with the negative sign if needed
-  return (isNegative ? '-' : '') + withCommas + fracPart;
-}
-
-String _fmtDateTime(DateTime d) {
-  final dd = d.day.toString().padLeft(2, '0');
-  final mm = d.month.toString().padLeft(2, '0');
-  final yyyy = d.year.toString().padLeft(4, '0');
-  final hh = d.hour.toString().padLeft(2, '0');
-  final mi = d.minute.toString().padLeft(2, '0');
-  return '$dd/$mm/$yyyy $hh:$mi';
-}
+// Money/date formatters moved to lib/utils/format.dart
