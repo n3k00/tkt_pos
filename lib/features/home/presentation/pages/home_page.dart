@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/home/presentation/controllers/home_controller.dart';
 import 'package:tkt_pos/resources/strings.dart';
@@ -6,6 +6,7 @@ import 'package:tkt_pos/widgets/appdrawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
+import 'package:tkt_pos/app/router/app_pages.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -47,34 +48,100 @@ class HomePage extends GetView<HomeController> {
                 child: Obx(() {
                   final rows = controller.items;
                   if (rows.isEmpty) {
-                    return const Center(child: Text('No records in Trip Main.'));
+                    return const Center(
+                      child: Text('No records in Trip Main.'),
+                    );
                   }
-                  return ListView.separated(
-                    itemCount: rows.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final r = rows[index];
-                      return ListTile(
-                        leading: CircleAvatar(child: Text(r.id.toString())),
-                        title: Text(r.driverName),
-                        subtitle: Text('Date: ' + Format.date(r.date) + '  •  Car: ' + r.carId),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text('Commission: ' + Format.money(r.commission ?? 0)),
-                            Text('Labor: ' + Format.money(r.laborCost ?? 0)),
-                          ],
-                        ),
-                      );
-                    },
-                  );
+                  return _TripMainTable(rows: rows);
                 }),
               ),
             ],
           ),
           EdgeDrawerOpener(),
         ],
+      ),
+    );
+  }
+}
+
+class _TripMainTable extends StatefulWidget {
+  const _TripMainTable({required this.rows});
+  final List rows;
+
+  @override
+  State<_TripMainTable> createState() => _TripMainTableState();
+}
+
+class _TripMainTableState extends State<_TripMainTable> {
+  final ScrollController _vCtrl = ScrollController();
+  final ScrollController _hCtrl = ScrollController();
+
+  @override
+  void dispose() {
+    _vCtrl.dispose();
+    _hCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = widget.rows;
+    return Scrollbar(
+      controller: _vCtrl,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        controller: _vCtrl,
+        scrollDirection: Axis.vertical,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              controller: _hCtrl,
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                child: DataTable(
+                  columnSpacing: 16,
+                  horizontalMargin: 12,
+                  showCheckboxColumn: false,
+                  columns: const [
+                    DataColumn(label: Text('Date')),
+                    DataColumn(label: Text('Driver Name')),
+                    DataColumn(label: Text('Car ID')),
+                    DataColumn(label: Text('Commission')),
+                    DataColumn(label: Text('Labor Cost')),
+                    DataColumn(label: Text('Support Payment')),
+                    DataColumn(label: Text('Room Fee')),
+                  ],
+                  rows: [
+                    ...rows.asMap().entries.map((e) {
+                      final r = e.value;
+                      Widget right(String s) => Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(s),
+                      );
+                      return DataRow(
+                        onSelectChanged: (selected) {
+                          if (selected == true) {
+                            Get.toNamed(Routes.tripDetail, arguments: r);
+                          }
+                        },
+                        cells: [
+                          DataCell(Text(Format.date(r.date))),
+                          DataCell(Text(r.driverName)),
+                          DataCell(Text(r.carId)),
+                          DataCell(right(Format.money(r.commission ?? 0))),
+                          DataCell(right(Format.money(r.laborCost ?? 0))),
+                          DataCell(right(Format.money(r.supportPayment ?? 0))),
+                          DataCell(right(Format.money(r.roomFee ?? 0))),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -118,9 +185,7 @@ Future<void> _showAddTripMainDialog(
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(
-                          child: Text('Date: ' + Format.date(date)),
-                        ),
+                        Expanded(child: Text('Date: ' + Format.date(date))),
                         TextButton(
                           onPressed: () async {
                             final picked = await showDatePicker(
@@ -144,7 +209,8 @@ Future<void> _showAddTripMainDialog(
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Required' : null,
                     ),
                   ],
                 ),

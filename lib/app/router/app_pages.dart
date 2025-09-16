@@ -7,6 +7,7 @@ import 'package:tkt_pos/features/settings/presentation/bindings/settings_binding
 import 'package:tkt_pos/features/settings/presentation/pages/settings_page.dart';
 import 'package:tkt_pos/features/reports/presentation/bindings/reports_binding.dart';
 import 'package:tkt_pos/features/reports/presentation/pages/reports_page.dart';
+import 'package:tkt_pos/features/trips/presentation/pages/trip_detail_page.dart';
 
 part 'app_routes.dart';
 
@@ -33,6 +34,10 @@ class AppPages {
       name: Routes.reports,
       page: () => const ReportsPage(),
       binding: ReportsBinding(),
+    ),
+    GetPage(
+      name: Routes.tripDetail,
+      page: () => const TripDetailPage(),
     ),
   ];
 }
