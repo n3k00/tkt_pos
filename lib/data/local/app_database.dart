@@ -20,13 +20,45 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => _instance;
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 10;
 
   // Migrations: create new tables when upgrading from v1
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
+      // Create requested trip tables if they don't exist
+      await customStatement('''
+        CREATE TABLE IF NOT EXISTS trip_main (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date INTEGER NOT NULL,
+          driver_name TEXT NOT NULL,
+          car_id TEXT NOT NULL,
+          commission REAL,
+          labor_cost REAL,
+          support_payment REAL,
+          room_fee REAL,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+      await customStatement('''
+        CREATE TABLE IF NOT EXISTS trip_manifests (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          driver_id INTEGER,
+          customer_name TEXT,
+          delivery_city TEXT,
+          phone TEXT,
+          parcel_type TEXT NOT NULL,
+          number_of_parcel INTEGER NOT NULL,
+          cash_advance REAL,
+          payment_pending REAL,
+          payment_paid REAL,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY(driver_id) REFERENCES trip_main(id)
+        )
+      ''');
     },
     onUpgrade: (m, from, to) async {
       if (from < 2) {
@@ -97,6 +129,68 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 6) {
         await m.createTable(reportTransactions);
+      }
+      if (from < 9) {
+        await customStatement('''
+          CREATE TABLE IF NOT EXISTS trip_main (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date INTEGER NOT NULL,
+            driver_name TEXT NOT NULL,
+            car_id TEXT NOT NULL,
+            commission REAL,
+            labor_cost REAL,
+            support_payment REAL,
+            room_fee REAL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+        await customStatement('''
+          CREATE TABLE IF NOT EXISTS trip_manifests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            driver_id INTEGER,
+            customer_name TEXT,
+            delivery_city TEXT,
+            phone TEXT,
+            parcel_type TEXT NOT NULL,
+            number_of_parcel INTEGER NOT NULL,
+            cash_advance REAL,
+            payment_pending REAL,
+            payment_paid REAL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(driver_id) REFERENCES trip_main(id)
+          )
+        ''');
+      }
+      if (from < 10) {
+        try {
+          await customStatement('ALTER TABLE trip_main RENAME TO trip_main_old');
+          await customStatement('''
+            CREATE TABLE trip_main (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              date INTEGER NOT NULL,
+              driver_name TEXT NOT NULL,
+              car_id TEXT NOT NULL,
+              commission REAL,
+              labor_cost REAL,
+              support_payment REAL,
+              room_fee REAL,
+              created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+              updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+          ''');
+          await customStatement('''
+            INSERT INTO trip_main (
+              id, date, driver_name, car_id, commission, labor_cost,
+              support_payment, room_fee, created_at, updated_at
+            )
+            SELECT id, date, driver_name, CAST(car_id AS TEXT), commission, labor_cost,
+                   support_payment, room_fee, created_at, updated_at
+            FROM trip_main_old
+          ''');
+          await customStatement('DROP TABLE trip_main_old');
+        } catch (_) {}
       }
     },
   );
@@ -323,6 +417,72 @@ class AppDatabase extends _$AppDatabase {
       await customStatement('DETACH DATABASE src');
     }
   }
+
+  // ------ Trip Main: read helpers ------
+  Future<List<TripMainRow>> getTripMainRows() async {
+    final rows = await customSelect(
+      'SELECT id, date, driver_name, car_id, commission, labor_cost, support_payment, room_fee, created_at, updated_at FROM trip_main ORDER BY date DESC, id DESC',
+    ).get();
+    return rows.map((r) => TripMainRow.fromRow(r)).toList(growable: false);
+  }
+
+  Future<int> insertTripMain({
+    required DateTime date,
+    required String driverName,
+    required String carId,
+  }) async {
+    return await customInsert(
+      'INSERT INTO trip_main (date, driver_name, car_id, commission, labor_cost, support_payment, room_fee, created_at, updated_at) '
+      'VALUES (?, ?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
+      variables: [
+        Variable<int>(date.millisecondsSinceEpoch),
+        Variable<String>(driverName),
+        Variable<String>(carId),
+      ],
+    );
+  }
+}
+
+class TripMainRow {
+  final int id;
+  final DateTime date;
+  final String driverName;
+  final String carId;
+  final double? commission;
+  final double? laborCost;
+  final double? supportPayment;
+  final double? roomFee;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  TripMainRow({
+    required this.id,
+    required this.date,
+    required this.driverName,
+    required this.carId,
+    this.commission,
+    this.laborCost,
+    this.supportPayment,
+    this.roomFee,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory TripMainRow.fromRow(QueryRow r) {
+    DateTime? parseTs(String? s) => s == null ? null : DateTime.tryParse(s);
+    return TripMainRow(
+      id: r.read<int>('id'),
+      date: DateTime.fromMillisecondsSinceEpoch(r.read<int>('date')),
+      driverName: r.read<String>('driver_name'),
+      carId: r.read<String>('car_id'),
+      commission: r.read<double?>('commission'),
+      laborCost: r.read<double?>('labor_cost'),
+      supportPayment: r.read<double?>('support_payment'),
+      roomFee: r.read<double?>('room_fee'),
+      createdAt: parseTs(r.read<String?>('created_at')),
+      updatedAt: parseTs(r.read<String?>('updated_at')),
+    );
+  }
 }
 
 LazyDatabase _openConnection() {
@@ -333,3 +493,4 @@ LazyDatabase _openConnection() {
     return NativeDatabase.createInBackground(file);
   });
 }
+
