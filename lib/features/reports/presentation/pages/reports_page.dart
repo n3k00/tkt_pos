@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/reports/presentation/controllers/reports_controller.dart';
-import 'package:tkt_pos/widgets/appdrawer.dart';
+import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
@@ -167,77 +167,81 @@ class _ReportsTable extends StatelessWidget {
         );
       }
       return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Card(
-            margin: EdgeInsets.zero,
-            color: AppColor.card,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppColor.border),
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                    child: DataTable(
-                      columnSpacing: 20,
-                      columns: const [
-                        DataColumn(label: Text(AppString.colNo)),
-                        DataColumn(label: Text(AppString.colDriver)),
-                        DataColumn(label: Text(AppString.colCustomerName)),
-                        DataColumn(label: Text(AppString.colPhone)),
-                        DataColumn(label: Text(AppString.colParcelType)),
-                        DataColumn(label: Text(AppString.colNumber)),
-                        DataColumn(label: Center(child: Text(AppString.colCharges))),
-                        DataColumn(label: Text(AppString.colPaymentStatus)),
-                        DataColumn(label: Center(child: Text(AppString.colCashAdvance))),
-                      ],
-                      rows: [
-                        ...rows.asMap().entries.map((e) {
-                          final i = e.key + 1;
-                          final t = e.value;
-                          return DataRow(
-                            cells: [
-                              DataCell(Text('$i')),
-                              DataCell(
-                                Text(controller.driverNameFor(t.driverId)),
-                              ),
-                              DataCell(Text(t.customerName ?? '-')),
-                              DataCell(Text(t.phone)),
-                              DataCell(Text(t.parcelType)),
-                              DataCell(Text(t.number)),
-                              DataCell(
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                    Format.money(t.charges),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                              ),
-                              DataCell(Text(t.paymentStatus)),
-                              DataCell(
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                    Format.money(t.cashAdvance),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: Card(
+          margin: EdgeInsets.zero,
+          color: AppColor.card,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: AppColor.border),
           ),
-        );
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                  child: DataTable(
+                    columnSpacing: 20,
+                    columns: const [
+                      DataColumn(label: Text(AppString.colNo)),
+                      DataColumn(label: Text(AppString.colDriver)),
+                      DataColumn(label: Text(AppString.colCustomerName)),
+                      DataColumn(label: Text(AppString.colPhone)),
+                      DataColumn(label: Text(AppString.colParcelType)),
+                      DataColumn(label: Text(AppString.colNumber)),
+                      DataColumn(
+                        label: Center(child: Text(AppString.colCharges)),
+                      ),
+                      DataColumn(label: Text(AppString.colPaymentStatus)),
+                      DataColumn(
+                        label: Center(child: Text(AppString.colCashAdvance)),
+                      ),
+                    ],
+                    rows: [
+                      ...rows.asMap().entries.map((e) {
+                        final i = e.key + 1;
+                        final t = e.value;
+                        return DataRow(
+                          cells: [
+                            DataCell(Text('$i')),
+                            DataCell(
+                              Text(controller.driverNameFor(t.driverId)),
+                            ),
+                            DataCell(Text(t.customerName ?? '-')),
+                            DataCell(Text(t.phone)),
+                            DataCell(Text(t.parcelType)),
+                            DataCell(Text(t.number)),
+                            DataCell(
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  Format.money(t.charges),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ),
+                            DataCell(Text(t.paymentStatus)),
+                            DataCell(
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  Format.money(t.cashAdvance),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
     });
   }
 }

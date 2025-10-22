@@ -6,6 +6,8 @@
   static const String reportTransactionsTitle = 'Report Transaction List';
   static const String totalCount = 'Total Count';
   static const String totalCharges = 'Total Charges';
+  // Home / Trips
+  static const String noTripMainRecords = 'No records in Trip Main.';
   // Inventory
   static const String inventory = 'Inventory';
   static const String noDrivers = 'No drivers yet. Tap + to add.';

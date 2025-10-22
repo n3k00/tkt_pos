@@ -2,11 +2,13 @@
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/home/presentation/controllers/home_controller.dart';
 import 'package:tkt_pos/resources/strings.dart';
-import 'package:tkt_pos/widgets/appdrawer.dart';
+import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
+import 'package:tkt_pos/data/local/app_database.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -28,20 +30,11 @@ class HomePage extends GetView<HomeController> {
             children: [
               PageHeader(
                 title: AppString.title,
-                crumbs: const ['Home'],
                 showBack: false,
-                trailing: SizedBox(
-                  width: 360,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: HeaderSearchField(
-                          hint: AppString.searchHint,
-                          onChanged: controller.setSearch,
-                        ),
-                      ),
-                    ],
-                  ),
+                trailingWidth: 360,
+                trailing: HeaderSearchField(
+                  hint: AppString.searchHint,
+                  onChanged: controller.setSearch,
                 ),
               ),
               Expanded(
@@ -49,7 +42,7 @@ class HomePage extends GetView<HomeController> {
                   final rows = controller.items;
                   if (rows.isEmpty) {
                     return const Center(
-                      child: Text('No records in Trip Main.'),
+                      child: Text(AppString.noTripMainRecords),
                     );
                   }
                   return _TripMainTable(rows: rows);
@@ -66,7 +59,7 @@ class HomePage extends GetView<HomeController> {
 
 class _TripMainTable extends StatefulWidget {
   const _TripMainTable({required this.rows});
-  final List rows;
+  final List<TripMainRow> rows;
 
   @override
   State<_TripMainTable> createState() => _TripMainTableState();
@@ -94,49 +87,68 @@ class _TripMainTableState extends State<_TripMainTable> {
         scrollDirection: Axis.vertical,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
+            return Scrollbar(
               controller: _hCtrl,
-              scrollDirection: Axis.horizontal,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                child: DataTable(
-                  columnSpacing: 16,
-                  horizontalMargin: 12,
-                  showCheckboxColumn: false,
-                  columns: const [
-                    DataColumn(label: Text('Date')),
-                    DataColumn(label: Text('Driver Name')),
-                    DataColumn(label: Text('Car ID')),
-                    DataColumn(label: Text('Commission')),
-                    DataColumn(label: Text('Labor Cost')),
-                    DataColumn(label: Text('Support Payment')),
-                    DataColumn(label: Text('Room Fee')),
-                  ],
-                  rows: [
-                    ...rows.asMap().entries.map((e) {
-                      final r = e.value;
-                      Widget right(String s) => Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(s),
-                      );
-                      return DataRow(
-                        onSelectChanged: (selected) {
-                          if (selected == true) {
-                            Get.toNamed(Routes.tripDetail, arguments: r);
-                          }
-                        },
-                        cells: [
-                          DataCell(Text(Format.date(r.date))),
-                          DataCell(Text(r.driverName)),
-                          DataCell(Text(r.carId)),
-                          DataCell(right(Format.money(r.commission ?? 0))),
-                          DataCell(right(Format.money(r.laborCost ?? 0))),
-                          DataCell(right(Format.money(r.supportPayment ?? 0))),
-                          DataCell(right(Format.money(r.roomFee ?? 0))),
+              thumbVisibility: true,
+              scrollbarOrientation: ScrollbarOrientation.bottom,
+              child: SingleChildScrollView(
+                controller: _hCtrl,
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                  child: Card(
+                    color: AppColor.white,
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Colors.black12.withValues(alpha: 0.08)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DataTableTheme(
+                      data: const DataTableThemeData(
+                        headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
+                        headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
+                        dividerThickness: 0.6,
+                        dataRowMinHeight: 36,
+                        dataRowMaxHeight: 36,
+                      ),
+                      child: DataTable(
+                        columnSpacing: 16,
+                        horizontalMargin: 12,
+                        showCheckboxColumn: false,
+                        columns: const [
+                          DataColumn(label: Text('Date')),
+                          DataColumn(label: Text('Driver Name')),
+                          DataColumn(label: Text('Car ID')),
+                          DataColumn(label: Text('Commission')),
+                          DataColumn(label: Text('Labor Cost')),
+                          DataColumn(label: Text('Support Payment')),
+                          DataColumn(label: Text('Room Fee')),
                         ],
-                      );
-                    }),
-                  ],
+                        rows: [
+                          ...rows.asMap().entries.map((e) {
+                            final r = e.value;
+                            return DataRow(
+                              onSelectChanged: (selected) {
+                                if (selected == true) {
+                                  Get.toNamed(Routes.tripDetail, arguments: r);
+                                }
+                              },
+                              cells: [
+                                DataCell(Text(Format.date(r.date))),
+                                DataCell(Text(r.driverName)),
+                                DataCell(Text(r.carId)),
+                                DataCell(_right(Format.money(r.commission ?? 0))),
+                                DataCell(_right(Format.money(r.laborCost ?? 0))),
+                                DataCell(_right(Format.money(r.supportPayment ?? 0))),
+                                DataCell(_right(Format.money(r.roomFee ?? 0))),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             );
@@ -145,6 +157,11 @@ class _TripMainTableState extends State<_TripMainTable> {
       ),
     );
   }
+
+  Widget _right(String s) => Align(
+        alignment: Alignment.centerRight,
+        child: Text(s),
+      );
 }
 
 Future<void> _showAddTripMainDialog(
@@ -185,7 +202,7 @@ Future<void> _showAddTripMainDialog(
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: Text('Date: ' + Format.date(date))),
+                        Expanded(child: Text('Date: ${Format.date(date)}')),
                         TextButton(
                           onPressed: () async {
                             final picked = await showDatePicker(
@@ -226,13 +243,13 @@ Future<void> _showAddTripMainDialog(
                   if (!formKey.currentState!.validate()) return;
                   final name = nameCtrl.text.trim();
                   final carId = carCtrl.text.trim();
+                  // Close the dialog before awaiting to avoid using context after await
+                  Navigator.of(ctx).pop();
                   await controller.addTripMain(
                     date: date,
                     driverName: name,
                     carId: carId,
                   );
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(ctx).pop();
                 },
                 child: const Text('Save'),
               ),

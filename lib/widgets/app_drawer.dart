@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/app/router/app_pages.dart';
 
 /// Slim, icon-only sidebar drawer inspired by the provided design.
 /// Keeps existing GetX navigation behavior and route names.
@@ -13,6 +14,16 @@ class AppDrawer extends StatelessWidget {
 
     Color iconColor(bool selected) =>
         selected ? AppColor.primaryDark : Colors.black.withOpacity(0.55);
+
+    // Simple nav model to reduce repetition
+    const topItems = <_NavItem>[
+      _NavItem(icon: Icons.home, tooltip: 'Home', route: Routes.home),
+      _NavItem(icon: Icons.inventory_2, tooltip: 'Inventory', route: Routes.inventory),
+      _NavItem(icon: Icons.bar_chart, tooltip: 'Reports', route: Routes.reports),
+    ];
+    const bottomItems = <_NavItem>[
+      _NavItem(icon: Icons.settings, tooltip: 'Settings', route: Routes.settings),
+    ];
 
     return Drawer(
       width: 88,
@@ -46,55 +57,36 @@ class AppDrawer extends StatelessWidget {
                   const Divider(height: 24),
 
                   // Nav buttons
-                  _NavIconButton(
-                    icon: Icons.home,
-                    tooltip: 'Home',
-                    selected: currentRoute == '/home',
-                    onTap: () {
-                      Get.back();
-                      if (currentRoute != '/home') Get.offAllNamed('/home');
-                    },
-                    color: iconColor(currentRoute == '/home'),
-                  ),
-                  _NavIconButton(
-                    icon: Icons.inventory_2,
-                    tooltip: 'Inventory',
-                    selected: currentRoute == '/inventory',
-                    onTap: () {
-                      Get.back();
-                      if (currentRoute != '/inventory') {
-                        Get.offAllNamed('/inventory');
-                      }
-                    },
-                    color: iconColor(currentRoute == '/inventory'),
-                  ),
-                  _NavIconButton(
-                    icon: Icons.bar_chart,
-                    tooltip: 'Reports',
-                    selected: currentRoute == '/reports',
-                    onTap: () {
-                      Get.back();
-                      if (currentRoute != '/reports') {
-                        Get.offAllNamed('/reports');
-                      }
-                    },
-                    color: iconColor(currentRoute == '/reports'),
-                  ),
+                  // Top nav buttons
+                  ...topItems.map((it) => _NavIconButton(
+                        icon: it.icon,
+                        tooltip: it.tooltip,
+                        selected: currentRoute == it.route,
+                        onTap: () {
+                          Get.back();
+                          if (currentRoute != it.route) {
+                            // Keep existing behavior: clear and go to target
+                            Get.offAllNamed(it.route);
+                          }
+                        },
+                        color: iconColor(currentRoute == it.route),
+                      )),
 
                   const Spacer(),
 
-                  _NavIconButton(
-                    icon: Icons.settings,
-                    tooltip: 'Settings',
-                    selected: currentRoute == '/settings',
-                    onTap: () {
-                      Get.back();
-                      if (currentRoute != '/settings') {
-                        Get.offAllNamed('/settings');
-                      }
-                    },
-                    color: iconColor(currentRoute == '/settings'),
-                  ),
+                  // Bottom nav buttons
+                  ...bottomItems.map((it) => _NavIconButton(
+                        icon: it.icon,
+                        tooltip: it.tooltip,
+                        selected: currentRoute == it.route,
+                        onTap: () {
+                          Get.back();
+                          if (currentRoute != it.route) {
+                            Get.offAllNamed(it.route);
+                          }
+                        },
+                        color: iconColor(currentRoute == it.route),
+                      )),
 
                   const SizedBox(height: 12),
                 ],
@@ -166,4 +158,11 @@ class _CircleSurface extends StatelessWidget {
       child: Center(child: child),
     );
   }
+}
+
+class _NavItem {
+  final IconData icon;
+  final String tooltip;
+  final String route;
+  const _NavItem({required this.icon, required this.tooltip, required this.route});
 }

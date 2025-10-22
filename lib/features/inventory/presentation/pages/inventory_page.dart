@@ -11,7 +11,7 @@ import 'package:tkt_pos/features/inventory/presentation/dialogs/driver_dialogs.d
 import 'package:tkt_pos/features/inventory/presentation/dialogs/transaction_dialogs.dart';
 import 'package:tkt_pos/features/inventory/presentation/widgets/transaction_actions_menu.dart';
 import 'package:tkt_pos/features/inventory/presentation/widgets/driver_actions_menu.dart';
-import 'package:tkt_pos/widgets/appdrawer.dart';
+import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
@@ -194,7 +194,9 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
             final headerStyle = AppTextStyles.tableHeader;
             final cellStyle = AppTextStyles.tableCell;
             final totalCharges = rows
-                .where((t) => t.paymentStatus.trim() == AppString.paymentPending)
+                .where(
+                  (t) => t.paymentStatus.trim() == AppString.paymentPending,
+                )
                 .fold<double>(0, (s, t) => s + t.charges);
             final totalAdvance = rows.fold<double>(
               0,

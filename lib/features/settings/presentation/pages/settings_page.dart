@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:tkt_pos/widgets/appdrawer.dart';
+import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 
@@ -33,13 +33,16 @@ class SettingsPage extends GetView<SettingsController> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
-                    Obx(() => SwitchListTile(
-                          value: controller.compactTable.value,
-                          onChanged: controller.setCompactTable,
-                          title: const Text('Compact transactions table'),
-                          subtitle:
-                              const Text('Reduce paddings to show more rows'),
-                        )),
+                    Obx(
+                      () => SwitchListTile(
+                        value: controller.compactTable.value,
+                        onChanged: controller.setCompactTable,
+                        title: const Text('Compact transactions table'),
+                        subtitle: const Text(
+                          'Reduce paddings to show more rows',
+                        ),
+                      ),
+                    ),
                     const Divider(height: 32),
                     Text(
                       'Database',
@@ -49,14 +52,18 @@ class SettingsPage extends GetView<SettingsController> {
                     ListTile(
                       leading: const Icon(Icons.backup_outlined),
                       title: const Text('Backup database'),
-                      subtitle: const Text('Saves a copy into app backups folder'),
+                      subtitle: const Text(
+                        'Saves a copy into app backups folder',
+                      ),
                       onTap: () async {
                         try {
                           final path = await controller.backupDb();
                           if (!context.mounted) return;
                           if (path == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Backup cancelled.')),
+                              const SnackBar(
+                                content: Text('Backup cancelled.'),
+                              ),
                             );
                             return;
                           }
@@ -74,7 +81,9 @@ class SettingsPage extends GetView<SettingsController> {
                     ListTile(
                       leading: const Icon(Icons.restore_outlined),
                       title: const Text('Restore latest backup (replace)'),
-                      subtitle: const Text('Replaces current DB with most recent backup'),
+                      subtitle: const Text(
+                        'Replaces current DB with most recent backup',
+                      ),
                       onTap: () async {
                         try {
                           final ok = await controller.restoreLatestBackup();
@@ -84,7 +93,9 @@ class SettingsPage extends GetView<SettingsController> {
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 title: const Text('Restore complete'),
-                                content: const Text('Please restart the app to use the restored database.'),
+                                content: const Text(
+                                  'Please restart the app to use the restored database.',
+                                ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.of(ctx).pop(),
@@ -95,7 +106,11 @@ class SettingsPage extends GetView<SettingsController> {
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('No backup found or restore failed.')),
+                              const SnackBar(
+                                content: Text(
+                                  'No backup found or restore failed.',
+                                ),
+                              ),
                             );
                           }
                         } catch (e) {
@@ -109,7 +124,9 @@ class SettingsPage extends GetView<SettingsController> {
                     ListTile(
                       leading: const Icon(Icons.merge_type_outlined),
                       title: const Text('Restore from file (merge)'),
-                      subtitle: const Text('Choose a .db file and merge into current database'),
+                      subtitle: const Text(
+                        'Choose a .db file and merge into current database',
+                      ),
                       onTap: () async {
                         try {
                           final ok = await controller.restoreFromFileMerge();
@@ -117,7 +134,9 @@ class SettingsPage extends GetView<SettingsController> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                ok ? 'Merge completed successfully.' : 'Restore cancelled.',
+                                ok
+                                    ? 'Merge completed successfully.'
+                                    : 'Restore cancelled.',
                               ),
                             ),
                           );

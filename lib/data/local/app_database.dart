@@ -485,6 +485,57 @@ class TripMainRow {
   }
 }
 
+class TripManifestRow {
+  final int id;
+  final int driverId;
+  final String? customerName;
+  final String? deliveryCity;
+  final String? phone;
+  final String parcelType;
+  final int numberOfParcel;
+  final double? cashAdvance;
+  final double? paymentPending;
+  final double? paymentPaid;
+
+  TripManifestRow({
+    required this.id,
+    required this.driverId,
+    required this.customerName,
+    required this.deliveryCity,
+    required this.phone,
+    required this.parcelType,
+    required this.numberOfParcel,
+    required this.cashAdvance,
+    required this.paymentPending,
+    required this.paymentPaid,
+  });
+
+  factory TripManifestRow.fromRow(QueryRow r) {
+    return TripManifestRow(
+      id: r.read<int>('id'),
+      driverId: r.read<int>('driver_id'),
+      customerName: r.read<String?>('customer_name'),
+      deliveryCity: r.read<String?>('delivery_city'),
+      phone: r.read<String?>('phone'),
+      parcelType: r.read<String>('parcel_type'),
+      numberOfParcel: r.read<int>('number_of_parcel'),
+      cashAdvance: r.read<double?>('cash_advance'),
+      paymentPending: r.read<double?>('payment_pending'),
+      paymentPaid: r.read<double?>('payment_paid'),
+    );
+  }
+}
+
+extension TripManifestsQueries on AppDatabase {
+  Future<List<TripManifestRow>> getTripManifests(int driverId) async {
+    final rows = await customSelect(
+      'SELECT id, driver_id, customer_name, delivery_city, phone, parcel_type, number_of_parcel, cash_advance, payment_pending, payment_paid FROM trip_manifests WHERE driver_id = ? ORDER BY id ASC',
+      variables: [Variable<int>(driverId)],
+    ).get();
+    return rows.map((r) => TripManifestRow.fromRow(r)).toList(growable: false);
+  }
+}
+
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final Directory dir = await getApplicationSupportDirectory();
