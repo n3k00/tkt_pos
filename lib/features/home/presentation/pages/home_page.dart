@@ -9,6 +9,7 @@ import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -109,8 +110,8 @@ class _TripMainTableState extends State<_TripMainTable> {
                         headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
                         headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
                         dividerThickness: 0.6,
-                        dataRowMinHeight: 36,
-                        dataRowMaxHeight: 36,
+                        dataRowMinHeight: Dimens.tableRowMinHeight,
+                        dataRowMaxHeight: Dimens.tableRowMaxHeight,
                       ),
                       child: DataTable(
                         columnSpacing: 16,

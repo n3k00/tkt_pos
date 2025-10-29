@@ -446,48 +446,70 @@ Future<void> showClaimTransactionDialog(
   final commentCtrl = TextEditingController();
   await showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (ctx) {
-      return AlertDialog(
-        title: const Text('Claim Transaction'),
-        content: SizedBox(
-          width: 420,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Customer: ${t.customerName ?? '-'}'),
-              const SizedBox(height: 4),
-              Text('Phone: ${t.phone}'),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: commentCtrl,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Comment (optional)',
-                  border: OutlineInputBorder(),
-                  isDense: true,
+      bool isSubmitting = false;
+      return StatefulBuilder(
+        builder: (ctx, setState) {
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: AlertDialog(
+              title: const Text('Claim Transaction'),
+              content: SizedBox(
+                width: 420,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Customer: ${t.customerName ?? '-'}'),
+                    const SizedBox(height: 4),
+                    Text('Phone: ${t.phone}'),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: commentCtrl,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Comment (optional)',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await controller.claimTransaction(
-                tx: t,
-                comment: commentCtrl.text,
-              );
-              // ignore: use_build_context_synchronously
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('Claim'),
-          ),
-        ],
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting ? null : () => Navigator.of(ctx).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          setState(() => isSubmitting = true);
+                          try {
+                            await controller.claimTransaction(
+                              tx: t,
+                              comment: commentCtrl.text,
+                            );
+                            // ignore: use_build_context_synchronously
+                            Navigator.of(ctx).pop();
+                          } finally {
+                            if (ctx.mounted) setState(() => isSubmitting = false);
+                          }
+                        },
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Claim'),
+                ),
+              ],
+            ),
+          );
+        },
       );
     },
   );
@@ -593,13 +615,16 @@ Future<void> showAddTransactionDialog(
 
   await showDialog(
     context: context,
+    barrierDismissible: false, // prevent closing by tapping outside
     builder: (ctx) {
-      return StatefulBuilder(
-        builder: (ctx, setState) {
-          return AlertDialog(
-            title: const Text('Add Transaction'),
-            content: SizedBox(
-              width: 600,
+      return WillPopScope(
+        onWillPop: () async => false, // block back/Escape
+        child: StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              title: const Text('Add Transaction'),
+              content: SizedBox(
+                width: 600,
               child: SingleChildScrollView(
                 child: Form(
                   key: formKey,
@@ -929,6 +954,8 @@ Future<void> showAddTransactionDialog(
                         double.tryParse(chargesCtrl.text.trim()) ?? 0;
                     final cashAdvance =
                         double.tryParse(cashAdvanceCtrl.text.trim()) ?? 0.0;
+                    // Close dialog before awaiting to avoid using build context after await
+                    Navigator.of(ctx).pop();
                     await controller.addTransaction(
                       driverId: driverId,
                       customerName: customerCtrl.text.trim().isEmpty
@@ -943,15 +970,14 @@ Future<void> showAddTransactionDialog(
                       pickedUp: pickedUp,
                       comment: null,
                     );
-                    // ignore: use_build_context_synchronously
-                    Navigator.of(ctx).pop();
                   } catch (_) {}
                 },
                 child: const Text('Save'),
               ),
             ],
           );
-        },
+          },
+        ),
       );
     },
   );

@@ -39,7 +39,7 @@ class PageHeader extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withOpacity(0.30),
+                  Colors.white.withOpacity(0.25),
                   Colors.white.withOpacity(0.18),
                 ],
               ),
@@ -53,53 +53,50 @@ class PageHeader extends StatelessWidget {
               ],
             ),
             child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (showBreadcrumbs) ...[
-                  Row(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (showBack) ...[
-                        _BackButton(onTap: onBack ?? () => Get.back()),
-                        const SizedBox(width: 8),
+                      if (showBreadcrumbs) ...[
+                        Row(
+                          children: [
+                            if (showBack) ...[
+                              _BackButton(onTap: onBack ?? () => Get.back()),
+                              const SizedBox(width: 8),
+                            ],
+                            Flexible(
+                              child: Text(
+                                crumbs.isEmpty ? 'Home' : crumbs.join('  >  '),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColor.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
                       ],
-                      Flexible(
-                        child: Text(
-                          crumbs.isEmpty ? 'Home' : crumbs.join('  >  '),
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColor.textSecondary,
-                            fontSize: 13,
-                          ),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: AppColor.textPrimary,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                ],
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: AppColor.textPrimary,
-                  ),
                 ),
+                if (trailing != null) ...[
+                  const SizedBox(width: 16),
+                  SizedBox(width: trailingWidth, child: trailing),
+                ],
               ],
             ),
-          ),
-          if (trailing != null) ...[
-            const SizedBox(width: 16),
-            SizedBox(
-              width: trailingWidth,
-              child: trailing,
-            ),
-          ],
-        ],
-      ),
           ),
         ),
       ),
@@ -124,7 +121,11 @@ class _BackButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: AppColor.border),
         ),
-        child: const Icon(Icons.arrow_back, color: AppColor.textPrimary, size: 18),
+        child: const Icon(
+          Icons.arrow_back,
+          color: AppColor.textPrimary,
+          size: 18,
+        ),
       ),
     );
   }
@@ -141,8 +142,7 @@ class HeaderSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container
-        (
+    return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
@@ -160,8 +160,10 @@ class HeaderSearchField extends StatelessWidget {
           hintText: hint,
           hintStyle: const TextStyle(color: AppColor.textSecondary),
           isDense: true,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           filled: true,
           fillColor: AppColor.surfaceBackground,
           border: OutlineInputBorder(
@@ -174,7 +176,10 @@ class HeaderSearchField extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(28),
-            borderSide: const BorderSide(color: AppColor.primaryDark, width: 1.2),
+            borderSide: const BorderSide(
+              color: AppColor.primaryDark,
+              width: 1.2,
+            ),
           ),
           // No leading icon as requested
           suffixIcon: Padding(
@@ -187,13 +192,19 @@ class HeaderSearchField extends StatelessWidget {
                 border: Border.all(color: AppColor.border),
                 color: AppColor.white,
               ),
-              child: const Icon(Icons.search, size: 16, color: AppColor.textSecondary),
+              child: const Icon(
+                Icons.search,
+                size: 16,
+                color: AppColor.textSecondary,
+              ),
             ),
           ),
-          suffixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+          suffixIconConstraints: const BoxConstraints(
+            minWidth: 40,
+            minHeight: 40,
+          ),
         ),
       ),
     );
   }
 }
-

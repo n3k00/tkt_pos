@@ -17,5 +17,8 @@ class Dimens {
       EdgeInsets.symmetric(horizontal: d12, vertical: d16);
   static const EdgeInsets inputPadding14 =
       EdgeInsets.symmetric(horizontal: d12, vertical: d14);
-}
 
+  // DataTable row heights
+  static const double tableRowMinHeight = 55;
+  static const double tableRowMaxHeight = 55;
+}

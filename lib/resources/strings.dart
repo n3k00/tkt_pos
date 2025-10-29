@@ -6,6 +6,9 @@
   static const String reportTransactionsTitle = 'Report Transaction List';
   static const String totalCount = 'Total Count';
   static const String totalCharges = 'Total Charges';
+  static const String statPaymentPending = 'Payment Pending';
+  static const String statPaymentPaid = 'Payment Paid';
+  static const String statCashAdvance = 'Cash Advance';
   // Home / Trips
   static const String noTripMainRecords = 'No records in Trip Main.';
   // Inventory
@@ -33,8 +36,6 @@
 
   // Payment statuses (MM)
   static const String paymentPending = 'ငွေတောင်းရန်';
-  static const String paymentPaid = 'ပေးပြီး'; // adjust if needed in app
+  static const String paymentPaid = 'ငွေရှင်းပြီး'; // adjust if needed in app
   static const String noReportsForDate = 'No reports for';
 }
-
-

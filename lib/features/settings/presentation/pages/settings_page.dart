@@ -80,15 +80,15 @@ class SettingsPage extends GetView<SettingsController> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.restore_outlined),
-                      title: const Text('Restore latest backup (replace)'),
+                      title: const Text('Restore from file (replace)'),
                       subtitle: const Text(
-                        'Replaces current DB with most recent backup',
+                        'Choose a .db file and replace current database',
                       ),
                       onTap: () async {
                         try {
-                          final ok = await controller.restoreLatestBackup();
+                          final msg = await controller.restoreFromFileReplaceWithMessage();
                           if (!context.mounted) return;
-                          if (ok) {
+                          if (msg == null) {
                             showDialog(
                               context: context,
                               builder: (ctx) => AlertDialog(
@@ -106,11 +106,7 @@ class SettingsPage extends GetView<SettingsController> {
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'No backup found or restore failed.',
-                                ),
-                              ),
+                              SnackBar(content: Text(msg)),
                             );
                           }
                         } catch (e) {
@@ -159,6 +155,13 @@ class SettingsPage extends GetView<SettingsController> {
                       title: Text('App'),
                       subtitle: Text('TKT POS — Inventory Demo'),
                     ),
+                    Obx(() => ListTile(
+                          dense: true,
+                          title: const Text('Version'),
+                          subtitle: Text(controller.appVersion.value.isEmpty
+                              ? 'beta'
+                              : controller.appVersion.value),
+                        )),
                   ],
                 ),
               ),

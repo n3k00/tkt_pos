@@ -213,15 +213,18 @@ Future<void> showAddDriverDialog(
   final formKey = GlobalKey<FormState>();
   await showDialog(
     context: context,
+    barrierDismissible: false, // require explicit action to close
     builder: (ctx) {
-      return StatefulBuilder(
-        builder: (ctx, setState) {
-          return AlertDialog(
-            title: const Text('Add Driver'),
-            content: Form(
-              key: formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Column(
+      return WillPopScope(
+        onWillPop: () async => false, // block back/Escape dismiss
+        child: StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              title: const Text('Add Driver'),
+              content: Form(
+                key: formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextFormField(
@@ -308,15 +311,16 @@ Future<void> showAddDriverDialog(
                 onPressed: () async {
                   if (!formKey.currentState!.validate()) return;
                   final name = nameController.text.trim();
-                  await controller.addDriver(date: date, name: name);
-                  // ignore: use_build_context_synchronously
+                  // Close dialog before awaiting to avoid using context after await
                   Navigator.of(ctx).pop();
+                  await controller.addDriver(date: date, name: name);
                 },
                 child: const Text('Save'),
               ),
             ],
           );
-        },
+          },
+        ),
       );
     },
   );

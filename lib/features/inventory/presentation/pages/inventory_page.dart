@@ -212,10 +212,18 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      DataTable(
-                        columnSpacing: 12,
-                        horizontalMargin: 0,
-                        columns: [
+                      DataTableTheme(
+                        data: const DataTableThemeData(
+                          headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
+                          headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
+                          dividerThickness: 0.6,
+                          dataRowMinHeight: Dimens.tableRowMinHeight,
+                          dataRowMaxHeight: Dimens.tableRowMaxHeight,
+                        ),
+                        child: DataTable(
+                          columnSpacing: 16,
+                          horizontalMargin: 12,
+                          columns: [
                           DataColumn(
                             label: Padding(
                               padding: const EdgeInsets.only(left: Dimens.d16),
@@ -519,6 +527,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                             ],
                           ),
                         ],
+                      ),
                       ),
                     ],
                   ),

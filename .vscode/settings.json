@@ -1,3 +1,7 @@
 {
-    "chatgpt.openOnStartup": true
+    "chatgpt.openOnStartup": true,
+    "cSpell.words": [
+        "dimens",
+        "ရှင်"
+    ]
 }

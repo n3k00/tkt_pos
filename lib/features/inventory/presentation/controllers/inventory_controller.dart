@@ -202,21 +202,23 @@ class InventoryController extends GetxController {
   }
 
   Future<void> claimTransaction({required DbTransaction tx, String? comment}) async {
-    // Partial update: only set pickedUp/comment/updatedAt
-    await (db.update(db.transactions)..where((t) => t.id.equals(tx.id))).write(
-      TransactionsCompanion(
-        pickedUp: const drift.Value(true),
-        comment: (comment == null || comment.trim().isEmpty)
-            ? const drift.Value.absent()
-            : drift.Value(comment.trim()),
-        updatedAt: drift.Value(DateTime.now()),
-      ),
-    );
-    // Record this claim event into report_transactions
-    await db.insertReportTransaction(
-      driverId: tx.driverId,
-      transactionId: tx.id,
-    );
+    await db.transaction(() async {
+      // Partial update: only set pickedUp/comment/updatedAt
+      await (db.update(db.transactions)..where((t) => t.id.equals(tx.id))).write(
+        TransactionsCompanion(
+          pickedUp: const drift.Value(true),
+          comment: (comment == null || comment.trim().isEmpty)
+              ? const drift.Value.absent()
+              : drift.Value(comment.trim()),
+          updatedAt: drift.Value(DateTime.now()),
+        ),
+      );
+      // Record this claim event into report_transactions (guarded against duplicates)
+      await db.insertReportTransaction(
+        driverId: tx.driverId,
+        transactionId: tx.id,
+      );
+    });
     await loadTransactionsByDriverToMap(tx.driverId);
   }
 }

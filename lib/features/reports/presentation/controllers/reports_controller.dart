@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:drift/drift.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/resources/strings.dart';
 
@@ -80,6 +79,16 @@ class ReportsController extends GetxController {
   double get totalChargesPending => filtered
       .where((t) => _isPending(t.paymentStatus))
       .fold(0.0, (s, t) => s + t.charges);
+  double get totalChargesPaid => filtered
+      .where((t) => _isPaid(t.paymentStatus))
+      .fold(0.0, (s, t) => s + t.charges);
+  double get totalCashAdvance =>
+      filtered.fold(0.0, (s, t) => s + t.cashAdvance);
+  double get totalChargesCombined =>
+      totalChargesPending + totalChargesPaid + totalCashAdvance;
+  // For Total Charges card: Pending + Cash Advance only (exclude Paid)
+  double get totalChargesPendingAndAdvance =>
+      totalChargesPending + totalCashAdvance;
   int get totalCount => filtered.length;
 
   String driverNameFor(int driverId) => driverMap[driverId]?.name ?? '-';
@@ -90,6 +99,15 @@ class ReportsController extends GetxController {
     if (s.toLowerCase() == 'pending') return true;
     // AppString constant (may differ by encoding on some setups)
     if (s == AppString.paymentPending) return true;
+    return false;
+  }
+
+  bool _isPaid(String status) {
+    final s = status.trim();
+    if (s.toLowerCase() == 'paid') return true;
+    if (s == AppString.paymentPaid) return true; // 'ပေးပြီး'
+    if (s == 'ငွေရှင်းပြီး')
+      return true; // alternative MM wording commonly used
     return false;
   }
 }

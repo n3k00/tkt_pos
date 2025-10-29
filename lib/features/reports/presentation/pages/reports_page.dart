@@ -7,6 +7,7 @@ import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class ReportsPage extends GetView<ReportsController> {
   const ReportsPage({super.key});
@@ -80,7 +81,22 @@ class _StatCards extends StatelessWidget {
             const SizedBox(width: 12),
             _StatCard(
               title: AppString.totalCharges,
+              value: Format.money(controller.totalChargesPendingAndAdvance),
+            ),
+            const SizedBox(width: 12),
+            _StatCard(
+              title: AppString.statPaymentPending,
               value: Format.money(controller.totalChargesPending),
+            ),
+            const SizedBox(width: 12),
+            _StatCard(
+              title: AppString.statPaymentPaid,
+              value: Format.money(controller.totalChargesPaid),
+            ),
+            const SizedBox(width: 12),
+            _StatCard(
+              title: AppString.statCashAdvance,
+              value: Format.money(controller.totalCashAdvance),
             ),
           ],
         );
@@ -88,7 +104,6 @@ class _StatCards extends StatelessWidget {
     );
   }
 
-  static String _fmt(double v) => Format.money(v);
 }
 
 class _StatCard extends StatelessWidget {
@@ -132,13 +147,29 @@ class _StatCard extends StatelessWidget {
 
 // Export buttons removed as requested
 
-class _ReportsTable extends StatelessWidget {
+class _ReportsTable extends StatefulWidget {
   const _ReportsTable({required this.controller});
   final ReportsController controller;
 
   @override
+  State<_ReportsTable> createState() => _ReportsTableState();
+}
+
+class _ReportsTableState extends State<_ReportsTable> {
+  final ScrollController _vCtrl = ScrollController();
+  final ScrollController _hCtrl = ScrollController();
+
+  @override
+  void dispose() {
+    _vCtrl.dispose();
+    _hCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Obx(() {
+      final controller = widget.controller;
       final rows = controller.filtered;
       if (rows.isEmpty) {
         final d = controller.selectedDate.value;
@@ -177,64 +208,88 @@ class _ReportsTable extends StatelessWidget {
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                  child: DataTable(
-                    columnSpacing: 20,
-                    columns: const [
-                      DataColumn(label: Text(AppString.colNo)),
-                      DataColumn(label: Text(AppString.colDriver)),
-                      DataColumn(label: Text(AppString.colCustomerName)),
-                      DataColumn(label: Text(AppString.colPhone)),
-                      DataColumn(label: Text(AppString.colParcelType)),
-                      DataColumn(label: Text(AppString.colNumber)),
-                      DataColumn(
-                        label: Center(child: Text(AppString.colCharges)),
-                      ),
-                      DataColumn(label: Text(AppString.colPaymentStatus)),
-                      DataColumn(
-                        label: Center(child: Text(AppString.colCashAdvance)),
-                      ),
-                    ],
-                    rows: [
-                      ...rows.asMap().entries.map((e) {
-                        final i = e.key + 1;
-                        final t = e.value;
-                        return DataRow(
-                          cells: [
-                            DataCell(Text('$i')),
-                            DataCell(
-                              Text(controller.driverNameFor(t.driverId)),
-                            ),
-                            DataCell(Text(t.customerName ?? '-')),
-                            DataCell(Text(t.phone)),
-                            DataCell(Text(t.parcelType)),
-                            DataCell(Text(t.number)),
-                            DataCell(
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  Format.money(t.charges),
-                                  textAlign: TextAlign.right,
-                                ),
+              return Scrollbar(
+                controller: _vCtrl,
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  controller: _vCtrl,
+                  child: Scrollbar(
+                    controller: _hCtrl,
+                    thumbVisibility: true,
+                    scrollbarOrientation: ScrollbarOrientation.bottom,
+                    child: SingleChildScrollView(
+                      controller: _hCtrl,
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                        child: DataTableTheme(
+                          data: const DataTableThemeData(
+                            headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
+                            headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
+                            dividerThickness: 0.6,
+                            dataRowMinHeight: Dimens.tableRowMinHeight,
+                            dataRowMaxHeight: Dimens.tableRowMaxHeight,
+                          ),
+                          child: DataTable(
+                            columnSpacing: 16,
+                            horizontalMargin: 12,
+                            showCheckboxColumn: false,
+                            columns: const [
+                              DataColumn(label: Text(AppString.colNo)),
+                              DataColumn(label: Text(AppString.colDriver)),
+                              DataColumn(label: Text(AppString.colCustomerName)),
+                              DataColumn(label: Text(AppString.colPhone)),
+                              DataColumn(label: Text(AppString.colParcelType)),
+                              DataColumn(label: Text(AppString.colNumber)),
+                              DataColumn(
+                                label: Center(child: Text(AppString.colCharges)),
                               ),
-                            ),
-                            DataCell(Text(t.paymentStatus)),
-                            DataCell(
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  Format.money(t.cashAdvance),
-                                  textAlign: TextAlign.right,
-                                ),
+                              DataColumn(label: Text(AppString.colPaymentStatus)),
+                              DataColumn(
+                                label: Center(child: Text(AppString.colCashAdvance)),
                               ),
-                            ),
-                          ],
-                        );
-                      }),
-                    ],
+                            ],
+                            rows: [
+                              ...rows.asMap().entries.map((e) {
+                                final i = e.key + 1;
+                                final t = e.value;
+                                return DataRow(
+                                  cells: [
+                                    DataCell(Text('$i')),
+                                    DataCell(
+                                      Text(controller.driverNameFor(t.driverId)),
+                                    ),
+                                    DataCell(Text(t.customerName ?? '-')),
+                                    DataCell(Text(t.phone)),
+                                    DataCell(Text(t.parcelType)),
+                                    DataCell(Text(t.number)),
+                                    DataCell(
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          Format.money(t.charges),
+                                          textAlign: TextAlign.right,
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(Text(t.paymentStatus)),
+                                    DataCell(
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          Format.money(t.cashAdvance),
+                                          textAlign: TextAlign.right,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               );

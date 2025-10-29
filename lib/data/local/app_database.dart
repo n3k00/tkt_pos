@@ -255,7 +255,13 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertReportTransaction({
     required int driverId,
     required int transactionId,
-  }) {
+  }) async {
+    // Prevent duplicates caused by rapid double clicks
+    final existing = await (select(reportTransactions)
+          ..where((rt) => rt.transactionId.equals(transactionId)))
+        .getSingleOrNull();
+    if (existing != null) return existing.id;
+
     return into(reportTransactions).insert(
       ReportTransactionsCompanion.insert(
         driverId: driverId,
@@ -350,11 +356,56 @@ class AppDatabase extends _$AppDatabase {
     try {
       final Directory dir = await getApplicationSupportDirectory();
       final File dbFile = File(p.join(dir.path, 'app.db'));
-      // Close current connection to release file lock
+      final File src = File(backupPath);
+      if (!await src.exists()) {
+        return null;
+      }
+      // Close current connection to release file lock (especially on Windows)
       try {
         await AppDatabase().close();
       } catch (_) {}
-      await File(backupPath).copy(dbFile.path);
+      // small delay to allow background isolate to release handles
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Ensure directory exists
+      await dbFile.parent.create(recursive: true);
+
+      // Move existing db out of the way first (fallback to delete if rename fails)
+      final File bakFile = File(dbFile.path + '.bak');
+      if (await dbFile.exists()) {
+        try {
+          if (await bakFile.exists()) {
+            await bakFile.delete();
+          }
+          await dbFile.rename(bakFile.path);
+        } catch (_) {
+          try {
+            await dbFile.delete();
+          } catch (_) {}
+        }
+      }
+
+      // Copy to a temp file then rename into place for atomicity
+      final File tmpFile = File(dbFile.path + '.tmp');
+      if (await tmpFile.exists()) {
+        try { await tmpFile.delete(); } catch (_) {}
+      }
+      await src.copy(tmpFile.path);
+      try {
+        await tmpFile.rename(dbFile.path);
+      } catch (_) {
+        try {
+          await tmpFile.copy(dbFile.path);
+          await tmpFile.delete();
+        } catch (_) {
+          return null;
+        }
+      }
+
+      // Cleanup old backup if we created one
+      if (await bakFile.exists()) {
+        try { await bakFile.delete(); } catch (_) {}
+      }
       return dbFile.path;
     } catch (e) {
       return null;
