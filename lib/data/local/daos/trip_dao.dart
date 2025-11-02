@@ -7,7 +7,7 @@ part 'trip_dao.g.dart';
 
 @DriftAccessor(tables: [TripMains, TripManifests])
 class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin {
-  TripDao(AppDatabase db) : super(db);
+  TripDao(super.db);
 
   Future<List<TripMain>> getTripMains() {
     return (select(tripMains)

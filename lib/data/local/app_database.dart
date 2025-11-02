@@ -339,7 +339,7 @@ class AppDatabase extends _$AppDatabase {
     }
     // Use SQLite to write a consistent backup without closing the db
     final escaped = destinationPath.replaceAll("'", "''");
-    await customStatement("VACUUM INTO '" + escaped + "'");
+    await customStatement("VACUUM INTO '$escaped'");
     return destinationPath;
   }
 
@@ -355,7 +355,7 @@ class AppDatabase extends _$AppDatabase {
         .replaceAll('.', '-');
     final String dest = p.join(backupsDir.path, 'app-$ts.db');
     // Use SQLite to write a consistent backup without closing the db
-    await customStatement("VACUUM INTO '" + dest.replaceAll("'", "''") + "'");
+    await customStatement("VACUUM INTO '${dest.replaceAll("'", "''")}'");
     return dest;
   }
 
@@ -378,7 +378,7 @@ class AppDatabase extends _$AppDatabase {
       await dbFile.parent.create(recursive: true);
 
       // Move existing db out of the way first (fallback to delete if rename fails)
-      final File bakFile = File(dbFile.path + '.bak');
+      final File bakFile = File('${dbFile.path}.bak');
       if (await dbFile.exists()) {
         try {
           if (await bakFile.exists()) {
@@ -393,7 +393,7 @@ class AppDatabase extends _$AppDatabase {
       }
 
       // Copy to a temp file then rename into place for atomicity
-      final File tmpFile = File(dbFile.path + '.tmp');
+      final File tmpFile = File('${dbFile.path}.tmp');
       if (await tmpFile.exists()) {
         try { await tmpFile.delete(); } catch (_) {}
       }
@@ -424,7 +424,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> mergeFromDatabaseFile(String backupPath) async {
     final escaped = backupPath.replaceAll("'", "''");
     // Ensure operations run sequentially
-    await customStatement("ATTACH DATABASE '" + escaped + "' AS src");
+    await customStatement("ATTACH DATABASE '$escaped' AS src");
     try {
       await customStatement('PRAGMA foreign_keys=OFF');
       await customStatement('BEGIN');

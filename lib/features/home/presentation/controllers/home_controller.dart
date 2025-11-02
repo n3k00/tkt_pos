@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
-import 'package:tkt_pos/data/local/tables/trip_main.dart';
 import 'package:tkt_pos/features/trips/data/trip_repository.dart';
 
 class HomeController extends GetxController {
@@ -31,7 +30,11 @@ class HomeController extends GetxController {
     required String driverName,
     required String carId,
   }) async {
-    await tripRepo.addTripMain(date: date, driverName: driverName, carId: carId);
+    await tripRepo.addTripMain(
+      date: date,
+      driverName: driverName,
+      carId: carId,
+    );
     await loadTripMain();
   }
 }

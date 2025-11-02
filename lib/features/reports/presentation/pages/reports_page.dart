@@ -7,7 +7,6 @@ import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
-import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 
 class ReportsPage extends GetView<ReportsController> {
@@ -104,7 +103,6 @@ class _StatCards extends StatelessWidget {
       }),
     );
   }
-
 }
 
 class _StatCard extends StatelessWidget {
@@ -212,13 +210,9 @@ class _ReportsTableState extends State<_ReportsTable> {
               DataColumn(label: Text(AppString.colPhone)),
               DataColumn(label: Text(AppString.colParcelType)),
               DataColumn(label: Text(AppString.colNumber)),
-              DataColumn(
-                label: Center(child: Text(AppString.colCharges)),
-              ),
+              DataColumn(label: Center(child: Text(AppString.colCharges))),
               DataColumn(label: Text(AppString.colPaymentStatus)),
-              DataColumn(
-                label: Center(child: Text(AppString.colCashAdvance)),
-              ),
+              DataColumn(label: Center(child: Text(AppString.colCashAdvance))),
             ],
             rows: [
               ...rows.asMap().entries.map((e) {
@@ -227,9 +221,7 @@ class _ReportsTableState extends State<_ReportsTable> {
                 return DataRow(
                   cells: [
                     DataCell(Text('$i')),
-                    DataCell(
-                      Text(controller.driverNameFor(t.driverId)),
-                    ),
+                    DataCell(Text(controller.driverNameFor(t.driverId))),
                     DataCell(Text(t.customerName ?? '-')),
                     DataCell(Text(t.phone)),
                     DataCell(Text(t.parcelType)),

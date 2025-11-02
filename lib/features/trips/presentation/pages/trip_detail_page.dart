@@ -5,8 +5,6 @@ import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/resources/table_widths.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/styles.dart';
-import 'package:tkt_pos/data/local/tables/trip_main.dart';
-import 'package:tkt_pos/data/local/tables/trip_manifests.dart';
 import 'package:tkt_pos/features/trips/data/trip_repository.dart';
 
 class TripDetailPage extends StatelessWidget {
@@ -60,7 +58,7 @@ class _TripHeaderTable extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: DataTableTheme(
         data: const DataTableThemeData(
-          headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
+          headingRowColor: WidgetStatePropertyAll(Color(0xFFF2F4F7)),
           headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
           dividerThickness: 0.6,
           dataRowMinHeight: 36,
@@ -280,7 +278,7 @@ class _ManifestsTableState extends State<_ManifestsTable> {
                       }),
                       if (list.isNotEmpty)
                         DataRow(
-                          color: const MaterialStatePropertyAll(
+                          color: const WidgetStatePropertyAll(
                             Color(0xFFF2F4F7),
                           ),
                           cells: [

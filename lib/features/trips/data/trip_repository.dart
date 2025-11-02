@@ -1,6 +1,4 @@
 import 'package:tkt_pos/data/local/app_database.dart';
-import 'package:tkt_pos/data/local/tables/trip_main.dart';
-import 'package:tkt_pos/data/local/tables/trip_manifests.dart';
 
 class TripRepository {
   TripRepository._internal();
@@ -29,4 +27,3 @@ class TripRepository {
     return _db.tripDao.getManifestsByDriver(driverId);
   }
 }
-

@@ -387,8 +387,8 @@ Future<void> showViewTransactionDialog(
   BuildContext context,
   DbTransaction t,
 ) async {
-  String _fmtMoney(double v) => Format.money(v);
-  String _fmtDateTime12(DateTime d) => Format.dateTime12(d);
+  String fmtMoney(double v) => Format.money(v);
+  String fmtDateTime12(DateTime d) => Format.dateTime12(d);
 
   await showDialog(
     context: context,
@@ -409,15 +409,15 @@ Future<void> showViewTransactionDialog(
               const SizedBox(height: 4),
               Text('Number: ${t.number}'),
               const SizedBox(height: 4),
-              Text('Charges: ${_fmtMoney(t.charges)}'),
+              Text('Charges: ${fmtMoney(t.charges)}'),
               const SizedBox(height: 4),
-              Text('Cash Advance: ${_fmtMoney(t.cashAdvance)}'),
+              Text('Cash Advance: ${fmtMoney(t.cashAdvance)}'),
               const SizedBox(height: 4),
               Text('Payment Status: ${t.paymentStatus}'),
               const SizedBox(height: 4),
               Text('Picked Up: ${t.pickedUp ? 'Yes' : 'No'}'),
               const SizedBox(height: 4),
-              Text('Collect Time: ${t.pickedUp ? _fmtDateTime12(t.updatedAt) : '-'}'),
+              Text('Collect Time: ${t.pickedUp ? fmtDateTime12(t.updatedAt) : '-'}'),
               const SizedBox(height: 8),
               const Divider(),
               const SizedBox(height: 8),

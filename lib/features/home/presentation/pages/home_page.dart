@@ -2,15 +2,12 @@
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/home/presentation/controllers/home_controller.dart';
 import 'package:tkt_pos/resources/strings.dart';
-import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
-import 'package:tkt_pos/data/local/tables/trip_main.dart';
-import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 
 class HomePage extends GetView<HomeController> {
@@ -106,7 +103,11 @@ class _TripMainTableState extends State<_TripMainTable> {
                 }
               },
               cells: [
-                DataCell(Text(Format.date(DateTime.fromMillisecondsSinceEpoch(r.date)))),
+                DataCell(
+                  Text(
+                    Format.date(DateTime.fromMillisecondsSinceEpoch(r.date)),
+                  ),
+                ),
                 DataCell(Text(r.driverName)),
                 DataCell(Text(r.carId)),
                 DataCell(_right(Format.money(r.commission ?? 0))),
@@ -121,10 +122,8 @@ class _TripMainTableState extends State<_TripMainTable> {
     );
   }
 
-  Widget _right(String s) => Align(
-        alignment: Alignment.centerRight,
-        child: Text(s),
-      );
+  Widget _right(String s) =>
+      Align(alignment: Alignment.centerRight, child: Text(s));
 }
 
 Future<void> _showAddTripMainDialog(

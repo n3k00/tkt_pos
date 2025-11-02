@@ -131,7 +131,7 @@ class _BackButton extends StatelessWidget {
   }
 }
 
-class HeaderSearchField extends StatelessWidget {
+class HeaderSearchField extends StatefulWidget {
   const HeaderSearchField({
     super.key,
     this.hint = 'Enter your search request...',
@@ -141,7 +141,27 @@ class HeaderSearchField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
 
   @override
+  State<HeaderSearchField> createState() => _HeaderSearchFieldState();
+}
+
+class _HeaderSearchFieldState extends State<HeaderSearchField> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final hasText = _controller.text.isNotEmpty;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
@@ -154,10 +174,11 @@ class HeaderSearchField extends StatelessWidget {
         ],
       ),
       child: TextField(
-        onChanged: onChanged,
+        controller: _controller,
+        onChanged: widget.onChanged,
         style: const TextStyle(fontSize: 14, color: AppColor.textPrimary),
         decoration: InputDecoration(
-          hintText: hint,
+          hintText: widget.hint,
           hintStyle: const TextStyle(color: AppColor.textSecondary),
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(
@@ -181,24 +202,48 @@ class HeaderSearchField extends StatelessWidget {
               width: 1.2,
             ),
           ),
-          // No leading icon as requested
-          suffixIcon: Padding(
-            padding: const EdgeInsets.only(right: 6),
-            child: Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColor.border),
-                color: AppColor.white,
-              ),
-              child: const Icon(
-                Icons.search,
-                size: 16,
-                color: AppColor.textSecondary,
-              ),
-            ),
-          ),
+          suffixIcon: hasText
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () {
+                      _controller.clear();
+                      widget.onChanged?.call('');
+                    },
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColor.border),
+                        color: AppColor.white,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: AppColor.textSecondary,
+                      ),
+                    ),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColor.border),
+                      color: AppColor.white,
+                    ),
+                    child: const Icon(
+                      Icons.search,
+                      size: 16,
+                      color: AppColor.textSecondary,
+                    ),
+                  ),
+                ),
           suffixIconConstraints: const BoxConstraints(
             minWidth: 40,
             minHeight: 40,

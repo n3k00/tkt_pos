@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColor.background,
         cardColor: AppColor.card,
         dataTableTheme: const DataTableThemeData(
-          headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
+          headingRowColor: WidgetStatePropertyAll(Color(0xFFF2F4F7)),
           headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
           dividerThickness: 0.6,
           dataRowMinHeight: Dimens.tableRowMinHeight,

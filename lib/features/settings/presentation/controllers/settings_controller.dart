@@ -23,9 +23,9 @@ class SettingsController extends GetxController {
       final info = await PackageInfo.fromPlatform();
       final version = info.version;
       final build = info.buildNumber;
-      appVersion.value = 'v' + version + ' (beta)';
+      appVersion.value = 'v$version (beta)';
       if (build.isNotEmpty) {
-        appVersion.value = 'v' + version + '+' + build + ' (beta)';
+        appVersion.value = 'v$version+$build (beta)';
       }
     } catch (_) {
       appVersion.value = 'beta';
@@ -99,14 +99,14 @@ class SettingsController extends GetxController {
         try {
           final dir = await getApplicationSupportDirectory();
           final dst = p.join(dir.path, 'app.db');
-          return 'Failed to replace database. Destination: ' + dst;
+          return 'Failed to replace database. Destination: $dst';
         } catch (_) {
           return 'Failed to replace database.';
         }
       }
       return null; // success
     } catch (e) {
-      return 'Error: ' + e.toString();
+      return 'Error: $e';
     }
   }
 

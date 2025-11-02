@@ -24,7 +24,7 @@ class AppTextStyles {
 
 class AppTableStyles {
   // Consistent zebra coloring for DataRow backgrounds across the app
-  static MaterialStateProperty<Color?> zebra(int rowIndex,
+  static WidgetStateProperty<Color?> zebra(int rowIndex,
           {Color even = const Color(0xFFF9FAFB), Color odd = Colors.white}) =>
-      MaterialStatePropertyAll(rowIndex.isEven ? even : odd);
+      WidgetStatePropertyAll(rowIndex.isEven ? even : odd);
 }
