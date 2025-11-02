@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/strings.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -40,6 +41,13 @@ class MyApp extends StatelessWidget {
         primaryColor: AppColor.primary,
         scaffoldBackgroundColor: AppColor.background,
         cardColor: AppColor.card,
+        dataTableTheme: const DataTableThemeData(
+          headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
+          headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
+          dividerThickness: 0.6,
+          dataRowMinHeight: Dimens.tableRowMinHeight,
+          dataRowMaxHeight: Dimens.tableRowMaxHeight,
+        ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColor.primary,
           brightness: Brightness.light,

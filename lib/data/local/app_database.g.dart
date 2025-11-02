@@ -1575,6 +1575,1354 @@ class ReportTransactionsCompanion extends UpdateCompanion<ReportTransaction> {
   }
 }
 
+class $TripMainsTable extends TripMains
+    with TableInfo<$TripMainsTable, TripMain> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TripMainsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<int> date = GeneratedColumn<int>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _driverNameMeta = const VerificationMeta(
+    'driverName',
+  );
+  @override
+  late final GeneratedColumn<String> driverName = GeneratedColumn<String>(
+    'driver_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _carIdMeta = const VerificationMeta('carId');
+  @override
+  late final GeneratedColumn<String> carId = GeneratedColumn<String>(
+    'car_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _commissionMeta = const VerificationMeta(
+    'commission',
+  );
+  @override
+  late final GeneratedColumn<double> commission = GeneratedColumn<double>(
+    'commission',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _laborCostMeta = const VerificationMeta(
+    'laborCost',
+  );
+  @override
+  late final GeneratedColumn<double> laborCost = GeneratedColumn<double>(
+    'labor_cost',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _supportPaymentMeta = const VerificationMeta(
+    'supportPayment',
+  );
+  @override
+  late final GeneratedColumn<double> supportPayment = GeneratedColumn<double>(
+    'support_payment',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _roomFeeMeta = const VerificationMeta(
+    'roomFee',
+  );
+  @override
+  late final GeneratedColumn<double> roomFee = GeneratedColumn<double>(
+    'room_fee',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    date,
+    driverName,
+    carId,
+    commission,
+    laborCost,
+    supportPayment,
+    roomFee,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'trip_mains';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TripMain> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('driver_name')) {
+      context.handle(
+        _driverNameMeta,
+        driverName.isAcceptableOrUnknown(data['driver_name']!, _driverNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_driverNameMeta);
+    }
+    if (data.containsKey('car_id')) {
+      context.handle(
+        _carIdMeta,
+        carId.isAcceptableOrUnknown(data['car_id']!, _carIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_carIdMeta);
+    }
+    if (data.containsKey('commission')) {
+      context.handle(
+        _commissionMeta,
+        commission.isAcceptableOrUnknown(data['commission']!, _commissionMeta),
+      );
+    }
+    if (data.containsKey('labor_cost')) {
+      context.handle(
+        _laborCostMeta,
+        laborCost.isAcceptableOrUnknown(data['labor_cost']!, _laborCostMeta),
+      );
+    }
+    if (data.containsKey('support_payment')) {
+      context.handle(
+        _supportPaymentMeta,
+        supportPayment.isAcceptableOrUnknown(
+          data['support_payment']!,
+          _supportPaymentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('room_fee')) {
+      context.handle(
+        _roomFeeMeta,
+        roomFee.isAcceptableOrUnknown(data['room_fee']!, _roomFeeMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TripMain map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TripMain(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}date'],
+      )!,
+      driverName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}driver_name'],
+      )!,
+      carId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}car_id'],
+      )!,
+      commission: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}commission'],
+      ),
+      laborCost: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}labor_cost'],
+      ),
+      supportPayment: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}support_payment'],
+      ),
+      roomFee: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}room_fee'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $TripMainsTable createAlias(String alias) {
+    return $TripMainsTable(attachedDatabase, alias);
+  }
+}
+
+class TripMain extends DataClass implements Insertable<TripMain> {
+  final int id;
+  final int date;
+  final String driverName;
+  final String carId;
+  final double? commission;
+  final double? laborCost;
+  final double? supportPayment;
+  final double? roomFee;
+  final String? createdAt;
+  final String? updatedAt;
+  const TripMain({
+    required this.id,
+    required this.date,
+    required this.driverName,
+    required this.carId,
+    this.commission,
+    this.laborCost,
+    this.supportPayment,
+    this.roomFee,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['date'] = Variable<int>(date);
+    map['driver_name'] = Variable<String>(driverName);
+    map['car_id'] = Variable<String>(carId);
+    if (!nullToAbsent || commission != null) {
+      map['commission'] = Variable<double>(commission);
+    }
+    if (!nullToAbsent || laborCost != null) {
+      map['labor_cost'] = Variable<double>(laborCost);
+    }
+    if (!nullToAbsent || supportPayment != null) {
+      map['support_payment'] = Variable<double>(supportPayment);
+    }
+    if (!nullToAbsent || roomFee != null) {
+      map['room_fee'] = Variable<double>(roomFee);
+    }
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<String>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<String>(updatedAt);
+    }
+    return map;
+  }
+
+  TripMainsCompanion toCompanion(bool nullToAbsent) {
+    return TripMainsCompanion(
+      id: Value(id),
+      date: Value(date),
+      driverName: Value(driverName),
+      carId: Value(carId),
+      commission: commission == null && nullToAbsent
+          ? const Value.absent()
+          : Value(commission),
+      laborCost: laborCost == null && nullToAbsent
+          ? const Value.absent()
+          : Value(laborCost),
+      supportPayment: supportPayment == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supportPayment),
+      roomFee: roomFee == null && nullToAbsent
+          ? const Value.absent()
+          : Value(roomFee),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory TripMain.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TripMain(
+      id: serializer.fromJson<int>(json['id']),
+      date: serializer.fromJson<int>(json['date']),
+      driverName: serializer.fromJson<String>(json['driverName']),
+      carId: serializer.fromJson<String>(json['carId']),
+      commission: serializer.fromJson<double?>(json['commission']),
+      laborCost: serializer.fromJson<double?>(json['laborCost']),
+      supportPayment: serializer.fromJson<double?>(json['supportPayment']),
+      roomFee: serializer.fromJson<double?>(json['roomFee']),
+      createdAt: serializer.fromJson<String?>(json['createdAt']),
+      updatedAt: serializer.fromJson<String?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'date': serializer.toJson<int>(date),
+      'driverName': serializer.toJson<String>(driverName),
+      'carId': serializer.toJson<String>(carId),
+      'commission': serializer.toJson<double?>(commission),
+      'laborCost': serializer.toJson<double?>(laborCost),
+      'supportPayment': serializer.toJson<double?>(supportPayment),
+      'roomFee': serializer.toJson<double?>(roomFee),
+      'createdAt': serializer.toJson<String?>(createdAt),
+      'updatedAt': serializer.toJson<String?>(updatedAt),
+    };
+  }
+
+  TripMain copyWith({
+    int? id,
+    int? date,
+    String? driverName,
+    String? carId,
+    Value<double?> commission = const Value.absent(),
+    Value<double?> laborCost = const Value.absent(),
+    Value<double?> supportPayment = const Value.absent(),
+    Value<double?> roomFee = const Value.absent(),
+    Value<String?> createdAt = const Value.absent(),
+    Value<String?> updatedAt = const Value.absent(),
+  }) => TripMain(
+    id: id ?? this.id,
+    date: date ?? this.date,
+    driverName: driverName ?? this.driverName,
+    carId: carId ?? this.carId,
+    commission: commission.present ? commission.value : this.commission,
+    laborCost: laborCost.present ? laborCost.value : this.laborCost,
+    supportPayment: supportPayment.present
+        ? supportPayment.value
+        : this.supportPayment,
+    roomFee: roomFee.present ? roomFee.value : this.roomFee,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  TripMain copyWithCompanion(TripMainsCompanion data) {
+    return TripMain(
+      id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      driverName: data.driverName.present
+          ? data.driverName.value
+          : this.driverName,
+      carId: data.carId.present ? data.carId.value : this.carId,
+      commission: data.commission.present
+          ? data.commission.value
+          : this.commission,
+      laborCost: data.laborCost.present ? data.laborCost.value : this.laborCost,
+      supportPayment: data.supportPayment.present
+          ? data.supportPayment.value
+          : this.supportPayment,
+      roomFee: data.roomFee.present ? data.roomFee.value : this.roomFee,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TripMain(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('driverName: $driverName, ')
+          ..write('carId: $carId, ')
+          ..write('commission: $commission, ')
+          ..write('laborCost: $laborCost, ')
+          ..write('supportPayment: $supportPayment, ')
+          ..write('roomFee: $roomFee, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    date,
+    driverName,
+    carId,
+    commission,
+    laborCost,
+    supportPayment,
+    roomFee,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TripMain &&
+          other.id == this.id &&
+          other.date == this.date &&
+          other.driverName == this.driverName &&
+          other.carId == this.carId &&
+          other.commission == this.commission &&
+          other.laborCost == this.laborCost &&
+          other.supportPayment == this.supportPayment &&
+          other.roomFee == this.roomFee &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TripMainsCompanion extends UpdateCompanion<TripMain> {
+  final Value<int> id;
+  final Value<int> date;
+  final Value<String> driverName;
+  final Value<String> carId;
+  final Value<double?> commission;
+  final Value<double?> laborCost;
+  final Value<double?> supportPayment;
+  final Value<double?> roomFee;
+  final Value<String?> createdAt;
+  final Value<String?> updatedAt;
+  const TripMainsCompanion({
+    this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.driverName = const Value.absent(),
+    this.carId = const Value.absent(),
+    this.commission = const Value.absent(),
+    this.laborCost = const Value.absent(),
+    this.supportPayment = const Value.absent(),
+    this.roomFee = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  TripMainsCompanion.insert({
+    this.id = const Value.absent(),
+    required int date,
+    required String driverName,
+    required String carId,
+    this.commission = const Value.absent(),
+    this.laborCost = const Value.absent(),
+    this.supportPayment = const Value.absent(),
+    this.roomFee = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : date = Value(date),
+       driverName = Value(driverName),
+       carId = Value(carId);
+  static Insertable<TripMain> custom({
+    Expression<int>? id,
+    Expression<int>? date,
+    Expression<String>? driverName,
+    Expression<String>? carId,
+    Expression<double>? commission,
+    Expression<double>? laborCost,
+    Expression<double>? supportPayment,
+    Expression<double>? roomFee,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (driverName != null) 'driver_name': driverName,
+      if (carId != null) 'car_id': carId,
+      if (commission != null) 'commission': commission,
+      if (laborCost != null) 'labor_cost': laborCost,
+      if (supportPayment != null) 'support_payment': supportPayment,
+      if (roomFee != null) 'room_fee': roomFee,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  TripMainsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? date,
+    Value<String>? driverName,
+    Value<String>? carId,
+    Value<double?>? commission,
+    Value<double?>? laborCost,
+    Value<double?>? supportPayment,
+    Value<double?>? roomFee,
+    Value<String?>? createdAt,
+    Value<String?>? updatedAt,
+  }) {
+    return TripMainsCompanion(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      driverName: driverName ?? this.driverName,
+      carId: carId ?? this.carId,
+      commission: commission ?? this.commission,
+      laborCost: laborCost ?? this.laborCost,
+      supportPayment: supportPayment ?? this.supportPayment,
+      roomFee: roomFee ?? this.roomFee,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<int>(date.value);
+    }
+    if (driverName.present) {
+      map['driver_name'] = Variable<String>(driverName.value);
+    }
+    if (carId.present) {
+      map['car_id'] = Variable<String>(carId.value);
+    }
+    if (commission.present) {
+      map['commission'] = Variable<double>(commission.value);
+    }
+    if (laborCost.present) {
+      map['labor_cost'] = Variable<double>(laborCost.value);
+    }
+    if (supportPayment.present) {
+      map['support_payment'] = Variable<double>(supportPayment.value);
+    }
+    if (roomFee.present) {
+      map['room_fee'] = Variable<double>(roomFee.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TripMainsCompanion(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('driverName: $driverName, ')
+          ..write('carId: $carId, ')
+          ..write('commission: $commission, ')
+          ..write('laborCost: $laborCost, ')
+          ..write('supportPayment: $supportPayment, ')
+          ..write('roomFee: $roomFee, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TripManifestsTable extends TripManifests
+    with TableInfo<$TripManifestsTable, TripManifest> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TripManifestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _driverIdMeta = const VerificationMeta(
+    'driverId',
+  );
+  @override
+  late final GeneratedColumn<int> driverId = GeneratedColumn<int>(
+    'driver_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES trip_mains (id)',
+    ),
+  );
+  static const VerificationMeta _customerNameMeta = const VerificationMeta(
+    'customerName',
+  );
+  @override
+  late final GeneratedColumn<String> customerName = GeneratedColumn<String>(
+    'customer_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deliveryCityMeta = const VerificationMeta(
+    'deliveryCity',
+  );
+  @override
+  late final GeneratedColumn<String> deliveryCity = GeneratedColumn<String>(
+    'delivery_city',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
+  @override
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+    'phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parcelTypeMeta = const VerificationMeta(
+    'parcelType',
+  );
+  @override
+  late final GeneratedColumn<String> parcelType = GeneratedColumn<String>(
+    'parcel_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _numberOfParcelMeta = const VerificationMeta(
+    'numberOfParcel',
+  );
+  @override
+  late final GeneratedColumn<int> numberOfParcel = GeneratedColumn<int>(
+    'number_of_parcel',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cashAdvanceMeta = const VerificationMeta(
+    'cashAdvance',
+  );
+  @override
+  late final GeneratedColumn<double> cashAdvance = GeneratedColumn<double>(
+    'cash_advance',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paymentPendingMeta = const VerificationMeta(
+    'paymentPending',
+  );
+  @override
+  late final GeneratedColumn<double> paymentPending = GeneratedColumn<double>(
+    'payment_pending',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paymentPaidMeta = const VerificationMeta(
+    'paymentPaid',
+  );
+  @override
+  late final GeneratedColumn<double> paymentPaid = GeneratedColumn<double>(
+    'payment_paid',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    driverId,
+    customerName,
+    deliveryCity,
+    phone,
+    parcelType,
+    numberOfParcel,
+    cashAdvance,
+    paymentPending,
+    paymentPaid,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'trip_manifests';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TripManifest> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('driver_id')) {
+      context.handle(
+        _driverIdMeta,
+        driverId.isAcceptableOrUnknown(data['driver_id']!, _driverIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_driverIdMeta);
+    }
+    if (data.containsKey('customer_name')) {
+      context.handle(
+        _customerNameMeta,
+        customerName.isAcceptableOrUnknown(
+          data['customer_name']!,
+          _customerNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('delivery_city')) {
+      context.handle(
+        _deliveryCityMeta,
+        deliveryCity.isAcceptableOrUnknown(
+          data['delivery_city']!,
+          _deliveryCityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('phone')) {
+      context.handle(
+        _phoneMeta,
+        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
+    if (data.containsKey('parcel_type')) {
+      context.handle(
+        _parcelTypeMeta,
+        parcelType.isAcceptableOrUnknown(data['parcel_type']!, _parcelTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_parcelTypeMeta);
+    }
+    if (data.containsKey('number_of_parcel')) {
+      context.handle(
+        _numberOfParcelMeta,
+        numberOfParcel.isAcceptableOrUnknown(
+          data['number_of_parcel']!,
+          _numberOfParcelMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_numberOfParcelMeta);
+    }
+    if (data.containsKey('cash_advance')) {
+      context.handle(
+        _cashAdvanceMeta,
+        cashAdvance.isAcceptableOrUnknown(
+          data['cash_advance']!,
+          _cashAdvanceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('payment_pending')) {
+      context.handle(
+        _paymentPendingMeta,
+        paymentPending.isAcceptableOrUnknown(
+          data['payment_pending']!,
+          _paymentPendingMeta,
+        ),
+      );
+    }
+    if (data.containsKey('payment_paid')) {
+      context.handle(
+        _paymentPaidMeta,
+        paymentPaid.isAcceptableOrUnknown(
+          data['payment_paid']!,
+          _paymentPaidMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TripManifest map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TripManifest(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      driverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}driver_id'],
+      )!,
+      customerName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_name'],
+      ),
+      deliveryCity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}delivery_city'],
+      ),
+      phone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone'],
+      ),
+      parcelType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parcel_type'],
+      )!,
+      numberOfParcel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}number_of_parcel'],
+      )!,
+      cashAdvance: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cash_advance'],
+      ),
+      paymentPending: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}payment_pending'],
+      ),
+      paymentPaid: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}payment_paid'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $TripManifestsTable createAlias(String alias) {
+    return $TripManifestsTable(attachedDatabase, alias);
+  }
+}
+
+class TripManifest extends DataClass implements Insertable<TripManifest> {
+  final int id;
+  final int driverId;
+  final String? customerName;
+  final String? deliveryCity;
+  final String? phone;
+  final String parcelType;
+  final int numberOfParcel;
+  final double? cashAdvance;
+  final double? paymentPending;
+  final double? paymentPaid;
+  final String? createdAt;
+  final String? updatedAt;
+  const TripManifest({
+    required this.id,
+    required this.driverId,
+    this.customerName,
+    this.deliveryCity,
+    this.phone,
+    required this.parcelType,
+    required this.numberOfParcel,
+    this.cashAdvance,
+    this.paymentPending,
+    this.paymentPaid,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['driver_id'] = Variable<int>(driverId);
+    if (!nullToAbsent || customerName != null) {
+      map['customer_name'] = Variable<String>(customerName);
+    }
+    if (!nullToAbsent || deliveryCity != null) {
+      map['delivery_city'] = Variable<String>(deliveryCity);
+    }
+    if (!nullToAbsent || phone != null) {
+      map['phone'] = Variable<String>(phone);
+    }
+    map['parcel_type'] = Variable<String>(parcelType);
+    map['number_of_parcel'] = Variable<int>(numberOfParcel);
+    if (!nullToAbsent || cashAdvance != null) {
+      map['cash_advance'] = Variable<double>(cashAdvance);
+    }
+    if (!nullToAbsent || paymentPending != null) {
+      map['payment_pending'] = Variable<double>(paymentPending);
+    }
+    if (!nullToAbsent || paymentPaid != null) {
+      map['payment_paid'] = Variable<double>(paymentPaid);
+    }
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<String>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<String>(updatedAt);
+    }
+    return map;
+  }
+
+  TripManifestsCompanion toCompanion(bool nullToAbsent) {
+    return TripManifestsCompanion(
+      id: Value(id),
+      driverId: Value(driverId),
+      customerName: customerName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customerName),
+      deliveryCity: deliveryCity == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deliveryCity),
+      phone: phone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(phone),
+      parcelType: Value(parcelType),
+      numberOfParcel: Value(numberOfParcel),
+      cashAdvance: cashAdvance == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cashAdvance),
+      paymentPending: paymentPending == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentPending),
+      paymentPaid: paymentPaid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentPaid),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory TripManifest.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TripManifest(
+      id: serializer.fromJson<int>(json['id']),
+      driverId: serializer.fromJson<int>(json['driverId']),
+      customerName: serializer.fromJson<String?>(json['customerName']),
+      deliveryCity: serializer.fromJson<String?>(json['deliveryCity']),
+      phone: serializer.fromJson<String?>(json['phone']),
+      parcelType: serializer.fromJson<String>(json['parcelType']),
+      numberOfParcel: serializer.fromJson<int>(json['numberOfParcel']),
+      cashAdvance: serializer.fromJson<double?>(json['cashAdvance']),
+      paymentPending: serializer.fromJson<double?>(json['paymentPending']),
+      paymentPaid: serializer.fromJson<double?>(json['paymentPaid']),
+      createdAt: serializer.fromJson<String?>(json['createdAt']),
+      updatedAt: serializer.fromJson<String?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'driverId': serializer.toJson<int>(driverId),
+      'customerName': serializer.toJson<String?>(customerName),
+      'deliveryCity': serializer.toJson<String?>(deliveryCity),
+      'phone': serializer.toJson<String?>(phone),
+      'parcelType': serializer.toJson<String>(parcelType),
+      'numberOfParcel': serializer.toJson<int>(numberOfParcel),
+      'cashAdvance': serializer.toJson<double?>(cashAdvance),
+      'paymentPending': serializer.toJson<double?>(paymentPending),
+      'paymentPaid': serializer.toJson<double?>(paymentPaid),
+      'createdAt': serializer.toJson<String?>(createdAt),
+      'updatedAt': serializer.toJson<String?>(updatedAt),
+    };
+  }
+
+  TripManifest copyWith({
+    int? id,
+    int? driverId,
+    Value<String?> customerName = const Value.absent(),
+    Value<String?> deliveryCity = const Value.absent(),
+    Value<String?> phone = const Value.absent(),
+    String? parcelType,
+    int? numberOfParcel,
+    Value<double?> cashAdvance = const Value.absent(),
+    Value<double?> paymentPending = const Value.absent(),
+    Value<double?> paymentPaid = const Value.absent(),
+    Value<String?> createdAt = const Value.absent(),
+    Value<String?> updatedAt = const Value.absent(),
+  }) => TripManifest(
+    id: id ?? this.id,
+    driverId: driverId ?? this.driverId,
+    customerName: customerName.present ? customerName.value : this.customerName,
+    deliveryCity: deliveryCity.present ? deliveryCity.value : this.deliveryCity,
+    phone: phone.present ? phone.value : this.phone,
+    parcelType: parcelType ?? this.parcelType,
+    numberOfParcel: numberOfParcel ?? this.numberOfParcel,
+    cashAdvance: cashAdvance.present ? cashAdvance.value : this.cashAdvance,
+    paymentPending: paymentPending.present
+        ? paymentPending.value
+        : this.paymentPending,
+    paymentPaid: paymentPaid.present ? paymentPaid.value : this.paymentPaid,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  TripManifest copyWithCompanion(TripManifestsCompanion data) {
+    return TripManifest(
+      id: data.id.present ? data.id.value : this.id,
+      driverId: data.driverId.present ? data.driverId.value : this.driverId,
+      customerName: data.customerName.present
+          ? data.customerName.value
+          : this.customerName,
+      deliveryCity: data.deliveryCity.present
+          ? data.deliveryCity.value
+          : this.deliveryCity,
+      phone: data.phone.present ? data.phone.value : this.phone,
+      parcelType: data.parcelType.present
+          ? data.parcelType.value
+          : this.parcelType,
+      numberOfParcel: data.numberOfParcel.present
+          ? data.numberOfParcel.value
+          : this.numberOfParcel,
+      cashAdvance: data.cashAdvance.present
+          ? data.cashAdvance.value
+          : this.cashAdvance,
+      paymentPending: data.paymentPending.present
+          ? data.paymentPending.value
+          : this.paymentPending,
+      paymentPaid: data.paymentPaid.present
+          ? data.paymentPaid.value
+          : this.paymentPaid,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TripManifest(')
+          ..write('id: $id, ')
+          ..write('driverId: $driverId, ')
+          ..write('customerName: $customerName, ')
+          ..write('deliveryCity: $deliveryCity, ')
+          ..write('phone: $phone, ')
+          ..write('parcelType: $parcelType, ')
+          ..write('numberOfParcel: $numberOfParcel, ')
+          ..write('cashAdvance: $cashAdvance, ')
+          ..write('paymentPending: $paymentPending, ')
+          ..write('paymentPaid: $paymentPaid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    driverId,
+    customerName,
+    deliveryCity,
+    phone,
+    parcelType,
+    numberOfParcel,
+    cashAdvance,
+    paymentPending,
+    paymentPaid,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TripManifest &&
+          other.id == this.id &&
+          other.driverId == this.driverId &&
+          other.customerName == this.customerName &&
+          other.deliveryCity == this.deliveryCity &&
+          other.phone == this.phone &&
+          other.parcelType == this.parcelType &&
+          other.numberOfParcel == this.numberOfParcel &&
+          other.cashAdvance == this.cashAdvance &&
+          other.paymentPending == this.paymentPending &&
+          other.paymentPaid == this.paymentPaid &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TripManifestsCompanion extends UpdateCompanion<TripManifest> {
+  final Value<int> id;
+  final Value<int> driverId;
+  final Value<String?> customerName;
+  final Value<String?> deliveryCity;
+  final Value<String?> phone;
+  final Value<String> parcelType;
+  final Value<int> numberOfParcel;
+  final Value<double?> cashAdvance;
+  final Value<double?> paymentPending;
+  final Value<double?> paymentPaid;
+  final Value<String?> createdAt;
+  final Value<String?> updatedAt;
+  const TripManifestsCompanion({
+    this.id = const Value.absent(),
+    this.driverId = const Value.absent(),
+    this.customerName = const Value.absent(),
+    this.deliveryCity = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.parcelType = const Value.absent(),
+    this.numberOfParcel = const Value.absent(),
+    this.cashAdvance = const Value.absent(),
+    this.paymentPending = const Value.absent(),
+    this.paymentPaid = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  TripManifestsCompanion.insert({
+    this.id = const Value.absent(),
+    required int driverId,
+    this.customerName = const Value.absent(),
+    this.deliveryCity = const Value.absent(),
+    this.phone = const Value.absent(),
+    required String parcelType,
+    required int numberOfParcel,
+    this.cashAdvance = const Value.absent(),
+    this.paymentPending = const Value.absent(),
+    this.paymentPaid = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : driverId = Value(driverId),
+       parcelType = Value(parcelType),
+       numberOfParcel = Value(numberOfParcel);
+  static Insertable<TripManifest> custom({
+    Expression<int>? id,
+    Expression<int>? driverId,
+    Expression<String>? customerName,
+    Expression<String>? deliveryCity,
+    Expression<String>? phone,
+    Expression<String>? parcelType,
+    Expression<int>? numberOfParcel,
+    Expression<double>? cashAdvance,
+    Expression<double>? paymentPending,
+    Expression<double>? paymentPaid,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (driverId != null) 'driver_id': driverId,
+      if (customerName != null) 'customer_name': customerName,
+      if (deliveryCity != null) 'delivery_city': deliveryCity,
+      if (phone != null) 'phone': phone,
+      if (parcelType != null) 'parcel_type': parcelType,
+      if (numberOfParcel != null) 'number_of_parcel': numberOfParcel,
+      if (cashAdvance != null) 'cash_advance': cashAdvance,
+      if (paymentPending != null) 'payment_pending': paymentPending,
+      if (paymentPaid != null) 'payment_paid': paymentPaid,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  TripManifestsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? driverId,
+    Value<String?>? customerName,
+    Value<String?>? deliveryCity,
+    Value<String?>? phone,
+    Value<String>? parcelType,
+    Value<int>? numberOfParcel,
+    Value<double?>? cashAdvance,
+    Value<double?>? paymentPending,
+    Value<double?>? paymentPaid,
+    Value<String?>? createdAt,
+    Value<String?>? updatedAt,
+  }) {
+    return TripManifestsCompanion(
+      id: id ?? this.id,
+      driverId: driverId ?? this.driverId,
+      customerName: customerName ?? this.customerName,
+      deliveryCity: deliveryCity ?? this.deliveryCity,
+      phone: phone ?? this.phone,
+      parcelType: parcelType ?? this.parcelType,
+      numberOfParcel: numberOfParcel ?? this.numberOfParcel,
+      cashAdvance: cashAdvance ?? this.cashAdvance,
+      paymentPending: paymentPending ?? this.paymentPending,
+      paymentPaid: paymentPaid ?? this.paymentPaid,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (driverId.present) {
+      map['driver_id'] = Variable<int>(driverId.value);
+    }
+    if (customerName.present) {
+      map['customer_name'] = Variable<String>(customerName.value);
+    }
+    if (deliveryCity.present) {
+      map['delivery_city'] = Variable<String>(deliveryCity.value);
+    }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
+    if (parcelType.present) {
+      map['parcel_type'] = Variable<String>(parcelType.value);
+    }
+    if (numberOfParcel.present) {
+      map['number_of_parcel'] = Variable<int>(numberOfParcel.value);
+    }
+    if (cashAdvance.present) {
+      map['cash_advance'] = Variable<double>(cashAdvance.value);
+    }
+    if (paymentPending.present) {
+      map['payment_pending'] = Variable<double>(paymentPending.value);
+    }
+    if (paymentPaid.present) {
+      map['payment_paid'] = Variable<double>(paymentPaid.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TripManifestsCompanion(')
+          ..write('id: $id, ')
+          ..write('driverId: $driverId, ')
+          ..write('customerName: $customerName, ')
+          ..write('deliveryCity: $deliveryCity, ')
+          ..write('phone: $phone, ')
+          ..write('parcelType: $parcelType, ')
+          ..write('numberOfParcel: $numberOfParcel, ')
+          ..write('cashAdvance: $cashAdvance, ')
+          ..write('paymentPending: $paymentPending, ')
+          ..write('paymentPaid: $paymentPaid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1583,6 +2931,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $ReportTransactionsTable reportTransactions =
       $ReportTransactionsTable(this);
+  late final $TripMainsTable tripMains = $TripMainsTable(this);
+  late final $TripManifestsTable tripManifests = $TripManifestsTable(this);
+  late final TripDao tripDao = TripDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1592,6 +2943,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     drivers,
     transactions,
     reportTransactions,
+    tripMains,
+    tripManifests,
   ];
 }
 
@@ -3088,6 +4441,868 @@ typedef $$ReportTransactionsTableProcessedTableManager =
       ReportTransaction,
       PrefetchHooks Function({bool driverId, bool transactionId})
     >;
+typedef $$TripMainsTableCreateCompanionBuilder =
+    TripMainsCompanion Function({
+      Value<int> id,
+      required int date,
+      required String driverName,
+      required String carId,
+      Value<double?> commission,
+      Value<double?> laborCost,
+      Value<double?> supportPayment,
+      Value<double?> roomFee,
+      Value<String?> createdAt,
+      Value<String?> updatedAt,
+    });
+typedef $$TripMainsTableUpdateCompanionBuilder =
+    TripMainsCompanion Function({
+      Value<int> id,
+      Value<int> date,
+      Value<String> driverName,
+      Value<String> carId,
+      Value<double?> commission,
+      Value<double?> laborCost,
+      Value<double?> supportPayment,
+      Value<double?> roomFee,
+      Value<String?> createdAt,
+      Value<String?> updatedAt,
+    });
+
+final class $$TripMainsTableReferences
+    extends BaseReferences<_$AppDatabase, $TripMainsTable, TripMain> {
+  $$TripMainsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TripManifestsTable, List<TripManifest>>
+  _tripManifestsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.tripManifests,
+    aliasName: $_aliasNameGenerator(db.tripMains.id, db.tripManifests.driverId),
+  );
+
+  $$TripManifestsTableProcessedTableManager get tripManifestsRefs {
+    final manager = $$TripManifestsTableTableManager(
+      $_db,
+      $_db.tripManifests,
+    ).filter((f) => f.driverId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tripManifestsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TripMainsTableFilterComposer
+    extends Composer<_$AppDatabase, $TripMainsTable> {
+  $$TripMainsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get driverName => $composableBuilder(
+    column: $table.driverName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get carId => $composableBuilder(
+    column: $table.carId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get commission => $composableBuilder(
+    column: $table.commission,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get laborCost => $composableBuilder(
+    column: $table.laborCost,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get supportPayment => $composableBuilder(
+    column: $table.supportPayment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get roomFee => $composableBuilder(
+    column: $table.roomFee,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> tripManifestsRefs(
+    Expression<bool> Function($$TripManifestsTableFilterComposer f) f,
+  ) {
+    final $$TripManifestsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tripManifests,
+      getReferencedColumn: (t) => t.driverId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TripManifestsTableFilterComposer(
+            $db: $db,
+            $table: $db.tripManifests,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TripMainsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TripMainsTable> {
+  $$TripMainsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get driverName => $composableBuilder(
+    column: $table.driverName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get carId => $composableBuilder(
+    column: $table.carId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get commission => $composableBuilder(
+    column: $table.commission,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get laborCost => $composableBuilder(
+    column: $table.laborCost,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get supportPayment => $composableBuilder(
+    column: $table.supportPayment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get roomFee => $composableBuilder(
+    column: $table.roomFee,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TripMainsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TripMainsTable> {
+  $$TripMainsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get driverName => $composableBuilder(
+    column: $table.driverName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get carId =>
+      $composableBuilder(column: $table.carId, builder: (column) => column);
+
+  GeneratedColumn<double> get commission => $composableBuilder(
+    column: $table.commission,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get laborCost =>
+      $composableBuilder(column: $table.laborCost, builder: (column) => column);
+
+  GeneratedColumn<double> get supportPayment => $composableBuilder(
+    column: $table.supportPayment,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get roomFee =>
+      $composableBuilder(column: $table.roomFee, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> tripManifestsRefs<T extends Object>(
+    Expression<T> Function($$TripManifestsTableAnnotationComposer a) f,
+  ) {
+    final $$TripManifestsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tripManifests,
+      getReferencedColumn: (t) => t.driverId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TripManifestsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tripManifests,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TripMainsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TripMainsTable,
+          TripMain,
+          $$TripMainsTableFilterComposer,
+          $$TripMainsTableOrderingComposer,
+          $$TripMainsTableAnnotationComposer,
+          $$TripMainsTableCreateCompanionBuilder,
+          $$TripMainsTableUpdateCompanionBuilder,
+          (TripMain, $$TripMainsTableReferences),
+          TripMain,
+          PrefetchHooks Function({bool tripManifestsRefs})
+        > {
+  $$TripMainsTableTableManager(_$AppDatabase db, $TripMainsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TripMainsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TripMainsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TripMainsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> date = const Value.absent(),
+                Value<String> driverName = const Value.absent(),
+                Value<String> carId = const Value.absent(),
+                Value<double?> commission = const Value.absent(),
+                Value<double?> laborCost = const Value.absent(),
+                Value<double?> supportPayment = const Value.absent(),
+                Value<double?> roomFee = const Value.absent(),
+                Value<String?> createdAt = const Value.absent(),
+                Value<String?> updatedAt = const Value.absent(),
+              }) => TripMainsCompanion(
+                id: id,
+                date: date,
+                driverName: driverName,
+                carId: carId,
+                commission: commission,
+                laborCost: laborCost,
+                supportPayment: supportPayment,
+                roomFee: roomFee,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int date,
+                required String driverName,
+                required String carId,
+                Value<double?> commission = const Value.absent(),
+                Value<double?> laborCost = const Value.absent(),
+                Value<double?> supportPayment = const Value.absent(),
+                Value<double?> roomFee = const Value.absent(),
+                Value<String?> createdAt = const Value.absent(),
+                Value<String?> updatedAt = const Value.absent(),
+              }) => TripMainsCompanion.insert(
+                id: id,
+                date: date,
+                driverName: driverName,
+                carId: carId,
+                commission: commission,
+                laborCost: laborCost,
+                supportPayment: supportPayment,
+                roomFee: roomFee,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TripMainsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({tripManifestsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (tripManifestsRefs) db.tripManifests,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (tripManifestsRefs)
+                    await $_getPrefetchedData<
+                      TripMain,
+                      $TripMainsTable,
+                      TripManifest
+                    >(
+                      currentTable: table,
+                      referencedTable: $$TripMainsTableReferences
+                          ._tripManifestsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$TripMainsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).tripManifestsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.driverId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TripMainsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TripMainsTable,
+      TripMain,
+      $$TripMainsTableFilterComposer,
+      $$TripMainsTableOrderingComposer,
+      $$TripMainsTableAnnotationComposer,
+      $$TripMainsTableCreateCompanionBuilder,
+      $$TripMainsTableUpdateCompanionBuilder,
+      (TripMain, $$TripMainsTableReferences),
+      TripMain,
+      PrefetchHooks Function({bool tripManifestsRefs})
+    >;
+typedef $$TripManifestsTableCreateCompanionBuilder =
+    TripManifestsCompanion Function({
+      Value<int> id,
+      required int driverId,
+      Value<String?> customerName,
+      Value<String?> deliveryCity,
+      Value<String?> phone,
+      required String parcelType,
+      required int numberOfParcel,
+      Value<double?> cashAdvance,
+      Value<double?> paymentPending,
+      Value<double?> paymentPaid,
+      Value<String?> createdAt,
+      Value<String?> updatedAt,
+    });
+typedef $$TripManifestsTableUpdateCompanionBuilder =
+    TripManifestsCompanion Function({
+      Value<int> id,
+      Value<int> driverId,
+      Value<String?> customerName,
+      Value<String?> deliveryCity,
+      Value<String?> phone,
+      Value<String> parcelType,
+      Value<int> numberOfParcel,
+      Value<double?> cashAdvance,
+      Value<double?> paymentPending,
+      Value<double?> paymentPaid,
+      Value<String?> createdAt,
+      Value<String?> updatedAt,
+    });
+
+final class $$TripManifestsTableReferences
+    extends BaseReferences<_$AppDatabase, $TripManifestsTable, TripManifest> {
+  $$TripManifestsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TripMainsTable _driverIdTable(_$AppDatabase db) =>
+      db.tripMains.createAlias(
+        $_aliasNameGenerator(db.tripManifests.driverId, db.tripMains.id),
+      );
+
+  $$TripMainsTableProcessedTableManager get driverId {
+    final $_column = $_itemColumn<int>('driver_id')!;
+
+    final manager = $$TripMainsTableTableManager(
+      $_db,
+      $_db.tripMains,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_driverIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TripManifestsTableFilterComposer
+    extends Composer<_$AppDatabase, $TripManifestsTable> {
+  $$TripManifestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deliveryCity => $composableBuilder(
+    column: $table.deliveryCity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parcelType => $composableBuilder(
+    column: $table.parcelType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get numberOfParcel => $composableBuilder(
+    column: $table.numberOfParcel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cashAdvance => $composableBuilder(
+    column: $table.cashAdvance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get paymentPending => $composableBuilder(
+    column: $table.paymentPending,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get paymentPaid => $composableBuilder(
+    column: $table.paymentPaid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TripMainsTableFilterComposer get driverId {
+    final $$TripMainsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.tripMains,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TripMainsTableFilterComposer(
+            $db: $db,
+            $table: $db.tripMains,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TripManifestsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TripManifestsTable> {
+  $$TripManifestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deliveryCity => $composableBuilder(
+    column: $table.deliveryCity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parcelType => $composableBuilder(
+    column: $table.parcelType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get numberOfParcel => $composableBuilder(
+    column: $table.numberOfParcel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get cashAdvance => $composableBuilder(
+    column: $table.cashAdvance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get paymentPending => $composableBuilder(
+    column: $table.paymentPending,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get paymentPaid => $composableBuilder(
+    column: $table.paymentPaid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TripMainsTableOrderingComposer get driverId {
+    final $$TripMainsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.tripMains,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TripMainsTableOrderingComposer(
+            $db: $db,
+            $table: $db.tripMains,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TripManifestsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TripManifestsTable> {
+  $$TripManifestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get deliveryCity => $composableBuilder(
+    column: $table.deliveryCity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<String> get parcelType => $composableBuilder(
+    column: $table.parcelType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get numberOfParcel => $composableBuilder(
+    column: $table.numberOfParcel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get cashAdvance => $composableBuilder(
+    column: $table.cashAdvance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get paymentPending => $composableBuilder(
+    column: $table.paymentPending,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get paymentPaid => $composableBuilder(
+    column: $table.paymentPaid,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$TripMainsTableAnnotationComposer get driverId {
+    final $$TripMainsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.tripMains,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TripMainsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tripMains,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TripManifestsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TripManifestsTable,
+          TripManifest,
+          $$TripManifestsTableFilterComposer,
+          $$TripManifestsTableOrderingComposer,
+          $$TripManifestsTableAnnotationComposer,
+          $$TripManifestsTableCreateCompanionBuilder,
+          $$TripManifestsTableUpdateCompanionBuilder,
+          (TripManifest, $$TripManifestsTableReferences),
+          TripManifest,
+          PrefetchHooks Function({bool driverId})
+        > {
+  $$TripManifestsTableTableManager(_$AppDatabase db, $TripManifestsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TripManifestsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TripManifestsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TripManifestsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> driverId = const Value.absent(),
+                Value<String?> customerName = const Value.absent(),
+                Value<String?> deliveryCity = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                Value<String> parcelType = const Value.absent(),
+                Value<int> numberOfParcel = const Value.absent(),
+                Value<double?> cashAdvance = const Value.absent(),
+                Value<double?> paymentPending = const Value.absent(),
+                Value<double?> paymentPaid = const Value.absent(),
+                Value<String?> createdAt = const Value.absent(),
+                Value<String?> updatedAt = const Value.absent(),
+              }) => TripManifestsCompanion(
+                id: id,
+                driverId: driverId,
+                customerName: customerName,
+                deliveryCity: deliveryCity,
+                phone: phone,
+                parcelType: parcelType,
+                numberOfParcel: numberOfParcel,
+                cashAdvance: cashAdvance,
+                paymentPending: paymentPending,
+                paymentPaid: paymentPaid,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int driverId,
+                Value<String?> customerName = const Value.absent(),
+                Value<String?> deliveryCity = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                required String parcelType,
+                required int numberOfParcel,
+                Value<double?> cashAdvance = const Value.absent(),
+                Value<double?> paymentPending = const Value.absent(),
+                Value<double?> paymentPaid = const Value.absent(),
+                Value<String?> createdAt = const Value.absent(),
+                Value<String?> updatedAt = const Value.absent(),
+              }) => TripManifestsCompanion.insert(
+                id: id,
+                driverId: driverId,
+                customerName: customerName,
+                deliveryCity: deliveryCity,
+                phone: phone,
+                parcelType: parcelType,
+                numberOfParcel: numberOfParcel,
+                cashAdvance: cashAdvance,
+                paymentPending: paymentPending,
+                paymentPaid: paymentPaid,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TripManifestsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({driverId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (driverId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.driverId,
+                                referencedTable: $$TripManifestsTableReferences
+                                    ._driverIdTable(db),
+                                referencedColumn: $$TripManifestsTableReferences
+                                    ._driverIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TripManifestsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TripManifestsTable,
+      TripManifest,
+      $$TripManifestsTableFilterComposer,
+      $$TripManifestsTableOrderingComposer,
+      $$TripManifestsTableAnnotationComposer,
+      $$TripManifestsTableCreateCompanionBuilder,
+      $$TripManifestsTableUpdateCompanionBuilder,
+      (TripManifest, $$TripManifestsTableReferences),
+      TripManifest,
+      PrefetchHooks Function({bool driverId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3100,4 +5315,8 @@ class $AppDatabaseManager {
       $$TransactionsTableTableManager(_db, _db.transactions);
   $$ReportTransactionsTableTableManager get reportTransactions =>
       $$ReportTransactionsTableTableManager(_db, _db.reportTransactions);
+  $$TripMainsTableTableManager get tripMains =>
+      $$TripMainsTableTableManager(_db, _db.tripMains);
+  $$TripManifestsTableTableManager get tripManifests =>
+      $$TripManifestsTableTableManager(_db, _db.tripManifests);
 }

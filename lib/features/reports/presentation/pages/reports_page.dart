@@ -8,6 +8,7 @@ import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/widgets/app_data_table.dart';
 
 class ReportsPage extends GetView<ReportsController> {
   const ReportsPage({super.key});
@@ -199,101 +200,63 @@ class _ReportsTableState extends State<_ReportsTable> {
       }
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Card(
-          margin: EdgeInsets.zero,
-          color: AppColor.card,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: AppColor.border),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Scrollbar(
-                controller: _vCtrl,
-                thumbVisibility: true,
-                child: SingleChildScrollView(
-                  controller: _vCtrl,
-                  child: Scrollbar(
-                    controller: _hCtrl,
-                    thumbVisibility: true,
-                    scrollbarOrientation: ScrollbarOrientation.bottom,
-                    child: SingleChildScrollView(
-                      controller: _hCtrl,
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                        child: DataTableTheme(
-                          data: const DataTableThemeData(
-                            headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
-                            headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
-                            dividerThickness: 0.6,
-                            dataRowMinHeight: Dimens.tableRowMinHeight,
-                            dataRowMaxHeight: Dimens.tableRowMaxHeight,
-                          ),
-                          child: DataTable(
-                            columnSpacing: 16,
-                            horizontalMargin: 12,
-                            showCheckboxColumn: false,
-                            columns: const [
-                              DataColumn(label: Text(AppString.colNo)),
-                              DataColumn(label: Text(AppString.colDriver)),
-                              DataColumn(label: Text(AppString.colCustomerName)),
-                              DataColumn(label: Text(AppString.colPhone)),
-                              DataColumn(label: Text(AppString.colParcelType)),
-                              DataColumn(label: Text(AppString.colNumber)),
-                              DataColumn(
-                                label: Center(child: Text(AppString.colCharges)),
-                              ),
-                              DataColumn(label: Text(AppString.colPaymentStatus)),
-                              DataColumn(
-                                label: Center(child: Text(AppString.colCashAdvance)),
-                              ),
-                            ],
-                            rows: [
-                              ...rows.asMap().entries.map((e) {
-                                final i = e.key + 1;
-                                final t = e.value;
-                                return DataRow(
-                                  cells: [
-                                    DataCell(Text('$i')),
-                                    DataCell(
-                                      Text(controller.driverNameFor(t.driverId)),
-                                    ),
-                                    DataCell(Text(t.customerName ?? '-')),
-                                    DataCell(Text(t.phone)),
-                                    DataCell(Text(t.parcelType)),
-                                    DataCell(Text(t.number)),
-                                    DataCell(
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                          Format.money(t.charges),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(Text(t.paymentStatus)),
-                                    DataCell(
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                          Format.money(t.cashAdvance),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }),
-                            ],
-                          ),
+        child: AppDataTable(
+          table: DataTable(
+            columnSpacing: 16,
+            horizontalMargin: 12,
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text(AppString.colNo)),
+              DataColumn(label: Text(AppString.colDriver)),
+              DataColumn(label: Text(AppString.colCustomerName)),
+              DataColumn(label: Text(AppString.colPhone)),
+              DataColumn(label: Text(AppString.colParcelType)),
+              DataColumn(label: Text(AppString.colNumber)),
+              DataColumn(
+                label: Center(child: Text(AppString.colCharges)),
+              ),
+              DataColumn(label: Text(AppString.colPaymentStatus)),
+              DataColumn(
+                label: Center(child: Text(AppString.colCashAdvance)),
+              ),
+            ],
+            rows: [
+              ...rows.asMap().entries.map((e) {
+                final i = e.key + 1;
+                final t = e.value;
+                return DataRow(
+                  cells: [
+                    DataCell(Text('$i')),
+                    DataCell(
+                      Text(controller.driverNameFor(t.driverId)),
+                    ),
+                    DataCell(Text(t.customerName ?? '-')),
+                    DataCell(Text(t.phone)),
+                    DataCell(Text(t.parcelType)),
+                    DataCell(Text(t.number)),
+                    DataCell(
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          Format.money(t.charges),
+                          textAlign: TextAlign.right,
                         ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            },
+                    DataCell(Text(t.paymentStatus)),
+                    DataCell(
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          Format.money(t.cashAdvance),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ],
           ),
         ),
       );

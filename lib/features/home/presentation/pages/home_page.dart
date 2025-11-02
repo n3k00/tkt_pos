@@ -9,7 +9,9 @@ import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
+import 'package:tkt_pos/data/local/tables/trip_main.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/widgets/app_data_table.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -60,7 +62,7 @@ class HomePage extends GetView<HomeController> {
 
 class _TripMainTable extends StatefulWidget {
   const _TripMainTable({required this.rows});
-  final List<TripMainRow> rows;
+  final List<TripMain> rows;
 
   @override
   State<_TripMainTable> createState() => _TripMainTableState();
@@ -80,81 +82,41 @@ class _TripMainTableState extends State<_TripMainTable> {
   @override
   Widget build(BuildContext context) {
     final rows = widget.rows;
-    return Scrollbar(
-      controller: _vCtrl,
-      thumbVisibility: true,
-      child: SingleChildScrollView(
-        controller: _vCtrl,
-        scrollDirection: Axis.vertical,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Scrollbar(
-              controller: _hCtrl,
-              thumbVisibility: true,
-              scrollbarOrientation: ScrollbarOrientation.bottom,
-              child: SingleChildScrollView(
-                controller: _hCtrl,
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                  child: Card(
-                    color: AppColor.white,
-                    clipBehavior: Clip.antiAlias,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Colors.black12.withValues(alpha: 0.08)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DataTableTheme(
-                      data: const DataTableThemeData(
-                        headingRowColor: MaterialStatePropertyAll(Color(0xFFF2F4F7)),
-                        headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
-                        dividerThickness: 0.6,
-                        dataRowMinHeight: Dimens.tableRowMinHeight,
-                        dataRowMaxHeight: Dimens.tableRowMaxHeight,
-                      ),
-                      child: DataTable(
-                        columnSpacing: 16,
-                        horizontalMargin: 12,
-                        showCheckboxColumn: false,
-                        columns: const [
-                          DataColumn(label: Text('Date')),
-                          DataColumn(label: Text('Driver Name')),
-                          DataColumn(label: Text('Car ID')),
-                          DataColumn(label: Text('Commission')),
-                          DataColumn(label: Text('Labor Cost')),
-                          DataColumn(label: Text('Support Payment')),
-                          DataColumn(label: Text('Room Fee')),
-                        ],
-                        rows: [
-                          ...rows.asMap().entries.map((e) {
-                            final r = e.value;
-                            return DataRow(
-                              onSelectChanged: (selected) {
-                                if (selected == true) {
-                                  Get.toNamed(Routes.tripDetail, arguments: r);
-                                }
-                              },
-                              cells: [
-                                DataCell(Text(Format.date(r.date))),
-                                DataCell(Text(r.driverName)),
-                                DataCell(Text(r.carId)),
-                                DataCell(_right(Format.money(r.commission ?? 0))),
-                                DataCell(_right(Format.money(r.laborCost ?? 0))),
-                                DataCell(_right(Format.money(r.supportPayment ?? 0))),
-                                DataCell(_right(Format.money(r.roomFee ?? 0))),
-                              ],
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+    return AppDataTable(
+      table: DataTable(
+        columnSpacing: 16,
+        horizontalMargin: 12,
+        showCheckboxColumn: false,
+        columns: const [
+          DataColumn(label: Text('Date')),
+          DataColumn(label: Text('Driver Name')),
+          DataColumn(label: Text('Car ID')),
+          DataColumn(label: Text('Commission')),
+          DataColumn(label: Text('Labor Cost')),
+          DataColumn(label: Text('Support Payment')),
+          DataColumn(label: Text('Room Fee')),
+        ],
+        rows: [
+          ...rows.asMap().entries.map((e) {
+            final r = e.value;
+            return DataRow(
+              onSelectChanged: (selected) {
+                if (selected == true) {
+                  Get.toNamed(Routes.tripDetail, arguments: r);
+                }
+              },
+              cells: [
+                DataCell(Text(Format.date(DateTime.fromMillisecondsSinceEpoch(r.date)))),
+                DataCell(Text(r.driverName)),
+                DataCell(Text(r.carId)),
+                DataCell(_right(Format.money(r.commission ?? 0))),
+                DataCell(_right(Format.money(r.laborCost ?? 0))),
+                DataCell(_right(Format.money(r.supportPayment ?? 0))),
+                DataCell(_right(Format.money(r.roomFee ?? 0))),
+              ],
             );
-          },
-        ),
+          }),
+        ],
       ),
     );
   }

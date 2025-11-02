@@ -1,12 +1,12 @@
 import 'package:drift/drift.dart';
 
-// Typed definition (not yet wired into @DriftDatabase)
-class TripMain extends Table {
-  @override
-  String get tableName => 'trip_main';
-
+@DataClassName('TripMain')
+class TripMains extends Table {
   IntColumn get id => integer().autoIncrement()();
-  DateTimeColumn get date => dateTime()();
+
+  // Store as epoch milliseconds to match existing data
+  IntColumn get date => integer()();
+
   TextColumn get driverName => text().named('driver_name')();
   TextColumn get carId => text().named('car_id')();
 
@@ -15,8 +15,8 @@ class TripMain extends Table {
   RealColumn get supportPayment => real().named('support_payment').nullable()();
   RealColumn get roomFee => real().named('room_fee').nullable()();
 
-  DateTimeColumn get createdAt =>
-      dateTime().named('created_at').withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt =>
-      dateTime().named('updated_at').withDefault(currentDateAndTime)();
+  // Keep timestamps optional; not used by UI currently
+  TextColumn get createdAt => text().named('created_at').nullable()();
+  TextColumn get updatedAt => text().named('updated_at').nullable()();
 }
+

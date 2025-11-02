@@ -1,12 +1,15 @@
 import 'package:get/get.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
+import 'package:tkt_pos/data/local/tables/trip_main.dart';
+import 'package:tkt_pos/features/trips/data/trip_repository.dart';
 
 class HomeController extends GetxController {
   final AppDatabase db = AppDatabase();
+  final TripRepository tripRepo = TripRepository();
 
   // State
   final RxString searchQuery = ''.obs;
-  final RxList<TripMainRow> items = <TripMainRow>[].obs;
+  final RxList<TripMain> items = <TripMain>[].obs;
 
   // Lifecycle
   @override
@@ -19,7 +22,7 @@ class HomeController extends GetxController {
   void setSearch(String q) => searchQuery.value = q;
 
   Future<void> loadTripMain() async {
-    final list = await db.getTripMainRows();
+    final list = await tripRepo.getTripMains();
     items.assignAll(list);
   }
 
@@ -28,7 +31,7 @@ class HomeController extends GetxController {
     required String driverName,
     required String carId,
   }) async {
-    await db.insertTripMain(date: date, driverName: driverName, carId: carId);
+    await tripRepo.addTripMain(date: date, driverName: driverName, carId: carId);
     await loadTripMain();
   }
 }

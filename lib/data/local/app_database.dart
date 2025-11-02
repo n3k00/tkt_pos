@@ -8,57 +8,39 @@ import 'tables/app_settings.dart';
 import 'tables/drivers.dart';
 import 'tables/transactions.dart';
 import 'tables/report_transactions.dart';
+import 'tables/trip_main.dart';
+import 'tables/trip_manifests.dart';
+import 'daos/trip_dao.dart';
 
 part 'app_database.g.dart';
 
 // Tables are now split into separate files under tables/
 
-@DriftDatabase(tables: [AppSettings, Drivers, Transactions, ReportTransactions])
+@DriftDatabase(
+  tables: [
+    AppSettings,
+    Drivers,
+    Transactions,
+    ReportTransactions,
+    TripMains,
+    TripManifests,
+  ],
+  daos: [TripDao],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase._internal() : super(_openConnection());
   static final AppDatabase _instance = AppDatabase._internal();
   factory AppDatabase() => _instance;
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 12;
 
   // Migrations: create new tables when upgrading from v1
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
+      // Create all Drift-managed tables (including trip_main & trip_manifests)
       await m.createAll();
-      // Create requested trip tables if they don't exist
-      await customStatement('''
-        CREATE TABLE IF NOT EXISTS trip_main (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          date INTEGER NOT NULL,
-          driver_name TEXT NOT NULL,
-          car_id TEXT NOT NULL,
-          commission REAL,
-          labor_cost REAL,
-          support_payment REAL,
-          room_fee REAL,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-      ''');
-      await customStatement('''
-        CREATE TABLE IF NOT EXISTS trip_manifests (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          driver_id INTEGER,
-          customer_name TEXT,
-          delivery_city TEXT,
-          phone TEXT,
-          parcel_type TEXT NOT NULL,
-          number_of_parcel INTEGER NOT NULL,
-          cash_advance REAL,
-          payment_pending REAL,
-          payment_paid REAL,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY(driver_id) REFERENCES trip_main(id)
-        )
-      ''');
     },
     onUpgrade: (m, from, to) async {
       if (from < 2) {
@@ -191,6 +173,31 @@ class AppDatabase extends _$AppDatabase {
           ''');
           await customStatement('DROP TABLE trip_main_old');
         } catch (_) {}
+      }
+      if (from < 11) {
+        // Add indices for common queries
+        try {
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_trip_manifests_driver_id ON trip_manifests(driver_id)');
+        } catch (_) {}
+        try {
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_trip_main_date ON trip_main(date)');
+        } catch (_) {}
+      }
+      if (from < 12) {
+        // Ensure trip tables exist with Drift's expected names
+        // Drop legacy tables then (re)create via Drift to match naming
+        try {
+          await customStatement('DROP TABLE IF EXISTS trip_main');
+        } catch (_) {}
+        try {
+          await customStatement('DROP TABLE IF EXISTS trip_manifests');
+        } catch (_) {}
+
+        // Create Drift-managed tables using correct names/columns
+        await m.createTable(tripMains);
+        await m.createTable(tripManifests);
       }
     },
   );
@@ -469,122 +476,6 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  // ------ Trip Main: read helpers ------
-  Future<List<TripMainRow>> getTripMainRows() async {
-    final rows = await customSelect(
-      'SELECT id, date, driver_name, car_id, commission, labor_cost, support_payment, room_fee, created_at, updated_at FROM trip_main ORDER BY date DESC, id DESC',
-    ).get();
-    return rows.map((r) => TripMainRow.fromRow(r)).toList(growable: false);
-  }
-
-  Future<int> insertTripMain({
-    required DateTime date,
-    required String driverName,
-    required String carId,
-  }) async {
-    return await customInsert(
-      'INSERT INTO trip_main (date, driver_name, car_id, commission, labor_cost, support_payment, room_fee, created_at, updated_at) '
-      'VALUES (?, ?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
-      variables: [
-        Variable<int>(date.millisecondsSinceEpoch),
-        Variable<String>(driverName),
-        Variable<String>(carId),
-      ],
-    );
-  }
-}
-
-class TripMainRow {
-  final int id;
-  final DateTime date;
-  final String driverName;
-  final String carId;
-  final double? commission;
-  final double? laborCost;
-  final double? supportPayment;
-  final double? roomFee;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  TripMainRow({
-    required this.id,
-    required this.date,
-    required this.driverName,
-    required this.carId,
-    this.commission,
-    this.laborCost,
-    this.supportPayment,
-    this.roomFee,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory TripMainRow.fromRow(QueryRow r) {
-    DateTime? parseTs(String? s) => s == null ? null : DateTime.tryParse(s);
-    return TripMainRow(
-      id: r.read<int>('id'),
-      date: DateTime.fromMillisecondsSinceEpoch(r.read<int>('date')),
-      driverName: r.read<String>('driver_name'),
-      carId: r.read<String>('car_id'),
-      commission: r.read<double?>('commission'),
-      laborCost: r.read<double?>('labor_cost'),
-      supportPayment: r.read<double?>('support_payment'),
-      roomFee: r.read<double?>('room_fee'),
-      createdAt: parseTs(r.read<String?>('created_at')),
-      updatedAt: parseTs(r.read<String?>('updated_at')),
-    );
-  }
-}
-
-class TripManifestRow {
-  final int id;
-  final int driverId;
-  final String? customerName;
-  final String? deliveryCity;
-  final String? phone;
-  final String parcelType;
-  final int numberOfParcel;
-  final double? cashAdvance;
-  final double? paymentPending;
-  final double? paymentPaid;
-
-  TripManifestRow({
-    required this.id,
-    required this.driverId,
-    required this.customerName,
-    required this.deliveryCity,
-    required this.phone,
-    required this.parcelType,
-    required this.numberOfParcel,
-    required this.cashAdvance,
-    required this.paymentPending,
-    required this.paymentPaid,
-  });
-
-  factory TripManifestRow.fromRow(QueryRow r) {
-    return TripManifestRow(
-      id: r.read<int>('id'),
-      driverId: r.read<int>('driver_id'),
-      customerName: r.read<String?>('customer_name'),
-      deliveryCity: r.read<String?>('delivery_city'),
-      phone: r.read<String?>('phone'),
-      parcelType: r.read<String>('parcel_type'),
-      numberOfParcel: r.read<int>('number_of_parcel'),
-      cashAdvance: r.read<double?>('cash_advance'),
-      paymentPending: r.read<double?>('payment_pending'),
-      paymentPaid: r.read<double?>('payment_paid'),
-    );
-  }
-}
-
-extension TripManifestsQueries on AppDatabase {
-  Future<List<TripManifestRow>> getTripManifests(int driverId) async {
-    final rows = await customSelect(
-      'SELECT id, driver_id, customer_name, delivery_city, phone, parcel_type, number_of_parcel, cash_advance, payment_pending, payment_paid FROM trip_manifests WHERE driver_id = ? ORDER BY id ASC',
-      variables: [Variable<int>(driverId)],
-    ).get();
-    return rows.map((r) => TripManifestRow.fromRow(r)).toList(growable: false);
-  }
 }
 
 LazyDatabase _openConnection() {
