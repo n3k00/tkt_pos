@@ -62,18 +62,31 @@ class InventoryPage extends GetView<InventoryController> {
                               child: CircularProgressIndicator(),
                             );
                           }
-                          final list = controller.drivers;
-                          if (list.isEmpty) {
+                          final all = controller.drivers;
+                          if (all.isEmpty) {
                             return const Center(
                               child: Text(AppString.noDrivers),
                             );
                           }
+                          final q = controller.searchQuery.value.trim();
+                          final filteredDrivers = q.isEmpty
+                              ? all
+                              : all
+                                  .where((d) => controller
+                                      .filteredTransactionsForDriver(d.id)
+                                      .isNotEmpty)
+                                  .toList(growable: false);
+
+                          if (filteredDrivers.isEmpty) {
+                            return const Center(child: Text(AppString.noResults));
+                          }
+
                           return ListView.separated(
-                            itemCount: list.length,
+                            itemCount: filteredDrivers.length,
                             separatorBuilder: (_, __) =>
                                 const SizedBox(height: Dimens.d24),
                             itemBuilder: (context, index) {
-                              final d = list[index];
+                              final d = filteredDrivers[index];
                               return _DriverSection(
                                 driver: d,
                                 controller: controller,

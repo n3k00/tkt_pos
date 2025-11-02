@@ -33,6 +33,7 @@
   static const String searchLabel = 'Search';
   static const String searchHint = 'Type to filter transactions...';
   static const String searchReportsHint = 'Search reports...';
+  static const String noResults = 'No results found.';
 
   // Payment statuses (MM)
   static const String paymentPending = 'ငွေတောင်းရန်';
