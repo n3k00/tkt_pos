@@ -43,161 +43,29 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
     },
     onUpgrade: (m, from, to) async {
-      if (from < 2) {
-        // Create any newly added tables (drivers, transactions)
-        await m.createTable(drivers);
-        await m.createTable(transactions);
-      }
-      if (from < 3) {
-        // Rebuild transactions to relax NOT NULL on customer_name and cash_advance
-        // 1) Rename old table
-        await customStatement(
-          'ALTER TABLE transactions RENAME TO transactions_old',
-        );
-        // 2) Create new table with updated schema
-        await m.createTable(transactions);
-        // 3) Copy data across
-        await customStatement('''
-              INSERT INTO transactions (
-                id, customer_name, phone, parcel_type, number, charges,
-                payment_status, cash_advance, picked_up, comment, driver_id,
-                created_at, updated_at
-              )
-              SELECT id, customer_name, phone, parcel_type, number, charges,
-                     payment_status, cash_advance, picked_up, comment, driver_id,
-                     created_at, updated_at
-              FROM transactions_old
-            ''');
-        // 4) Drop old table
-        await customStatement('DROP TABLE transactions_old');
-      }
-      if (from < 4) {
-        // Remove column `no` from transactions by rebuilding
-        await customStatement(
-          'ALTER TABLE transactions RENAME TO transactions_old',
-        );
-        await m.createTable(transactions);
-        await customStatement('''
-              INSERT INTO transactions (
-                id, customer_name, phone, parcel_type, number, charges,
-                payment_status, cash_advance, picked_up, comment, driver_id,
-                created_at, updated_at
-              )
-              SELECT id, customer_name, phone, parcel_type, number, charges,
-                     payment_status, cash_advance, picked_up, comment, driver_id,
-                     created_at, updated_at
-              FROM transactions_old
-            ''');
-        await customStatement('DROP TABLE transactions_old');
-      }
-      if (from < 5) {
-        // Make cash_advance NOT NULL with default 0.0
-        await customStatement(
-          'ALTER TABLE transactions RENAME TO transactions_old',
-        );
-        await m.createTable(transactions);
-        await customStatement('''
-              INSERT INTO transactions (
-                id, customer_name, phone, parcel_type, number, charges,
-                payment_status, cash_advance, picked_up, comment, driver_id,
-                created_at, updated_at
-              )
-              SELECT id, customer_name, phone, parcel_type, number, charges,
-                     payment_status, COALESCE(cash_advance, 0.0), picked_up, comment, driver_id,
-                     created_at, updated_at
-              FROM transactions_old
-            ''');
-        await customStatement('DROP TABLE transactions_old');
-      }
       if (from < 6) {
         await m.createTable(reportTransactions);
       }
-      if (from < 9) {
-        await customStatement('''
-          CREATE TABLE IF NOT EXISTS trip_main (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date INTEGER NOT NULL,
-            driver_name TEXT NOT NULL,
-            car_id TEXT NOT NULL,
-            commission REAL,
-            labor_cost REAL,
-            support_payment REAL,
-            room_fee REAL,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-          )
-        ''');
-        await customStatement('''
-          CREATE TABLE IF NOT EXISTS trip_manifests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            driver_id INTEGER,
-            customer_name TEXT,
-            delivery_city TEXT,
-            phone TEXT,
-            parcel_type TEXT NOT NULL,
-            number_of_parcel INTEGER NOT NULL,
-            cash_advance REAL,
-            payment_pending REAL,
-            payment_paid REAL,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(driver_id) REFERENCES trip_main(id)
-          )
-        ''');
-      }
-      if (from < 10) {
-        try {
-          await customStatement('ALTER TABLE trip_main RENAME TO trip_main_old');
-          await customStatement('''
-            CREATE TABLE trip_main (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              date INTEGER NOT NULL,
-              driver_name TEXT NOT NULL,
-              car_id TEXT NOT NULL,
-              commission REAL,
-              labor_cost REAL,
-              support_payment REAL,
-              room_fee REAL,
-              created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-              updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-            )
-          ''');
-          await customStatement('''
-            INSERT INTO trip_main (
-              id, date, driver_name, car_id, commission, labor_cost,
-              support_payment, room_fee, created_at, updated_at
-            )
-            SELECT id, date, driver_name, CAST(car_id AS TEXT), commission, labor_cost,
-                   support_payment, room_fee, created_at, updated_at
-            FROM trip_main_old
-          ''');
-          await customStatement('DROP TABLE trip_main_old');
-        } catch (_) {}
-      }
-      if (from < 11) {
-        // Add indices for common queries
-        try {
-          await customStatement(
-              'CREATE INDEX IF NOT EXISTS idx_trip_manifests_driver_id ON trip_manifests(driver_id)');
-        } catch (_) {}
-        try {
-          await customStatement(
-              'CREATE INDEX IF NOT EXISTS idx_trip_main_date ON trip_main(date)');
-        } catch (_) {}
-      }
       if (from < 12) {
-        // Ensure trip tables exist with Drift's expected names
-        // Drop legacy tables then (re)create via Drift to match naming
+        // Rebuild trip tables using Drift-managed schema and ensure indices exist
         try {
           await customStatement('DROP TABLE IF EXISTS trip_main');
         } catch (_) {}
         try {
           await customStatement('DROP TABLE IF EXISTS trip_manifests');
         } catch (_) {}
-
-        // Create Drift-managed tables using correct names/columns
         await m.createTable(tripMains);
         await m.createTable(tripManifests);
+        try {
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_trip_manifests_driver_id ON trip_manifests(driver_id)',
+          );
+        } catch (_) {}
+        try {
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_trip_main_date ON trip_main(date)',
+          );
+        } catch (_) {}
       }
     },
   );
@@ -227,10 +95,6 @@ class AppDatabase extends _$AppDatabase {
 
   Future<bool> updateDriver(DriversCompanion companion) =>
       update(drivers).replace(companion);
-
-  Future<int> deleteDriverById(int id) {
-    return (delete(drivers)..where((t) => t.id.equals(id))).go();
-  }
 
   // ------ Transactions CRUD ------
   Future<int> insertTransaction(TransactionsCompanion companion) =>
@@ -416,63 +280,6 @@ class AppDatabase extends _$AppDatabase {
       return dbFile.path;
     } catch (e) {
       return null;
-    }
-  }
-
-  // Merge data from another sqlite database file into the current one.
-  // This keeps existing rows and inserts missing ones by primary key.
-  Future<void> mergeFromDatabaseFile(String backupPath) async {
-    final escaped = backupPath.replaceAll("'", "''");
-    // Ensure operations run sequentially
-    await customStatement("ATTACH DATABASE '$escaped' AS src");
-    try {
-      await customStatement('PRAGMA foreign_keys=OFF');
-      await customStatement('BEGIN');
-
-      // Drivers
-      await customStatement('''
-        INSERT INTO drivers (id, date, name)
-        SELECT id, date, name FROM src.drivers s
-        WHERE NOT EXISTS (SELECT 1 FROM drivers d WHERE d.id = s.id)
-      ''');
-
-      // Transactions
-      await customStatement('''
-        INSERT INTO transactions (
-          id, customer_name, phone, parcel_type, number, charges,
-          payment_status, cash_advance, picked_up, comment, driver_id,
-          created_at, updated_at
-        )
-        SELECT id, customer_name, phone, parcel_type, number, charges,
-               payment_status, cash_advance, picked_up, comment, driver_id,
-               created_at, updated_at
-        FROM src.transactions s
-        WHERE NOT EXISTS (SELECT 1 FROM transactions t WHERE t.id = s.id)
-      ''');
-
-      // Report transactions
-      await customStatement('''
-        INSERT INTO report_transactions (
-          id, driver_id, transaction_id, created_at, updated_at
-        )
-        SELECT id, driver_id, transaction_id, created_at, updated_at
-        FROM src.report_transactions s
-        WHERE NOT EXISTS (SELECT 1 FROM report_transactions r WHERE r.id = s.id)
-      ''');
-
-      // App settings: use INSERT OR REPLACE for broader SQLite compatibility
-      await customStatement('''
-        INSERT OR REPLACE INTO app_settings (key, value)
-        SELECT key, value FROM src.app_settings
-      ''');
-
-      await customStatement('COMMIT');
-    } catch (_) {
-      await customStatement('ROLLBACK');
-      rethrow;
-    } finally {
-      await customStatement('PRAGMA foreign_keys=ON');
-      await customStatement('DETACH DATABASE src');
     }
   }
 
