@@ -150,16 +150,6 @@ class InventoryController extends GetxController {
     await loadAllDrivers();
   }
 
-  Future<void> deleteDriver(int id) async {
-    await db.transaction(() async {
-      // Remove child transactions first to avoid foreign key constraint errors
-      await (db.delete(db.transactions)..where((t) => t.driverId.equals(id))).go();
-      await db.deleteDriverById(id);
-    });
-    // Refresh state
-    await loadAllDrivers();
-  }
-
   Future<void> addTransaction({
     required int driverId,
     String? customerName,

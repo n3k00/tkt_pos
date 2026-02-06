@@ -25,27 +25,11 @@ class DriverActionsMenu extends StatelessWidget {
             ],
           ),
         ),
-        PopupMenuItem(
-          value: 'delete',
-          child: Row(
-            children: [
-              const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-              const SizedBox(width: 8),
-              Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            ],
-          ),
-        ),
       ],
       onSelected: (value) async {
         switch (value) {
           case 'edit':
             await showEditDriverDialog(context, controller, driver);
-            break;
-          case 'delete':
-            final confirmed = await confirmDeleteDriver(context, driver);
-            if (confirmed == true) {
-              await controller.deleteDriver(driver.id);
-            }
             break;
         }
       },
