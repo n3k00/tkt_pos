@@ -122,33 +122,6 @@ class SettingsPage extends GetView<SettingsController> {
                         }
                       },
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.merge_type_outlined),
-                      title: const Text('Restore from file (merge)'),
-                      subtitle: const Text(
-                        'Choose a .db file and merge into current database',
-                      ),
-                      onTap: () async {
-                        try {
-                          final ok = await controller.restoreFromFileMerge();
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ok
-                                    ? 'Merge completed successfully.'
-                                    : 'Restore cancelled.',
-                              ),
-                            ),
-                          );
-                        } catch (e) {
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Merge failed: $e')),
-                          );
-                        }
-                      },
-                    ),
                     const Divider(height: 32),
                     Text(
                       'About',

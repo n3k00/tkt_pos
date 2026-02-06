@@ -116,14 +116,4 @@ class SettingsController extends GetxController {
     return msg == null;
   }
 
-  Future<bool> restoreFromFileMerge() async {
-    final xfile = await fs.openFile(
-      acceptedTypeGroups: const [
-        fs.XTypeGroup(label: 'Database', extensions: ['db'])
-      ],
-    );
-    if (xfile == null) return false; // user cancelled
-    await AppDatabase().mergeFromDatabaseFile(xfile.path);
-    return true;
-  }
 }
