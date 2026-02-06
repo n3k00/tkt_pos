@@ -14,14 +14,16 @@ Future<void> main() async {
   // Initialize local key-value storage
   await GetStorage.init();
 
-  final options = WindowOptions(backgroundColor: AppColor.background);
+  final options = WindowOptions(
+    minimumSize: const Size(900, 600),
+    backgroundColor: AppColor.background,
+  );
   windowManager.waitUntilReadyToShow(options, () async {
-    // Open full screen and disable minimize/resize controls
+    await windowManager.setResizable(true);
+    await windowManager.setMinimizable(true);
+    await windowManager.setMaximizable(true);
+    await windowManager.setMinimumSize(const Size(900, 600));
     await windowManager.maximize();
-    await windowManager.setMinimizable(false); // disable minimize button
-    await windowManager.setMaximizable(false); // disable maximize/resize button
-    await windowManager.setResizable(false); // block border/edge resize
-
     await windowManager.show();
     await windowManager.focus();
   });
