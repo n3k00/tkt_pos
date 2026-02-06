@@ -17,6 +17,21 @@ import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 
+const _monthNames = <String>[
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
 class InventoryPage extends GetView<InventoryController> {
   const InventoryPage({super.key});
 
@@ -40,13 +55,69 @@ class InventoryPage extends GetView<InventoryController> {
                 title: AppString.inventory,
                 crumbs: const ['Inventory'],
                 showBack: false,
-                trailing: SizedBox(
-                  width: 360,
-                  child: HeaderSearchField(
-                    hint: AppString.searchHint,
-                    onChanged: controller.setSearch,
-                  ),
-                ),
+                trailingWidth: 400,
+                trailing: Obx(() {
+                  final selected = controller.selectedDate.value;
+                  final label =
+                      '${_monthNames[selected.month - 1]} ${selected.year}';
+                  return SizedBox(
+                    width: 520,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: HeaderSearchField(
+                            hint: AppString.searchHint,
+                            onChanged: controller.setSearch,
+                          ),
+                        ),
+                        const SizedBox(width: Dimens.d12),
+                        Container(
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppColor.card,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColor.border),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                print('Select month');
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.calendar_month,
+                                      color: AppColor.textPrimary,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      label,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            color: AppColor.textPrimary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
               ),
               Expanded(
                 child: Padding(
@@ -72,13 +143,17 @@ class InventoryPage extends GetView<InventoryController> {
                           final filteredDrivers = q.isEmpty
                               ? all
                               : all
-                                  .where((d) => controller
-                                      .filteredTransactionsForDriver(d.id)
-                                      .isNotEmpty)
-                                  .toList(growable: false);
+                                    .where(
+                                      (d) => controller
+                                          .filteredTransactionsForDriver(d.id)
+                                          .isNotEmpty,
+                                    )
+                                    .toList(growable: false);
 
                           if (filteredDrivers.isEmpty) {
-                            return const Center(child: Text(AppString.noResults));
+                            return const Center(
+                              child: Text(AppString.noResults),
+                            );
                           }
 
                           return ListView.separated(
@@ -203,20 +278,14 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
             ),
             DataColumn(
               label: Center(
-                child: Text(
-                  AppString.colCustomerName,
-                  style: headerStyle,
-                ),
+                child: Text(AppString.colCustomerName, style: headerStyle),
               ),
             ),
             DataColumn(
               label: SizedBox(
                 width: AppTableWidths.phone,
                 child: Center(
-                  child: Text(
-                    AppString.colPhone,
-                    style: headerStyle,
-                  ),
+                  child: Text(AppString.colPhone, style: headerStyle),
                 ),
               ),
             ),
@@ -224,10 +293,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               label: SizedBox(
                 width: AppTableWidths.parcelType,
                 child: Center(
-                  child: Text(
-                    AppString.colParcelType,
-                    style: headerStyle,
-                  ),
+                  child: Text(AppString.colParcelType, style: headerStyle),
                 ),
               ),
             ),
@@ -235,10 +301,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               label: SizedBox(
                 width: AppTableWidths.number,
                 child: Center(
-                  child: Text(
-                    AppString.colNumber,
-                    style: headerStyle,
-                  ),
+                  child: Text(AppString.colNumber, style: headerStyle),
                 ),
               ),
             ),
@@ -247,10 +310,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 width: AppTableWidths.charges,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    AppString.colCharges,
-                    style: headerStyle,
-                  ),
+                  child: Text(AppString.colCharges, style: headerStyle),
                 ),
               ),
             ),
@@ -258,10 +318,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               label: SizedBox(
                 width: AppTableWidths.paymentStatus,
                 child: Center(
-                  child: Text(
-                    AppString.colPaymentStatus,
-                    style: headerStyle,
-                  ),
+                  child: Text(AppString.colPaymentStatus, style: headerStyle),
                 ),
               ),
             ),
@@ -270,10 +327,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 width: AppTableWidths.cashAdvance,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    AppString.colCashAdvance,
-                    style: headerStyle,
-                  ),
+                  child: Text(AppString.colCashAdvance, style: headerStyle),
                 ),
               ),
             ),
@@ -281,10 +335,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               label: SizedBox(
                 width: AppTableWidths.pickedUp,
                 child: Center(
-                  child: Text(
-                    AppString.colPickedUp,
-                    style: headerStyle,
-                  ),
+                  child: Text(AppString.colPickedUp, style: headerStyle),
                 ),
               ),
             ),
@@ -292,10 +343,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               label: SizedBox(
                 width: AppTableWidths.collectTime,
                 child: Center(
-                  child: Text(
-                    AppString.colCollectTime,
-                    style: headerStyle,
-                  ),
+                  child: Text(AppString.colCollectTime, style: headerStyle),
                 ),
               ),
             ),
@@ -394,10 +442,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                       width: AppTableWidths.pickedUp,
                       child: Center(
                         child: t.pickedUp
-                            ? const Icon(
-                                Icons.check,
-                                color: Colors.green,
-                              )
+                            ? const Icon(Icons.check, color: Colors.green)
                             : ElevatedButton(
                                 onPressed: () => showClaimTransactionDialog(
                                   context,

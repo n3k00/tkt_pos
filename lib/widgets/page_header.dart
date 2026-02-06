@@ -176,14 +176,17 @@ class _HeaderSearchFieldState extends State<HeaderSearchField> {
       child: TextField(
         controller: _controller,
         onChanged: widget.onChanged,
-        style: const TextStyle(fontSize: 14, color: AppColor.textPrimary),
+        style: const TextStyle(
+          fontSize: 16,
+          height: 1.4,
+          color: AppColor.textPrimary,
+        ),
         decoration: InputDecoration(
           hintText: widget.hint,
           hintStyle: const TextStyle(color: AppColor.textSecondary),
-          isDense: true,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+            horizontal: 20,
+            vertical: 18,
           ),
           filled: true,
           fillColor: AppColor.surfaceBackground,
