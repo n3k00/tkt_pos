@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/settings/presentation/controllers/settings_controller.dart';
@@ -94,11 +96,14 @@ class SettingsPage extends GetView<SettingsController> {
                               builder: (ctx) => AlertDialog(
                                 title: const Text('Restore complete'),
                                 content: const Text(
-                                  'Please restart the app to use the restored database.',
+                                  'The app will close now. Please reopen it manually to use the restored database.',
                                 ),
                                 actions: [
                                   TextButton(
-                                    onPressed: () => Navigator.of(ctx).pop(),
+                                    onPressed: () {
+                                      Navigator.of(ctx).pop();
+                                      exit(0);
+                                    },
                                     child: const Text('OK'),
                                   ),
                                 ],
