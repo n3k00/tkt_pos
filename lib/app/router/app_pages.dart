@@ -5,6 +5,8 @@ import 'package:tkt_pos/features/inventory/presentation/bindings/inventory_bindi
 import 'package:tkt_pos/features/inventory/presentation/pages/inventory_page.dart';
 import 'package:tkt_pos/features/settings/presentation/bindings/settings_binding.dart';
 import 'package:tkt_pos/features/settings/presentation/pages/settings_page.dart';
+import 'package:tkt_pos/features/settings/presentation/bindings/activity_log_binding.dart';
+import 'package:tkt_pos/features/settings/presentation/pages/activity_log_page.dart';
 import 'package:tkt_pos/features/reports/presentation/bindings/reports_binding.dart';
 import 'package:tkt_pos/features/reports/presentation/pages/reports_page.dart';
 import 'package:tkt_pos/features/trips/presentation/pages/trip_detail_page.dart';
@@ -29,6 +31,11 @@ class AppPages {
       name: Routes.settings,
       page: () => const SettingsPage(),
       binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: Routes.activityLog,
+      page: () => const ActivityLogPage(),
+      binding: ActivityLogBinding(),
     ),
     GetPage(
       name: Routes.reports,

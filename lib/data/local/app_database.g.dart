@@ -1214,6 +1214,1014 @@ class TransactionsCompanion extends UpdateCompanion<DbTransaction> {
   }
 }
 
+class $TransactionEditHistoryTable extends TransactionEditHistory
+    with TableInfo<$TransactionEditHistoryTable, TransactionEditHistoryEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransactionEditHistoryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _editIdMeta = const VerificationMeta('editId');
+  @override
+  late final GeneratedColumn<int> editId = GeneratedColumn<int>(
+    'edit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isBeforeMeta = const VerificationMeta(
+    'isBefore',
+  );
+  @override
+  late final GeneratedColumn<bool> isBefore = GeneratedColumn<bool>(
+    'is_before',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_before" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _editTimeMeta = const VerificationMeta(
+    'editTime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> editTime = GeneratedColumn<DateTime>(
+    'edit_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _isDeletionMeta = const VerificationMeta(
+    'isDeletion',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeletion = GeneratedColumn<bool>(
+    'is_deletion',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deletion" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<int> transactionId = GeneratedColumn<int>(
+    'transaction_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transactions (id)',
+    ),
+  );
+  static const VerificationMeta _customerNameMeta = const VerificationMeta(
+    'customerName',
+  );
+  @override
+  late final GeneratedColumn<String> customerName = GeneratedColumn<String>(
+    'customer_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
+  @override
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+    'phone',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _parcelTypeMeta = const VerificationMeta(
+    'parcelType',
+  );
+  @override
+  late final GeneratedColumn<String> parcelType = GeneratedColumn<String>(
+    'parcel_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _numberMeta = const VerificationMeta('number');
+  @override
+  late final GeneratedColumn<String> number = GeneratedColumn<String>(
+    'number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _chargesMeta = const VerificationMeta(
+    'charges',
+  );
+  @override
+  late final GeneratedColumn<double> charges = GeneratedColumn<double>(
+    'charges',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _paymentStatusMeta = const VerificationMeta(
+    'paymentStatus',
+  );
+  @override
+  late final GeneratedColumn<String> paymentStatus = GeneratedColumn<String>(
+    'payment_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cashAdvanceMeta = const VerificationMeta(
+    'cashAdvance',
+  );
+  @override
+  late final GeneratedColumn<double> cashAdvance = GeneratedColumn<double>(
+    'cash_advance',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _pickedUpMeta = const VerificationMeta(
+    'pickedUp',
+  );
+  @override
+  late final GeneratedColumn<bool> pickedUp = GeneratedColumn<bool>(
+    'picked_up',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("picked_up" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _commentMeta = const VerificationMeta(
+    'comment',
+  );
+  @override
+  late final GeneratedColumn<String> comment = GeneratedColumn<String>(
+    'comment',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _driverIdMeta = const VerificationMeta(
+    'driverId',
+  );
+  @override
+  late final GeneratedColumn<int> driverId = GeneratedColumn<int>(
+    'driver_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES drivers (id)',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    editId,
+    isBefore,
+    editTime,
+    isDeletion,
+    transactionId,
+    customerName,
+    phone,
+    parcelType,
+    number,
+    charges,
+    paymentStatus,
+    cashAdvance,
+    pickedUp,
+    comment,
+    driverId,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transaction_edit_history';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TransactionEditHistoryEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('edit_id')) {
+      context.handle(
+        _editIdMeta,
+        editId.isAcceptableOrUnknown(data['edit_id']!, _editIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_editIdMeta);
+    }
+    if (data.containsKey('is_before')) {
+      context.handle(
+        _isBeforeMeta,
+        isBefore.isAcceptableOrUnknown(data['is_before']!, _isBeforeMeta),
+      );
+    }
+    if (data.containsKey('edit_time')) {
+      context.handle(
+        _editTimeMeta,
+        editTime.isAcceptableOrUnknown(data['edit_time']!, _editTimeMeta),
+      );
+    }
+    if (data.containsKey('is_deletion')) {
+      context.handle(
+        _isDeletionMeta,
+        isDeletion.isAcceptableOrUnknown(data['is_deletion']!, _isDeletionMeta),
+      );
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('customer_name')) {
+      context.handle(
+        _customerNameMeta,
+        customerName.isAcceptableOrUnknown(
+          data['customer_name']!,
+          _customerNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('phone')) {
+      context.handle(
+        _phoneMeta,
+        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_phoneMeta);
+    }
+    if (data.containsKey('parcel_type')) {
+      context.handle(
+        _parcelTypeMeta,
+        parcelType.isAcceptableOrUnknown(data['parcel_type']!, _parcelTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_parcelTypeMeta);
+    }
+    if (data.containsKey('number')) {
+      context.handle(
+        _numberMeta,
+        number.isAcceptableOrUnknown(data['number']!, _numberMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_numberMeta);
+    }
+    if (data.containsKey('charges')) {
+      context.handle(
+        _chargesMeta,
+        charges.isAcceptableOrUnknown(data['charges']!, _chargesMeta),
+      );
+    }
+    if (data.containsKey('payment_status')) {
+      context.handle(
+        _paymentStatusMeta,
+        paymentStatus.isAcceptableOrUnknown(
+          data['payment_status']!,
+          _paymentStatusMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_paymentStatusMeta);
+    }
+    if (data.containsKey('cash_advance')) {
+      context.handle(
+        _cashAdvanceMeta,
+        cashAdvance.isAcceptableOrUnknown(
+          data['cash_advance']!,
+          _cashAdvanceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('picked_up')) {
+      context.handle(
+        _pickedUpMeta,
+        pickedUp.isAcceptableOrUnknown(data['picked_up']!, _pickedUpMeta),
+      );
+    }
+    if (data.containsKey('comment')) {
+      context.handle(
+        _commentMeta,
+        comment.isAcceptableOrUnknown(data['comment']!, _commentMeta),
+      );
+    }
+    if (data.containsKey('driver_id')) {
+      context.handle(
+        _driverIdMeta,
+        driverId.isAcceptableOrUnknown(data['driver_id']!, _driverIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_driverIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TransactionEditHistoryEntry map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TransactionEditHistoryEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      editId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}edit_id'],
+      )!,
+      isBefore: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_before'],
+      )!,
+      editTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}edit_time'],
+      )!,
+      isDeletion: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deletion'],
+      )!,
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}transaction_id'],
+      )!,
+      customerName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_name'],
+      ),
+      phone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone'],
+      )!,
+      parcelType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parcel_type'],
+      )!,
+      number: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}number'],
+      )!,
+      charges: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}charges'],
+      )!,
+      paymentStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payment_status'],
+      )!,
+      cashAdvance: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cash_advance'],
+      )!,
+      pickedUp: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}picked_up'],
+      )!,
+      comment: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}comment'],
+      ),
+      driverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}driver_id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TransactionEditHistoryTable createAlias(String alias) {
+    return $TransactionEditHistoryTable(attachedDatabase, alias);
+  }
+}
+
+class TransactionEditHistoryEntry extends DataClass
+    implements Insertable<TransactionEditHistoryEntry> {
+  final int id;
+  final int editId;
+  final bool isBefore;
+  final DateTime editTime;
+  final bool isDeletion;
+  final int transactionId;
+  final String? customerName;
+  final String phone;
+  final String parcelType;
+  final String number;
+  final double charges;
+  final String paymentStatus;
+  final double cashAdvance;
+  final bool pickedUp;
+  final String? comment;
+  final int driverId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const TransactionEditHistoryEntry({
+    required this.id,
+    required this.editId,
+    required this.isBefore,
+    required this.editTime,
+    required this.isDeletion,
+    required this.transactionId,
+    this.customerName,
+    required this.phone,
+    required this.parcelType,
+    required this.number,
+    required this.charges,
+    required this.paymentStatus,
+    required this.cashAdvance,
+    required this.pickedUp,
+    this.comment,
+    required this.driverId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['edit_id'] = Variable<int>(editId);
+    map['is_before'] = Variable<bool>(isBefore);
+    map['edit_time'] = Variable<DateTime>(editTime);
+    map['is_deletion'] = Variable<bool>(isDeletion);
+    map['transaction_id'] = Variable<int>(transactionId);
+    if (!nullToAbsent || customerName != null) {
+      map['customer_name'] = Variable<String>(customerName);
+    }
+    map['phone'] = Variable<String>(phone);
+    map['parcel_type'] = Variable<String>(parcelType);
+    map['number'] = Variable<String>(number);
+    map['charges'] = Variable<double>(charges);
+    map['payment_status'] = Variable<String>(paymentStatus);
+    map['cash_advance'] = Variable<double>(cashAdvance);
+    map['picked_up'] = Variable<bool>(pickedUp);
+    if (!nullToAbsent || comment != null) {
+      map['comment'] = Variable<String>(comment);
+    }
+    map['driver_id'] = Variable<int>(driverId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  TransactionEditHistoryCompanion toCompanion(bool nullToAbsent) {
+    return TransactionEditHistoryCompanion(
+      id: Value(id),
+      editId: Value(editId),
+      isBefore: Value(isBefore),
+      editTime: Value(editTime),
+      isDeletion: Value(isDeletion),
+      transactionId: Value(transactionId),
+      customerName: customerName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customerName),
+      phone: Value(phone),
+      parcelType: Value(parcelType),
+      number: Value(number),
+      charges: Value(charges),
+      paymentStatus: Value(paymentStatus),
+      cashAdvance: Value(cashAdvance),
+      pickedUp: Value(pickedUp),
+      comment: comment == null && nullToAbsent
+          ? const Value.absent()
+          : Value(comment),
+      driverId: Value(driverId),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory TransactionEditHistoryEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TransactionEditHistoryEntry(
+      id: serializer.fromJson<int>(json['id']),
+      editId: serializer.fromJson<int>(json['editId']),
+      isBefore: serializer.fromJson<bool>(json['isBefore']),
+      editTime: serializer.fromJson<DateTime>(json['editTime']),
+      isDeletion: serializer.fromJson<bool>(json['isDeletion']),
+      transactionId: serializer.fromJson<int>(json['transactionId']),
+      customerName: serializer.fromJson<String?>(json['customerName']),
+      phone: serializer.fromJson<String>(json['phone']),
+      parcelType: serializer.fromJson<String>(json['parcelType']),
+      number: serializer.fromJson<String>(json['number']),
+      charges: serializer.fromJson<double>(json['charges']),
+      paymentStatus: serializer.fromJson<String>(json['paymentStatus']),
+      cashAdvance: serializer.fromJson<double>(json['cashAdvance']),
+      pickedUp: serializer.fromJson<bool>(json['pickedUp']),
+      comment: serializer.fromJson<String?>(json['comment']),
+      driverId: serializer.fromJson<int>(json['driverId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'editId': serializer.toJson<int>(editId),
+      'isBefore': serializer.toJson<bool>(isBefore),
+      'editTime': serializer.toJson<DateTime>(editTime),
+      'isDeletion': serializer.toJson<bool>(isDeletion),
+      'transactionId': serializer.toJson<int>(transactionId),
+      'customerName': serializer.toJson<String?>(customerName),
+      'phone': serializer.toJson<String>(phone),
+      'parcelType': serializer.toJson<String>(parcelType),
+      'number': serializer.toJson<String>(number),
+      'charges': serializer.toJson<double>(charges),
+      'paymentStatus': serializer.toJson<String>(paymentStatus),
+      'cashAdvance': serializer.toJson<double>(cashAdvance),
+      'pickedUp': serializer.toJson<bool>(pickedUp),
+      'comment': serializer.toJson<String?>(comment),
+      'driverId': serializer.toJson<int>(driverId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  TransactionEditHistoryEntry copyWith({
+    int? id,
+    int? editId,
+    bool? isBefore,
+    DateTime? editTime,
+    bool? isDeletion,
+    int? transactionId,
+    Value<String?> customerName = const Value.absent(),
+    String? phone,
+    String? parcelType,
+    String? number,
+    double? charges,
+    String? paymentStatus,
+    double? cashAdvance,
+    bool? pickedUp,
+    Value<String?> comment = const Value.absent(),
+    int? driverId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => TransactionEditHistoryEntry(
+    id: id ?? this.id,
+    editId: editId ?? this.editId,
+    isBefore: isBefore ?? this.isBefore,
+    editTime: editTime ?? this.editTime,
+    isDeletion: isDeletion ?? this.isDeletion,
+    transactionId: transactionId ?? this.transactionId,
+    customerName: customerName.present ? customerName.value : this.customerName,
+    phone: phone ?? this.phone,
+    parcelType: parcelType ?? this.parcelType,
+    number: number ?? this.number,
+    charges: charges ?? this.charges,
+    paymentStatus: paymentStatus ?? this.paymentStatus,
+    cashAdvance: cashAdvance ?? this.cashAdvance,
+    pickedUp: pickedUp ?? this.pickedUp,
+    comment: comment.present ? comment.value : this.comment,
+    driverId: driverId ?? this.driverId,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  TransactionEditHistoryEntry copyWithCompanion(
+    TransactionEditHistoryCompanion data,
+  ) {
+    return TransactionEditHistoryEntry(
+      id: data.id.present ? data.id.value : this.id,
+      editId: data.editId.present ? data.editId.value : this.editId,
+      isBefore: data.isBefore.present ? data.isBefore.value : this.isBefore,
+      editTime: data.editTime.present ? data.editTime.value : this.editTime,
+      isDeletion: data.isDeletion.present
+          ? data.isDeletion.value
+          : this.isDeletion,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      customerName: data.customerName.present
+          ? data.customerName.value
+          : this.customerName,
+      phone: data.phone.present ? data.phone.value : this.phone,
+      parcelType: data.parcelType.present
+          ? data.parcelType.value
+          : this.parcelType,
+      number: data.number.present ? data.number.value : this.number,
+      charges: data.charges.present ? data.charges.value : this.charges,
+      paymentStatus: data.paymentStatus.present
+          ? data.paymentStatus.value
+          : this.paymentStatus,
+      cashAdvance: data.cashAdvance.present
+          ? data.cashAdvance.value
+          : this.cashAdvance,
+      pickedUp: data.pickedUp.present ? data.pickedUp.value : this.pickedUp,
+      comment: data.comment.present ? data.comment.value : this.comment,
+      driverId: data.driverId.present ? data.driverId.value : this.driverId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionEditHistoryEntry(')
+          ..write('id: $id, ')
+          ..write('editId: $editId, ')
+          ..write('isBefore: $isBefore, ')
+          ..write('editTime: $editTime, ')
+          ..write('isDeletion: $isDeletion, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('customerName: $customerName, ')
+          ..write('phone: $phone, ')
+          ..write('parcelType: $parcelType, ')
+          ..write('number: $number, ')
+          ..write('charges: $charges, ')
+          ..write('paymentStatus: $paymentStatus, ')
+          ..write('cashAdvance: $cashAdvance, ')
+          ..write('pickedUp: $pickedUp, ')
+          ..write('comment: $comment, ')
+          ..write('driverId: $driverId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    editId,
+    isBefore,
+    editTime,
+    isDeletion,
+    transactionId,
+    customerName,
+    phone,
+    parcelType,
+    number,
+    charges,
+    paymentStatus,
+    cashAdvance,
+    pickedUp,
+    comment,
+    driverId,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TransactionEditHistoryEntry &&
+          other.id == this.id &&
+          other.editId == this.editId &&
+          other.isBefore == this.isBefore &&
+          other.editTime == this.editTime &&
+          other.isDeletion == this.isDeletion &&
+          other.transactionId == this.transactionId &&
+          other.customerName == this.customerName &&
+          other.phone == this.phone &&
+          other.parcelType == this.parcelType &&
+          other.number == this.number &&
+          other.charges == this.charges &&
+          other.paymentStatus == this.paymentStatus &&
+          other.cashAdvance == this.cashAdvance &&
+          other.pickedUp == this.pickedUp &&
+          other.comment == this.comment &&
+          other.driverId == this.driverId &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TransactionEditHistoryCompanion
+    extends UpdateCompanion<TransactionEditHistoryEntry> {
+  final Value<int> id;
+  final Value<int> editId;
+  final Value<bool> isBefore;
+  final Value<DateTime> editTime;
+  final Value<bool> isDeletion;
+  final Value<int> transactionId;
+  final Value<String?> customerName;
+  final Value<String> phone;
+  final Value<String> parcelType;
+  final Value<String> number;
+  final Value<double> charges;
+  final Value<String> paymentStatus;
+  final Value<double> cashAdvance;
+  final Value<bool> pickedUp;
+  final Value<String?> comment;
+  final Value<int> driverId;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const TransactionEditHistoryCompanion({
+    this.id = const Value.absent(),
+    this.editId = const Value.absent(),
+    this.isBefore = const Value.absent(),
+    this.editTime = const Value.absent(),
+    this.isDeletion = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.customerName = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.parcelType = const Value.absent(),
+    this.number = const Value.absent(),
+    this.charges = const Value.absent(),
+    this.paymentStatus = const Value.absent(),
+    this.cashAdvance = const Value.absent(),
+    this.pickedUp = const Value.absent(),
+    this.comment = const Value.absent(),
+    this.driverId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  TransactionEditHistoryCompanion.insert({
+    this.id = const Value.absent(),
+    required int editId,
+    this.isBefore = const Value.absent(),
+    this.editTime = const Value.absent(),
+    this.isDeletion = const Value.absent(),
+    required int transactionId,
+    this.customerName = const Value.absent(),
+    required String phone,
+    required String parcelType,
+    required String number,
+    this.charges = const Value.absent(),
+    required String paymentStatus,
+    this.cashAdvance = const Value.absent(),
+    this.pickedUp = const Value.absent(),
+    this.comment = const Value.absent(),
+    required int driverId,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : editId = Value(editId),
+       transactionId = Value(transactionId),
+       phone = Value(phone),
+       parcelType = Value(parcelType),
+       number = Value(number),
+       paymentStatus = Value(paymentStatus),
+       driverId = Value(driverId);
+  static Insertable<TransactionEditHistoryEntry> custom({
+    Expression<int>? id,
+    Expression<int>? editId,
+    Expression<bool>? isBefore,
+    Expression<DateTime>? editTime,
+    Expression<bool>? isDeletion,
+    Expression<int>? transactionId,
+    Expression<String>? customerName,
+    Expression<String>? phone,
+    Expression<String>? parcelType,
+    Expression<String>? number,
+    Expression<double>? charges,
+    Expression<String>? paymentStatus,
+    Expression<double>? cashAdvance,
+    Expression<bool>? pickedUp,
+    Expression<String>? comment,
+    Expression<int>? driverId,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (editId != null) 'edit_id': editId,
+      if (isBefore != null) 'is_before': isBefore,
+      if (editTime != null) 'edit_time': editTime,
+      if (isDeletion != null) 'is_deletion': isDeletion,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (customerName != null) 'customer_name': customerName,
+      if (phone != null) 'phone': phone,
+      if (parcelType != null) 'parcel_type': parcelType,
+      if (number != null) 'number': number,
+      if (charges != null) 'charges': charges,
+      if (paymentStatus != null) 'payment_status': paymentStatus,
+      if (cashAdvance != null) 'cash_advance': cashAdvance,
+      if (pickedUp != null) 'picked_up': pickedUp,
+      if (comment != null) 'comment': comment,
+      if (driverId != null) 'driver_id': driverId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  TransactionEditHistoryCompanion copyWith({
+    Value<int>? id,
+    Value<int>? editId,
+    Value<bool>? isBefore,
+    Value<DateTime>? editTime,
+    Value<bool>? isDeletion,
+    Value<int>? transactionId,
+    Value<String?>? customerName,
+    Value<String>? phone,
+    Value<String>? parcelType,
+    Value<String>? number,
+    Value<double>? charges,
+    Value<String>? paymentStatus,
+    Value<double>? cashAdvance,
+    Value<bool>? pickedUp,
+    Value<String?>? comment,
+    Value<int>? driverId,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return TransactionEditHistoryCompanion(
+      id: id ?? this.id,
+      editId: editId ?? this.editId,
+      isBefore: isBefore ?? this.isBefore,
+      editTime: editTime ?? this.editTime,
+      isDeletion: isDeletion ?? this.isDeletion,
+      transactionId: transactionId ?? this.transactionId,
+      customerName: customerName ?? this.customerName,
+      phone: phone ?? this.phone,
+      parcelType: parcelType ?? this.parcelType,
+      number: number ?? this.number,
+      charges: charges ?? this.charges,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      cashAdvance: cashAdvance ?? this.cashAdvance,
+      pickedUp: pickedUp ?? this.pickedUp,
+      comment: comment ?? this.comment,
+      driverId: driverId ?? this.driverId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (editId.present) {
+      map['edit_id'] = Variable<int>(editId.value);
+    }
+    if (isBefore.present) {
+      map['is_before'] = Variable<bool>(isBefore.value);
+    }
+    if (editTime.present) {
+      map['edit_time'] = Variable<DateTime>(editTime.value);
+    }
+    if (isDeletion.present) {
+      map['is_deletion'] = Variable<bool>(isDeletion.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<int>(transactionId.value);
+    }
+    if (customerName.present) {
+      map['customer_name'] = Variable<String>(customerName.value);
+    }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
+    if (parcelType.present) {
+      map['parcel_type'] = Variable<String>(parcelType.value);
+    }
+    if (number.present) {
+      map['number'] = Variable<String>(number.value);
+    }
+    if (charges.present) {
+      map['charges'] = Variable<double>(charges.value);
+    }
+    if (paymentStatus.present) {
+      map['payment_status'] = Variable<String>(paymentStatus.value);
+    }
+    if (cashAdvance.present) {
+      map['cash_advance'] = Variable<double>(cashAdvance.value);
+    }
+    if (pickedUp.present) {
+      map['picked_up'] = Variable<bool>(pickedUp.value);
+    }
+    if (comment.present) {
+      map['comment'] = Variable<String>(comment.value);
+    }
+    if (driverId.present) {
+      map['driver_id'] = Variable<int>(driverId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionEditHistoryCompanion(')
+          ..write('id: $id, ')
+          ..write('editId: $editId, ')
+          ..write('isBefore: $isBefore, ')
+          ..write('editTime: $editTime, ')
+          ..write('isDeletion: $isDeletion, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('customerName: $customerName, ')
+          ..write('phone: $phone, ')
+          ..write('parcelType: $parcelType, ')
+          ..write('number: $number, ')
+          ..write('charges: $charges, ')
+          ..write('paymentStatus: $paymentStatus, ')
+          ..write('cashAdvance: $cashAdvance, ')
+          ..write('pickedUp: $pickedUp, ')
+          ..write('comment: $comment, ')
+          ..write('driverId: $driverId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ReportTransactionsTable extends ReportTransactions
     with TableInfo<$ReportTransactionsTable, ReportTransaction> {
   @override
@@ -2929,6 +3937,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   late final $DriversTable drivers = $DriversTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final $TransactionEditHistoryTable transactionEditHistory =
+      $TransactionEditHistoryTable(this);
   late final $ReportTransactionsTable reportTransactions =
       $ReportTransactionsTable(this);
   late final $TripMainsTable tripMains = $TripMainsTable(this);
@@ -2942,6 +3952,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appSettings,
     drivers,
     transactions,
+    transactionEditHistory,
     reportTransactions,
     tripMains,
     tripManifests,
@@ -3122,6 +4133,34 @@ final class $$DriversTableReferences
     );
   }
 
+  static MultiTypedResultKey<
+    $TransactionEditHistoryTable,
+    List<TransactionEditHistoryEntry>
+  >
+  _transactionEditHistoryRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionEditHistory,
+        aliasName: $_aliasNameGenerator(
+          db.drivers.id,
+          db.transactionEditHistory.driverId,
+        ),
+      );
+
+  $$TransactionEditHistoryTableProcessedTableManager
+  get transactionEditHistoryRefs {
+    final manager = $$TransactionEditHistoryTableTableManager(
+      $_db,
+      $_db.transactionEditHistory,
+    ).filter((f) => f.driverId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transactionEditHistoryRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$ReportTransactionsTable, List<ReportTransaction>>
   _reportTransactionsRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
@@ -3193,6 +4232,32 @@ class $$DriversTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> transactionEditHistoryRefs(
+    Expression<bool> Function($$TransactionEditHistoryTableFilterComposer f) f,
+  ) {
+    final $$TransactionEditHistoryTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionEditHistory,
+          getReferencedColumn: (t) => t.driverId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TransactionEditHistoryTableFilterComposer(
+                $db: $db,
+                $table: $db.transactionEditHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 
@@ -3290,6 +4355,32 @@ class $$DriversTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> transactionEditHistoryRefs<T extends Object>(
+    Expression<T> Function($$TransactionEditHistoryTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionEditHistoryTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionEditHistory,
+          getReferencedColumn: (t) => t.driverId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TransactionEditHistoryTableAnnotationComposer(
+                $db: $db,
+                $table: $db.transactionEditHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> reportTransactionsRefs<T extends Object>(
     Expression<T> Function($$ReportTransactionsTableAnnotationComposer a) f,
   ) {
@@ -3332,6 +4423,7 @@ class $$DriversTableTableManager
           Driver,
           PrefetchHooks Function({
             bool transactionsRefs,
+            bool transactionEditHistoryRefs,
             bool reportTransactionsRefs,
           })
         > {
@@ -3367,11 +4459,16 @@ class $$DriversTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({transactionsRefs = false, reportTransactionsRefs = false}) {
+              ({
+                transactionsRefs = false,
+                transactionEditHistoryRefs = false,
+                reportTransactionsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (transactionsRefs) db.transactions,
+                    if (transactionEditHistoryRefs) db.transactionEditHistory,
                     if (reportTransactionsRefs) db.reportTransactions,
                   ],
                   addJoins: null,
@@ -3392,6 +4489,27 @@ class $$DriversTableTableManager
                                 table,
                                 p0,
                               ).transactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.driverId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transactionEditHistoryRefs)
+                        await $_getPrefetchedData<
+                          Driver,
+                          $DriversTable,
+                          TransactionEditHistoryEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DriversTableReferences
+                              ._transactionEditHistoryRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DriversTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionEditHistoryRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.driverId == item.id,
@@ -3441,6 +4559,7 @@ typedef $$DriversTableProcessedTableManager =
       Driver,
       PrefetchHooks Function({
         bool transactionsRefs,
+        bool transactionEditHistoryRefs,
         bool reportTransactionsRefs,
       })
     >;
@@ -3497,6 +4616,34 @@ final class $$TransactionsTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $TransactionEditHistoryTable,
+    List<TransactionEditHistoryEntry>
+  >
+  _transactionEditHistoryRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionEditHistory,
+        aliasName: $_aliasNameGenerator(
+          db.transactions.id,
+          db.transactionEditHistory.transactionId,
+        ),
+      );
+
+  $$TransactionEditHistoryTableProcessedTableManager
+  get transactionEditHistoryRefs {
+    final manager = $$TransactionEditHistoryTableTableManager(
+      $_db,
+      $_db.transactionEditHistory,
+    ).filter((f) => f.transactionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transactionEditHistoryRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
@@ -3615,6 +4762,32 @@ class $$TransactionsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> transactionEditHistoryRefs(
+    Expression<bool> Function($$TransactionEditHistoryTableFilterComposer f) f,
+  ) {
+    final $$TransactionEditHistoryTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionEditHistory,
+          getReferencedColumn: (t) => t.transactionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TransactionEditHistoryTableFilterComposer(
+                $db: $db,
+                $table: $db.transactionEditHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
   }
 
   Expression<bool> reportTransactionsRefs(
@@ -3812,6 +4985,32 @@ class $$TransactionsTableAnnotationComposer
     return composer;
   }
 
+  Expression<T> transactionEditHistoryRefs<T extends Object>(
+    Expression<T> Function($$TransactionEditHistoryTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionEditHistoryTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionEditHistory,
+          getReferencedColumn: (t) => t.transactionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TransactionEditHistoryTableAnnotationComposer(
+                $db: $db,
+                $table: $db.transactionEditHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> reportTransactionsRefs<T extends Object>(
     Expression<T> Function($$ReportTransactionsTableAnnotationComposer a) f,
   ) {
@@ -3852,7 +5051,11 @@ class $$TransactionsTableTableManager
           $$TransactionsTableUpdateCompanionBuilder,
           (DbTransaction, $$TransactionsTableReferences),
           DbTransaction,
-          PrefetchHooks Function({bool driverId, bool reportTransactionsRefs})
+          PrefetchHooks Function({
+            bool driverId,
+            bool transactionEditHistoryRefs,
+            bool reportTransactionsRefs,
+          })
         > {
   $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
     : super(
@@ -3934,10 +5137,15 @@ class $$TransactionsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({driverId = false, reportTransactionsRefs = false}) {
+              ({
+                driverId = false,
+                transactionEditHistoryRefs = false,
+                reportTransactionsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (transactionEditHistoryRefs) db.transactionEditHistory,
                     if (reportTransactionsRefs) db.reportTransactions,
                   ],
                   addJoins:
@@ -3976,6 +5184,27 @@ class $$TransactionsTableTableManager
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (transactionEditHistoryRefs)
+                        await $_getPrefetchedData<
+                          DbTransaction,
+                          $TransactionsTable,
+                          TransactionEditHistoryEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransactionsTableReferences
+                              ._transactionEditHistoryRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransactionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionEditHistoryRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transactionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (reportTransactionsRefs)
                         await $_getPrefetchedData<
                           DbTransaction,
@@ -4017,7 +5246,699 @@ typedef $$TransactionsTableProcessedTableManager =
       $$TransactionsTableUpdateCompanionBuilder,
       (DbTransaction, $$TransactionsTableReferences),
       DbTransaction,
-      PrefetchHooks Function({bool driverId, bool reportTransactionsRefs})
+      PrefetchHooks Function({
+        bool driverId,
+        bool transactionEditHistoryRefs,
+        bool reportTransactionsRefs,
+      })
+    >;
+typedef $$TransactionEditHistoryTableCreateCompanionBuilder =
+    TransactionEditHistoryCompanion Function({
+      Value<int> id,
+      required int editId,
+      Value<bool> isBefore,
+      Value<DateTime> editTime,
+      Value<bool> isDeletion,
+      required int transactionId,
+      Value<String?> customerName,
+      required String phone,
+      required String parcelType,
+      required String number,
+      Value<double> charges,
+      required String paymentStatus,
+      Value<double> cashAdvance,
+      Value<bool> pickedUp,
+      Value<String?> comment,
+      required int driverId,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$TransactionEditHistoryTableUpdateCompanionBuilder =
+    TransactionEditHistoryCompanion Function({
+      Value<int> id,
+      Value<int> editId,
+      Value<bool> isBefore,
+      Value<DateTime> editTime,
+      Value<bool> isDeletion,
+      Value<int> transactionId,
+      Value<String?> customerName,
+      Value<String> phone,
+      Value<String> parcelType,
+      Value<String> number,
+      Value<double> charges,
+      Value<String> paymentStatus,
+      Value<double> cashAdvance,
+      Value<bool> pickedUp,
+      Value<String?> comment,
+      Value<int> driverId,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$TransactionEditHistoryTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $TransactionEditHistoryTable,
+          TransactionEditHistoryEntry
+        > {
+  $$TransactionEditHistoryTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TransactionsTable _transactionIdTable(_$AppDatabase db) =>
+      db.transactions.createAlias(
+        $_aliasNameGenerator(
+          db.transactionEditHistory.transactionId,
+          db.transactions.id,
+        ),
+      );
+
+  $$TransactionsTableProcessedTableManager get transactionId {
+    final $_column = $_itemColumn<int>('transaction_id')!;
+
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transactionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $DriversTable _driverIdTable(_$AppDatabase db) =>
+      db.drivers.createAlias(
+        $_aliasNameGenerator(db.transactionEditHistory.driverId, db.drivers.id),
+      );
+
+  $$DriversTableProcessedTableManager get driverId {
+    final $_column = $_itemColumn<int>('driver_id')!;
+
+    final manager = $$DriversTableTableManager(
+      $_db,
+      $_db.drivers,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_driverIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TransactionEditHistoryTableFilterComposer
+    extends Composer<_$AppDatabase, $TransactionEditHistoryTable> {
+  $$TransactionEditHistoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get editId => $composableBuilder(
+    column: $table.editId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isBefore => $composableBuilder(
+    column: $table.isBefore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get editTime => $composableBuilder(
+    column: $table.editTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeletion => $composableBuilder(
+    column: $table.isDeletion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parcelType => $composableBuilder(
+    column: $table.parcelType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get number => $composableBuilder(
+    column: $table.number,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get charges => $composableBuilder(
+    column: $table.charges,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paymentStatus => $composableBuilder(
+    column: $table.paymentStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cashAdvance => $composableBuilder(
+    column: $table.cashAdvance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pickedUp => $composableBuilder(
+    column: $table.pickedUp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get comment => $composableBuilder(
+    column: $table.comment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TransactionsTableFilterComposer get transactionId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$DriversTableFilterComposer get driverId {
+    final $$DriversTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableFilterComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionEditHistoryTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransactionEditHistoryTable> {
+  $$TransactionEditHistoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get editId => $composableBuilder(
+    column: $table.editId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isBefore => $composableBuilder(
+    column: $table.isBefore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get editTime => $composableBuilder(
+    column: $table.editTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeletion => $composableBuilder(
+    column: $table.isDeletion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parcelType => $composableBuilder(
+    column: $table.parcelType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get number => $composableBuilder(
+    column: $table.number,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get charges => $composableBuilder(
+    column: $table.charges,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paymentStatus => $composableBuilder(
+    column: $table.paymentStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get cashAdvance => $composableBuilder(
+    column: $table.cashAdvance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pickedUp => $composableBuilder(
+    column: $table.pickedUp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get comment => $composableBuilder(
+    column: $table.comment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TransactionsTableOrderingComposer get transactionId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$DriversTableOrderingComposer get driverId {
+    final $$DriversTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableOrderingComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionEditHistoryTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransactionEditHistoryTable> {
+  $$TransactionEditHistoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get editId =>
+      $composableBuilder(column: $table.editId, builder: (column) => column);
+
+  GeneratedColumn<bool> get isBefore =>
+      $composableBuilder(column: $table.isBefore, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get editTime =>
+      $composableBuilder(column: $table.editTime, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeletion => $composableBuilder(
+    column: $table.isDeletion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<String> get parcelType => $composableBuilder(
+    column: $table.parcelType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get number =>
+      $composableBuilder(column: $table.number, builder: (column) => column);
+
+  GeneratedColumn<double> get charges =>
+      $composableBuilder(column: $table.charges, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentStatus => $composableBuilder(
+    column: $table.paymentStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get cashAdvance => $composableBuilder(
+    column: $table.cashAdvance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get pickedUp =>
+      $composableBuilder(column: $table.pickedUp, builder: (column) => column);
+
+  GeneratedColumn<String> get comment =>
+      $composableBuilder(column: $table.comment, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$TransactionsTableAnnotationComposer get transactionId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$DriversTableAnnotationComposer get driverId {
+    final $$DriversTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableAnnotationComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionEditHistoryTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TransactionEditHistoryTable,
+          TransactionEditHistoryEntry,
+          $$TransactionEditHistoryTableFilterComposer,
+          $$TransactionEditHistoryTableOrderingComposer,
+          $$TransactionEditHistoryTableAnnotationComposer,
+          $$TransactionEditHistoryTableCreateCompanionBuilder,
+          $$TransactionEditHistoryTableUpdateCompanionBuilder,
+          (
+            TransactionEditHistoryEntry,
+            $$TransactionEditHistoryTableReferences,
+          ),
+          TransactionEditHistoryEntry,
+          PrefetchHooks Function({bool transactionId, bool driverId})
+        > {
+  $$TransactionEditHistoryTableTableManager(
+    _$AppDatabase db,
+    $TransactionEditHistoryTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransactionEditHistoryTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$TransactionEditHistoryTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$TransactionEditHistoryTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> editId = const Value.absent(),
+                Value<bool> isBefore = const Value.absent(),
+                Value<DateTime> editTime = const Value.absent(),
+                Value<bool> isDeletion = const Value.absent(),
+                Value<int> transactionId = const Value.absent(),
+                Value<String?> customerName = const Value.absent(),
+                Value<String> phone = const Value.absent(),
+                Value<String> parcelType = const Value.absent(),
+                Value<String> number = const Value.absent(),
+                Value<double> charges = const Value.absent(),
+                Value<String> paymentStatus = const Value.absent(),
+                Value<double> cashAdvance = const Value.absent(),
+                Value<bool> pickedUp = const Value.absent(),
+                Value<String?> comment = const Value.absent(),
+                Value<int> driverId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => TransactionEditHistoryCompanion(
+                id: id,
+                editId: editId,
+                isBefore: isBefore,
+                editTime: editTime,
+                isDeletion: isDeletion,
+                transactionId: transactionId,
+                customerName: customerName,
+                phone: phone,
+                parcelType: parcelType,
+                number: number,
+                charges: charges,
+                paymentStatus: paymentStatus,
+                cashAdvance: cashAdvance,
+                pickedUp: pickedUp,
+                comment: comment,
+                driverId: driverId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int editId,
+                Value<bool> isBefore = const Value.absent(),
+                Value<DateTime> editTime = const Value.absent(),
+                Value<bool> isDeletion = const Value.absent(),
+                required int transactionId,
+                Value<String?> customerName = const Value.absent(),
+                required String phone,
+                required String parcelType,
+                required String number,
+                Value<double> charges = const Value.absent(),
+                required String paymentStatus,
+                Value<double> cashAdvance = const Value.absent(),
+                Value<bool> pickedUp = const Value.absent(),
+                Value<String?> comment = const Value.absent(),
+                required int driverId,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => TransactionEditHistoryCompanion.insert(
+                id: id,
+                editId: editId,
+                isBefore: isBefore,
+                editTime: editTime,
+                isDeletion: isDeletion,
+                transactionId: transactionId,
+                customerName: customerName,
+                phone: phone,
+                parcelType: parcelType,
+                number: number,
+                charges: charges,
+                paymentStatus: paymentStatus,
+                cashAdvance: cashAdvance,
+                pickedUp: pickedUp,
+                comment: comment,
+                driverId: driverId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TransactionEditHistoryTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({transactionId = false, driverId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (transactionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.transactionId,
+                                referencedTable:
+                                    $$TransactionEditHistoryTableReferences
+                                        ._transactionIdTable(db),
+                                referencedColumn:
+                                    $$TransactionEditHistoryTableReferences
+                                        ._transactionIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (driverId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.driverId,
+                                referencedTable:
+                                    $$TransactionEditHistoryTableReferences
+                                        ._driverIdTable(db),
+                                referencedColumn:
+                                    $$TransactionEditHistoryTableReferences
+                                        ._driverIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TransactionEditHistoryTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TransactionEditHistoryTable,
+      TransactionEditHistoryEntry,
+      $$TransactionEditHistoryTableFilterComposer,
+      $$TransactionEditHistoryTableOrderingComposer,
+      $$TransactionEditHistoryTableAnnotationComposer,
+      $$TransactionEditHistoryTableCreateCompanionBuilder,
+      $$TransactionEditHistoryTableUpdateCompanionBuilder,
+      (TransactionEditHistoryEntry, $$TransactionEditHistoryTableReferences),
+      TransactionEditHistoryEntry,
+      PrefetchHooks Function({bool transactionId, bool driverId})
     >;
 typedef $$ReportTransactionsTableCreateCompanionBuilder =
     ReportTransactionsCompanion Function({
@@ -5313,6 +7234,11 @@ class $AppDatabaseManager {
       $$DriversTableTableManager(_db, _db.drivers);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
+  $$TransactionEditHistoryTableTableManager get transactionEditHistory =>
+      $$TransactionEditHistoryTableTableManager(
+        _db,
+        _db.transactionEditHistory,
+      );
   $$ReportTransactionsTableTableManager get reportTransactions =>
       $$ReportTransactionsTableTableManager(_db, _db.reportTransactions);
   $$TripMainsTableTableManager get tripMains =>

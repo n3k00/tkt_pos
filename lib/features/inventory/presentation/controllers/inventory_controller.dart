@@ -195,7 +195,8 @@ class InventoryController extends GetxController {
   }
 
   Future<void> updateTransaction(TransactionsCompanion companion) async {
-    await db.update(db.transactions).replace(companion);
+    final success = await db.updateTransaction(companion);
+    if (!success) return;
     final driverId = companion.driverId.present ? companion.driverId.value : null;
     if (driverId != null) {
       await loadTransactionsByDriverToMap(driverId);

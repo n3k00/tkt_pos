@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
@@ -121,6 +122,13 @@ class SettingsPage extends GetView<SettingsController> {
                           );
                         }
                       },
+                    ),
+                    const Divider(height: 32),
+                    ListTile(
+                      leading: const Icon(Icons.history),
+                      title: const Text('Activity Log'),
+                      subtitle: const Text('View transaction edit history'),
+                      onTap: () => Get.toNamed(Routes.activityLog),
                     ),
                     const Divider(height: 32),
                     Text(

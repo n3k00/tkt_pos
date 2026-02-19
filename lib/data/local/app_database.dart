@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'tables/app_settings.dart';
 import 'tables/drivers.dart';
 import 'tables/transactions.dart';
+import 'tables/transaction_edit_history.dart';
 import 'tables/report_transactions.dart';
 import 'tables/trip_main.dart';
 import 'tables/trip_manifests.dart';
@@ -21,6 +22,7 @@ part 'app_database.g.dart';
     AppSettings,
     Drivers,
     Transactions,
+    TransactionEditHistory,
     ReportTransactions,
     TripMains,
     TripManifests,
@@ -33,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => _instance;
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   // Migrations: create new tables when upgrading from v1
   @override
@@ -66,6 +68,9 @@ class AppDatabase extends _$AppDatabase {
             'CREATE INDEX IF NOT EXISTS idx_trip_main_date ON trip_main(date)',
           );
         } catch (_) {}
+      }
+      if (from < 13) {
+        await m.createTable(transactionEditHistory);
       }
     },
   );
@@ -116,10 +121,92 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<bool> updateTransaction(TransactionsCompanion companion) =>
-      update(transactions).replace(companion);
+      transaction(() async {
+        final int? id = companion.id.present ? companion.id.value : null;
+        if (id == null) {
+          throw ArgumentError('Transaction id is required for update');
+        }
+        final before = await getTransactionById(id);
+        if (before == null) return false;
 
-  Future<int> deleteTransactionById(int id) {
-    return (delete(transactions)..where((t) => t.id.equals(id))).go();
+        final success = await update(transactions).replace(companion);
+        if (!success) return false;
+
+        final after = await getTransactionById(id);
+        if (after == null) return success;
+
+        final DateTime editTime = DateTime.now();
+        final int editId = before.id;
+
+        await _insertHistorySnapshot(
+          source: before,
+          editId: editId,
+          editTime: editTime,
+          isBefore: true,
+          isDeletion: false,
+        );
+        await _insertHistorySnapshot(
+          source: after,
+          editId: editId,
+          editTime: editTime,
+          isBefore: false,
+          isDeletion: false,
+        );
+        return true;
+      });
+
+  Future<int> deleteTransactionById(int id) async {
+    final before = await getTransactionById(id);
+    if (before == null) return 0;
+    return transaction(() async {
+      final editTime = DateTime.now();
+      final editId = before.id;
+      await _insertHistorySnapshot(
+        source: before,
+        editId: editId,
+        editTime: editTime,
+        isBefore: true,
+        isDeletion: true,
+      );
+      await _insertHistorySnapshot(
+        source: before,
+        editId: editId,
+        editTime: editTime,
+        isBefore: false,
+        isDeletion: true,
+      );
+      return (delete(transactions)..where((t) => t.id.equals(id))).go();
+    });
+  }
+
+  Future<void> _insertHistorySnapshot({
+    required DbTransaction source,
+    required int editId,
+    required DateTime editTime,
+    required bool isBefore,
+    required bool isDeletion,
+  }) async {
+    await into(transactionEditHistory).insert(
+      TransactionEditHistoryCompanion.insert(
+        editId: editId,
+        isBefore: Value(isBefore),
+        editTime: Value(editTime),
+        isDeletion: Value(isDeletion),
+        transactionId: source.id,
+        customerName: Value(source.customerName),
+        phone: source.phone,
+        parcelType: source.parcelType,
+        number: source.number,
+        charges: Value(source.charges),
+        paymentStatus: source.paymentStatus,
+        cashAdvance: Value(source.cashAdvance),
+        pickedUp: Value(source.pickedUp),
+        comment: Value(source.comment),
+        driverId: source.driverId,
+        createdAt: Value(source.createdAt),
+        updatedAt: Value(source.updatedAt),
+      ),
+    );
   }
 
   // ------ ReportTransactions CRUD ------
