@@ -444,6 +444,7 @@ Future<void> showClaimTransactionDialog(
   DbTransaction t,
 ) async {
   final commentCtrl = TextEditingController();
+  final formKey = GlobalKey<FormState>();
   await showDialog(
     context: context,
     barrierDismissible: false,
@@ -456,25 +457,99 @@ Future<void> showClaimTransactionDialog(
             child: AlertDialog(
               title: const Text('Claim Transaction'),
               content: SizedBox(
-                width: 420,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Customer: ${t.customerName ?? '-'}'),
-                    const SizedBox(height: 4),
-                    Text('Phone: ${t.phone}'),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: commentCtrl,
-                      maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Comment (optional)',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                width: 440,
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(ctx)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Theme.of(ctx).colorScheme.outlineVariant,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _ClaimInfoRow(
+                              icon: Icons.person_outline,
+                              label: 'Customer',
+                              value: t.customerName?.trim().isEmpty ?? true
+                                  ? '-'
+                                  : t.customerName!,
+                            ),
+                            const SizedBox(height: 6),
+                            _ClaimInfoRow(
+                              icon: Icons.phone_outlined,
+                              label: 'Phone',
+                              value: t.phone,
+                            ),
+                            const SizedBox(height: 6),
+                            _ClaimInfoRow(
+                              icon: Icons.inventory_2_outlined,
+                              label: 'Parcel',
+                              value: t.parcelType,
+                            ),
+                            const SizedBox(height: 6),
+                            _ClaimInfoRow(
+                              icon: Icons.numbers,
+                              label: 'Number',
+                              value: t.number,
+                            ),
+                            const SizedBox(height: 6),
+                            _ClaimInfoRow(
+                              icon: Icons.attach_money,
+                              label: 'Charges',
+                              value: Format.money(t.charges),
+                            ),
+                            const SizedBox(height: 6),
+                            _ClaimInfoRow(
+                              icon: Icons.payments_outlined,
+                              label: 'Payment Status',
+                              value: t.paymentStatus,
+                            ),
+                            const SizedBox(height: 6),
+                            _ClaimInfoRow(
+                              icon: Icons.account_balance_wallet_outlined,
+                              label: 'Cash Advance',
+                              value: Format.money(t.cashAdvance),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: commentCtrl,
+                        maxLines: 3,
+                        textInputAction: TextInputAction.done,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Comment is required';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Comment',
+                          helperText: 'Explain who claimed or any note.',
+                          prefixIcon: const Icon(Icons.edit_note_outlined),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          isDense: true,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               actions: [
@@ -482,15 +557,26 @@ Future<void> showClaimTransactionDialog(
                   onPressed: isSubmitting ? null : () => Navigator.of(ctx).pop(),
                   child: const Text('Cancel'),
                 ),
-                ElevatedButton(
+                ElevatedButton.icon(
+                  icon: isSubmitting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.check_circle_outline),
+                  label: const Text('Confirm Claim'),
                   onPressed: isSubmitting
                       ? null
                       : () async {
+                          if (!formKey.currentState!.validate()) {
+                            return;
+                          }
                           setState(() => isSubmitting = true);
                           try {
                             await controller.claimTransaction(
                               tx: t,
-                              comment: commentCtrl.text,
+                              comment: commentCtrl.text.trim(),
                             );
                             // ignore: use_build_context_synchronously
                             Navigator.of(ctx).pop();
@@ -498,13 +584,6 @@ Future<void> showClaimTransactionDialog(
                             if (ctx.mounted) setState(() => isSubmitting = false);
                           }
                         },
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Claim'),
                 ),
               ],
             ),
@@ -513,6 +592,48 @@ Future<void> showClaimTransactionDialog(
       );
     },
   );
+}
+
+class _ClaimInfoRow extends StatelessWidget {
+  const _ClaimInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                value.isEmpty ? '-' : value,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 Future<bool?> confirmDeleteTransaction(

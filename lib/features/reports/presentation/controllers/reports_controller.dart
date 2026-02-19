@@ -39,9 +39,7 @@ class ReportsController extends GetxController {
     final ds = await (db.select(
       db.drivers,
     )..where((d) => d.id.isIn(ids))).get();
-    driverMap
-      ..clear()
-      ..addEntries(ds.map((d) => MapEntry(d.id, d)));
+    driverMap.assignAll({for (final d in ds) d.id: d});
     update();
   }
 

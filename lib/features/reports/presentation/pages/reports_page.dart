@@ -213,6 +213,7 @@ class _ReportsTableState extends State<_ReportsTable> {
               DataColumn(label: Center(child: Text(AppString.colCharges))),
               DataColumn(label: Text(AppString.colPaymentStatus)),
               DataColumn(label: Center(child: Text(AppString.colCashAdvance))),
+              DataColumn(label: Text(AppString.colComment)),
             ],
             rows: [
               ...rows.asMap().entries.map((e) {
@@ -245,6 +246,7 @@ class _ReportsTableState extends State<_ReportsTable> {
                         ),
                       ),
                     ),
+                    DataCell(Text(t.comment ?? '-')),
                   ],
                 );
               }),
