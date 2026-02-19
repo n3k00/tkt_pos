@@ -15,15 +15,20 @@ Future<void> main() async {
   await GetStorage.init();
 
   final options = WindowOptions(
-    minimumSize: const Size(900, 600),
+    minimumSize: const Size(
+      1300,
+      700,
+    ), // အသေးဆုံး ချုံ့လို့ရမယ့် အရွယ်အစား (ဒီနေရာမှာ 1100 ကို ပြောင်းလိုက်ပါ)
     backgroundColor: AppColor.background,
+    center: true,
   );
+
   windowManager.waitUntilReadyToShow(options, () async {
-    await windowManager.setResizable(true);
     await windowManager.setMinimizable(true);
+    await windowManager.setResizable(true);
     await windowManager.setMaximizable(true);
-    await windowManager.setMinimumSize(const Size(900, 600));
-    await windowManager.maximize();
+
+    await windowManager.maximize(); // ပွင့်ပွင့်ချင်း မျက်နှာပြင်အပြည့်
     await windowManager.show();
     await windowManager.focus();
   });

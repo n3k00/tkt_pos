@@ -9,7 +9,6 @@ class PageHeader extends StatelessWidget {
     required this.title,
     this.crumbs = const <String>[],
     this.trailing,
-    this.trailingWidth = 280,
     this.onBack,
     this.showBack = true,
     this.showBreadcrumbs = false,
@@ -18,7 +17,6 @@ class PageHeader extends StatelessWidget {
   final String title;
   final List<String> crumbs;
   final Widget? trailing;
-  final double trailingWidth;
   final VoidCallback? onBack;
   final bool showBack;
   final bool showBreadcrumbs;
@@ -93,7 +91,12 @@ class PageHeader extends StatelessWidget {
                 ),
                 if (trailing != null) ...[
                   const SizedBox(width: 16),
-                  SizedBox(width: trailingWidth, child: trailing),
+                  Flexible(
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: trailing!,
+                    ),
+                  ),
                 ],
               ],
             ),

@@ -55,67 +55,99 @@ class InventoryPage extends GetView<InventoryController> {
                 title: AppString.inventory,
                 crumbs: const ['Inventory'],
                 showBack: false,
-                trailingWidth: 400,
                 trailing: Obx(() {
                   final selected = controller.selectedDate.value;
                   final label =
                       '${_monthNames[selected.month - 1]} ${selected.year}';
-                  return SizedBox(
-                    width: 520,
-                    child: Row(
-                      children: [
-                        Expanded(
+                  final bool _isUnclaimedOnly = false;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 48,
+                        child: FilterChip(
+                          label: Text(
+                            'Unclaimed',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: AppColor.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          selected: _isUnclaimedOnly,
+                          onSelected: (value) {},
+                          backgroundColor: AppColor.card,
+                          selectedColor:
+                              AppColor.primary.withOpacity(0.15),
+                          showCheckmark: false,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: AppColor.border),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: Dimens.d12),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 320),
+                        child: SizedBox(
+                          width: 280,
+                          height: 48,
                           child: HeaderSearchField(
                             hint: AppString.searchHint,
                             onChanged: controller.setSearch,
                           ),
                         ),
-                        const SizedBox(width: Dimens.d12),
-                        Container(
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColor.card,
+                      ),
+                      const SizedBox(width: Dimens.d12),
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppColor.card,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColor.border),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColor.border),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () {
-                                print('Select month');
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.calendar_month,
-                                      color: AppColor.textPrimary,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      label,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            color: AppColor.textPrimary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                  ],
-                                ),
+                            onTap: () {
+                              print('Select month');
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.calendar_month,
+                                    color: AppColor.textPrimary,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    label,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: AppColor.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   );
                 }),
               ),

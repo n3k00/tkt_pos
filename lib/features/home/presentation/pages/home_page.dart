@@ -31,10 +31,17 @@ class HomePage extends GetView<HomeController> {
               PageHeader(
                 title: AppString.title,
                 showBack: false,
-                trailingWidth: 360,
-                trailing: HeaderSearchField(
-                  hint: AppString.searchHint,
-                  onChanged: controller.setSearch,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 260,
+                      child: HeaderSearchField(
+                        hint: AppString.searchHint,
+                        onChanged: controller.setSearch,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Expanded(
