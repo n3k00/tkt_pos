@@ -35,6 +35,14 @@ const _monthNames = <String>[
 class InventoryPage extends GetView<InventoryController> {
   const InventoryPage({super.key});
 
+  Future<void> _openMonthPicker(BuildContext context) async {
+    final initial = controller.selectedDate.value;
+    final result = await _showMonthYearPickerDialog(context, initial);
+    if (result != null) {
+      controller.selectedDate.value = DateTime(result.year, result.month, 1);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,9 +100,7 @@ class InventoryPage extends GetView<InventoryController> {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () {
-                              print('Select month');
-                            },
+                            onTap: () => _openMonthPicker(context),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -148,16 +154,32 @@ class InventoryPage extends GetView<InventoryController> {
                               child: Text(AppString.noDrivers),
                             );
                           }
+                          final selectedMonth = controller.selectedDate.value;
+                          final monthFiltered = all
+                              .where(
+                                (d) =>
+                                    d.date.year == selectedMonth.year &&
+                                    d.date.month == selectedMonth.month,
+                              )
+                              .toList(growable: false);
+                          if (monthFiltered.isEmpty) {
+                            return const Center(
+                              child: Text(AppString.noResults),
+                            );
+                          }
                           final q = controller.searchQuery.value.trim();
-                          final filteredDrivers = q.isEmpty
-                              ? all
-                              : all
-                                    .where(
-                                      (d) => controller
-                                          .filteredTransactionsForDriver(d.id)
-                                          .isNotEmpty,
-                                    )
-                                    .toList(growable: false);
+                          final bool filterByRows =
+                              controller.showUnclaimedOnly.value ||
+                                  q.isNotEmpty;
+                          final filteredDrivers = filterByRows
+                              ? monthFiltered
+                                  .where(
+                                    (d) => controller
+                                        .filteredTransactionsForDriver(d.id)
+                                        .isNotEmpty,
+                                  )
+                                  .toList(growable: false)
+                              : monthFiltered;
 
                           if (filteredDrivers.isEmpty) {
                             return const Center(
@@ -634,4 +656,85 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
       );
     });
   }
+}
+
+Future<DateTime?> _showMonthYearPickerDialog(
+  BuildContext context,
+  DateTime initial,
+) {
+  const int minYear = 2000;
+  final int maxYear = DateTime.now().year + 5;
+  int tempYear = initial.year;
+  int tempMonth = initial.month;
+
+  return showDialog<DateTime>(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Select Month'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: tempYear > minYear
+                          ? () => setState(() => tempYear -= 1)
+                          : null,
+                    ),
+                    Text(
+                      tempYear.toString(),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: tempYear < maxYear
+                          ? () => setState(() => tempYear += 1)
+                          : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: 320,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(12, (index) {
+                      final monthIndex = index + 1;
+                      final bool isSelected = tempMonth == monthIndex;
+                      return ChoiceChip(
+                        label: Text(_monthNames[index]),
+                        selected: isSelected,
+                        onSelected: (_) =>
+                            setState(() => tempMonth = monthIndex),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context)
+                    .pop(DateTime(tempYear, tempMonth, 1)),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
 }
