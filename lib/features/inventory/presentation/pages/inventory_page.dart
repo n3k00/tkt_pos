@@ -59,7 +59,7 @@ class InventoryPage extends GetView<InventoryController> {
                   final selected = controller.selectedDate.value;
                   final label =
                       '${_monthNames[selected.month - 1]} ${selected.year}';
-                  final bool _isUnclaimedOnly = false;
+                  final bool isUnclaimedOnly = controller.showUnclaimedOnly.value;
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -76,8 +76,8 @@ class InventoryPage extends GetView<InventoryController> {
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
-                          selected: _isUnclaimedOnly,
-                          onSelected: (value) {},
+                          selected: isUnclaimedOnly,
+                          onSelected: controller.setUnclaimedOnly,
                           backgroundColor: AppColor.card,
                           selectedColor:
                               AppColor.primary.withOpacity(0.15),
@@ -290,6 +290,8 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
       final rows = widget.controller.filteredTransactionsForDriver(
         widget.driverId,
       );
+      final bool showSummaryRow = !widget.controller.showUnclaimedOnly.value &&
+          widget.controller.searchQuery.value.trim().isEmpty;
       final headerStyle = AppTextStyles.tableHeader;
       final cellStyle = AppTextStyles.tableCell;
       final totalCharges = rows
@@ -517,12 +519,13 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 ],
               );
             }),
-            DataRow(
-              cells: [
-                const DataCell(SizedBox()), // No
-                const DataCell(SizedBox()), // Name
-                const DataCell(SizedBox()), // Phone placeholder
-                const DataCell(SizedBox()), // Parcel type
+            if (showSummaryRow)
+              DataRow(
+                cells: [
+                  const DataCell(SizedBox()), // No
+                  const DataCell(SizedBox()), // Name
+                  const DataCell(SizedBox()), // Phone placeholder
+                  const DataCell(SizedBox()), // Parcel type
                 const DataCell(SizedBox()), // Number
                 DataCell(
                   SizedBox(
@@ -558,10 +561,10 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                 ),
                 const DataCell(SizedBox()), // Picked up
-                const DataCell(SizedBox()), // Collect time
-                const DataCell(SizedBox()), // Actions
-              ],
-            ),
+                  const DataCell(SizedBox()), // Collect time
+                  const DataCell(SizedBox()), // Actions
+                ],
+              ),
           ],
         ),
       );

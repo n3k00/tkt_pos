@@ -12,6 +12,7 @@ class InventoryController extends GetxController {
   final RxMap<int, List<DbTransaction>> transactionsByDriver = <int, List<DbTransaction>>{}.obs;
   final RxString searchQuery = ''.obs;
   final RxBool isLoading = false.obs;
+  final RxBool showUnclaimedOnly = false.obs;
 
   @override
   void onInit() {
@@ -101,10 +102,18 @@ class InventoryController extends GetxController {
     searchQuery.value = q;
   }
 
+  void setUnclaimedOnly(bool value) {
+    showUnclaimedOnly.value = value;
+  }
+
   List<DbTransaction> get filteredTransactions {
     final q = searchQuery.value.trim().toLowerCase();
-    if (q.isEmpty) return transactions;
-    return transactions.where((t) {
+    Iterable<DbTransaction> filtered = transactions;
+    if (showUnclaimedOnly.value) {
+      filtered = filtered.where((t) => !t.pickedUp);
+    }
+    if (q.isEmpty) return filtered.toList(growable: false);
+    return filtered.where((t) {
       final fields = <String?>[
         t.customerName,
         t.phone,
@@ -121,8 +130,12 @@ class InventoryController extends GetxController {
   List<DbTransaction> filteredTransactionsForDriver(int driverId) {
     final q = searchQuery.value.trim().toLowerCase();
     final source = transactionsByDriver[driverId] ?? const <DbTransaction>[];
-    if (q.isEmpty) return source;
-    return source.where((t) {
+    Iterable<DbTransaction> filtered = source;
+    if (showUnclaimedOnly.value) {
+      filtered = filtered.where((t) => !t.pickedUp);
+    }
+    if (q.isEmpty) return filtered.toList(growable: false);
+    return filtered.where((t) {
       final fields = <String?>[
         t.customerName,
         t.phone,
