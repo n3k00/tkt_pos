@@ -15,10 +15,7 @@ Future<void> main() async {
   await GetStorage.init();
 
   final options = WindowOptions(
-    minimumSize: const Size(
-      1300,
-      700,
-    ), // အသေးဆုံး ချုံ့လို့ရမယ့် အရွယ်အစား (ဒီနေရာမှာ 1100 ကို ပြောင်းလိုက်ပါ)
+    minimumSize: const Size(1300, 700),
     backgroundColor: AppColor.background,
     center: true,
   );
@@ -28,7 +25,7 @@ Future<void> main() async {
     await windowManager.setResizable(true);
     await windowManager.setMaximizable(true);
 
-    await windowManager.maximize(); // ပွင့်ပွင့်ချင်း မျက်နှာပြင်အပြည့်
+    await windowManager.maximize();
     await windowManager.show();
     await windowManager.focus();
   });
@@ -60,7 +57,6 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
           primary: AppColor.primary,
           surface: AppColor.card,
-          background: AppColor.background,
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColor.card,

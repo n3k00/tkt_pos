@@ -13,7 +13,7 @@ class AppDrawer extends StatelessWidget {
     final String currentRoute = Get.currentRoute;
 
     Color iconColor(bool selected) =>
-        selected ? AppColor.primaryDark : Colors.black.withOpacity(0.55);
+        selected ? AppColor.primaryDark : Colors.black.withValues(alpha: 0.55);
 
     // Simple nav model to reduce repetition
     const topItems = <_NavItem>[
@@ -38,7 +38,7 @@ class AppDrawer extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -129,7 +129,7 @@ class _NavIconButton extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               color: selected
-                  ? AppColor.primary.withOpacity(0.12)
+                  ? AppColor.primary.withValues(alpha: 0.12)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
             ),

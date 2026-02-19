@@ -526,8 +526,8 @@ Future<void> showClaimTransactionDialog(
       bool isSubmitting = false;
       return StatefulBuilder(
         builder: (ctx, setState) {
-          return WillPopScope(
-            onWillPop: () async => false,
+          return PopScope(
+            canPop: false,
             child: AlertDialog(
               title: const Text('Claim Transaction'),
               content: SizedBox(
@@ -812,8 +812,8 @@ Future<void> showAddTransactionDialog(
     context: context,
     barrierDismissible: false, // prevent closing by tapping outside
     builder: (ctx) {
-      return WillPopScope(
-        onWillPop: () async => false, // block back/Escape
+      return PopScope(
+        canPop: false,
         child: StatefulBuilder(
           builder: (ctx, setState) {
             return AlertDialog(

@@ -202,11 +202,11 @@ class _ManifestsTableState extends State<_ManifestsTable> {
                       ...list.asMap().entries.map((e) {
                         final i = e.key + 1;
                         final m = e.value;
-                        final zebra = i % 2 == 0;
-                        Widget center(String s) => Align(
-                          alignment: Alignment.center,
-                          child: Text(s, style: cellStyle),
-                        );
+                        //final zebra = i % 2 == 0;
+                        // Widget center(String s) => Align(
+                        //   alignment: Alignment.center,
+                        //   child: Text(s, style: cellStyle),
+                        // );
                         Widget right(String s) => Align(
                           alignment: Alignment.centerRight,
                           child: Text(s, style: cellStyle),

@@ -215,9 +215,9 @@ class AppDatabase extends _$AppDatabase {
     required int transactionId,
   }) async {
     // Prevent duplicates caused by rapid double clicks
-    final existing = await (select(reportTransactions)
-          ..where((rt) => rt.transactionId.equals(transactionId)))
-        .getSingleOrNull();
+    final existing = await (select(
+      reportTransactions,
+    )..where((rt) => rt.transactionId.equals(transactionId))).getSingleOrNull();
     if (existing != null) return existing.id;
 
     return into(reportTransactions).insert(
@@ -346,7 +346,9 @@ class AppDatabase extends _$AppDatabase {
       // Copy to a temp file then rename into place for atomicity
       final File tmpFile = File('${dbFile.path}.tmp');
       if (await tmpFile.exists()) {
-        try { await tmpFile.delete(); } catch (_) {}
+        try {
+          await tmpFile.delete();
+        } catch (_) {}
       }
       await src.copy(tmpFile.path);
       try {
@@ -362,22 +364,21 @@ class AppDatabase extends _$AppDatabase {
 
       // Cleanup old backup if we created one
       if (await bakFile.exists()) {
-        try { await bakFile.delete(); } catch (_) {}
+        try {
+          await bakFile.delete();
+        } catch (_) {}
       }
       return dbFile.path;
     } catch (e) {
       return null;
     }
   }
-
 }
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final Directory dir = await getApplicationSupportDirectory();
     final File file = File(p.join(dir.path, 'app.db'));
-    // Use a background isolate to avoid jank
     return NativeDatabase.createInBackground(file);
   });
 }
-

@@ -140,8 +140,8 @@ Future<void> showAddDriverDialog(
     context: context,
     barrierDismissible: false, // require explicit action to close
     builder: (ctx) {
-      return WillPopScope(
-        onWillPop: () async => false, // block back/Escape dismiss
+      return PopScope(
+        canPop: false,
         child: StatefulBuilder(
           builder: (ctx, setState) {
             return AlertDialog(
