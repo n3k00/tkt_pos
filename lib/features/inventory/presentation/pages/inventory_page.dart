@@ -59,37 +59,14 @@ class InventoryPage extends GetView<InventoryController> {
                   final selected = controller.selectedDate.value;
                   final label =
                       '${_monthNames[selected.month - 1]} ${selected.year}';
-                  final bool isUnclaimedOnly = controller.showUnclaimedOnly.value;
+                  final bool isUnclaimedOnly =
+                      controller.showUnclaimedOnly.value;
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        height: 48,
-                        child: FilterChip(
-                          label: Text(
-                            'Unclaimed',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: AppColor.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                          selected: isUnclaimedOnly,
-                          onSelected: controller.setUnclaimedOnly,
-                          backgroundColor: AppColor.card,
-                          selectedColor:
-                              AppColor.primary.withOpacity(0.15),
-                          showCheckmark: false,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: AppColor.border),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                          ),
-                        ),
+                      _UnclaimedSwitch(
+                        isActive: isUnclaimedOnly,
+                        onChanged: controller.setUnclaimedOnly,
                       ),
                       const SizedBox(width: Dimens.d12),
                       ConstrainedBox(
@@ -270,6 +247,92 @@ class _DriverSection extends StatelessWidget {
   // Date formatting moved to Format.date
 }
 
+class _UnclaimedSwitch extends StatelessWidget {
+  const _UnclaimedSwitch({required this.isActive, required this.onChanged});
+
+  final bool isActive;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    const Duration duration = Duration(milliseconds: 250);
+    const double width = 150;
+    const double height = 44;
+    const double knobSize = 32;
+    final Color activeBg = const Color(0xFF00C853);
+    final Color inactiveBg = Colors.grey[300]!;
+    final Color activeBorder = const Color(0xFF6EF3A1);
+    final Color inactiveBorder = Colors.grey[400]!;
+
+    return GestureDetector(
+      onTap: () => onChanged(!isActive),
+      child: AnimatedContainer(
+        duration: duration,
+        curve: Curves.easeInOut,
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: isActive ? activeBg : inactiveBg,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            width: 3,
+            color: isActive ? activeBorder : inactiveBorder,
+          ),
+        ),
+        child: Stack(
+          children: [
+            AnimatedAlign(
+              duration: duration,
+              curve: Curves.easeInOut,
+              alignment: isActive
+                  ? Alignment.centerLeft
+                  : Alignment.centerRight,
+              child: AnimatedPadding(
+                duration: duration,
+                curve: Curves.easeInOut,
+                padding: EdgeInsets.only(
+                  left: isActive ? 16 : knobSize + 14,
+                  right: isActive ? knobSize + 14 : 16,
+                ),
+                child: Text(
+                  'Unclaimed',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: isActive ? const Color(0xFF064D1F) : Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            AnimatedAlign(
+              duration: duration,
+              curve: Curves.easeInOut,
+              alignment: isActive
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
+              child: Container(
+                width: knobSize,
+                height: knobSize,
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _DriverTransactionsTable extends StatefulWidget {
   const _DriverTransactionsTable({
     required this.controller,
@@ -290,7 +353,8 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
       final rows = widget.controller.filteredTransactionsForDriver(
         widget.driverId,
       );
-      final bool showSummaryRow = !widget.controller.showUnclaimedOnly.value &&
+      final bool showSummaryRow =
+          !widget.controller.showUnclaimedOnly.value &&
           widget.controller.searchQuery.value.trim().isEmpty;
       final headerStyle = AppTextStyles.tableHeader;
       final cellStyle = AppTextStyles.tableCell;
@@ -526,41 +590,41 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   const DataCell(SizedBox()), // Name
                   const DataCell(SizedBox()), // Phone placeholder
                   const DataCell(SizedBox()), // Parcel type
-                const DataCell(SizedBox()), // Number
-                DataCell(
-                  SizedBox(
-                    width: AppTableWidths.charges,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        Format.money(totalCharges),
-                        style: headerStyle.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColor.textPrimary,
+                  const DataCell(SizedBox()), // Number
+                  DataCell(
+                    SizedBox(
+                      width: AppTableWidths.charges,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          Format.money(totalCharges),
+                          style: headerStyle.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColor.textPrimary,
+                          ),
+                          textAlign: TextAlign.right,
                         ),
-                        textAlign: TextAlign.right,
                       ),
                     ),
                   ),
-                ),
-                const DataCell(SizedBox()), // Payment status
-                DataCell(
-                  SizedBox(
-                    width: AppTableWidths.cashAdvance,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        Format.money(totalAdvance),
-                        style: headerStyle.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColor.textPrimary,
+                  const DataCell(SizedBox()), // Payment status
+                  DataCell(
+                    SizedBox(
+                      width: AppTableWidths.cashAdvance,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          Format.money(totalAdvance),
+                          style: headerStyle.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColor.textPrimary,
+                          ),
+                          textAlign: TextAlign.right,
                         ),
-                        textAlign: TextAlign.right,
                       ),
                     ),
                   ),
-                ),
-                const DataCell(SizedBox()), // Picked up
+                  const DataCell(SizedBox()), // Picked up
                   const DataCell(SizedBox()), // Collect time
                   const DataCell(SizedBox()), // Actions
                 ],
