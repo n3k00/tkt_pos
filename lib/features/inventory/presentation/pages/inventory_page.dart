@@ -474,6 +474,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
             ...rows.asMap().entries.map((e) {
               final idx = e.key + 1;
               final t = e.value;
+              void openDetails() => showViewTransactionDialog(context, t);
               return DataRow(
                 cells: [
                   DataCell(
@@ -481,8 +482,12 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                       padding: const EdgeInsets.only(left: Dimens.d16),
                       child: Text(idx.toString(), style: cellStyle),
                     ),
+                    onTap: openDetails,
                   ),
-                  DataCell(Text(t.customerName ?? '-', style: cellStyle)),
+                  DataCell(
+                    Text(t.customerName ?? '-', style: cellStyle),
+                    onTap: openDetails,
+                  ),
                   DataCell(
                     SizedBox(
                       width: AppTableWidths.phone,
@@ -494,6 +499,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
+                    onTap: openDetails,
                   ),
                   DataCell(
                     SizedBox(
@@ -506,6 +512,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
+                    onTap: openDetails,
                   ),
                   DataCell(
                     SizedBox(
@@ -518,6 +525,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
+                    onTap: openDetails,
                   ),
                   DataCell(
                     SizedBox(
@@ -531,6 +539,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
+                    onTap: openDetails,
                   ),
                   DataCell(
                     SizedBox(
@@ -543,6 +552,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
+                    onTap: openDetails,
                   ),
                   DataCell(
                     SizedBox(
@@ -556,6 +566,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
+                    onTap: openDetails,
                   ),
                   DataCell(
                     SizedBox(
@@ -591,6 +602,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
+                    onTap: openDetails,
                   ),
                   DataCell(
                     Align(

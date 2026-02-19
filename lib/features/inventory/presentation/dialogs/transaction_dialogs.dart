@@ -6,6 +6,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/resources/strings.dart';
 
@@ -396,35 +397,108 @@ Future<void> showViewTransactionDialog(
       return AlertDialog(
         title: const Text('Transaction Details'),
         content: SizedBox(
-          width: 480,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Customer: ${t.customerName ?? '-'}'),
-              const SizedBox(height: 4),
-              Text('Phone: ${t.phone}'),
-              const SizedBox(height: 4),
-              Text('Parcel Type: ${t.parcelType}'),
-              const SizedBox(height: 4),
-              Text('Number: ${t.number}'),
-              const SizedBox(height: 4),
-              Text('Charges: ${fmtMoney(t.charges)}'),
-              const SizedBox(height: 4),
-              Text('Cash Advance: ${fmtMoney(t.cashAdvance)}'),
-              const SizedBox(height: 4),
-              Text('Payment Status: ${t.paymentStatus}'),
-              const SizedBox(height: 4),
-              Text('Picked Up: ${t.pickedUp ? 'Yes' : 'No'}'),
-              const SizedBox(height: 4),
-              Text('Collect Time: ${t.pickedUp ? fmtDateTime12(t.updatedAt) : '-'}'),
-              const SizedBox(height: 8),
-              const Divider(),
-              const SizedBox(height: 8),
-              Text('Comment:'),
-              const SizedBox(height: 4),
-              Text(t.comment ?? '-', style: const TextStyle(color: Colors.black87)),
-            ],
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Theme.of(ctx).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _ClaimInfoRow(
+                        icon: Icons.person_outline,
+                        label: 'Customer',
+                        value: t.customerName?.trim().isEmpty ?? true
+                            ? '-'
+                            : t.customerName!,
+                      ),
+                      const SizedBox(height: 10),
+                      _ClaimInfoRow(
+                        icon: Icons.phone_outlined,
+                        label: 'Phone',
+                        value: t.phone,
+                      ),
+                      const SizedBox(height: 10),
+                      _ClaimInfoRow(
+                        icon: Icons.inventory_2_outlined,
+                        label: 'Parcel Type',
+                        value: t.parcelType,
+                      ),
+                      const SizedBox(height: 10),
+                      _ClaimInfoRow(
+                        icon: Icons.numbers,
+                        label: 'Number',
+                        value: t.number,
+                      ),
+                      const SizedBox(height: 10),
+                      _ClaimInfoRow(
+                        icon: Icons.attach_money,
+                        label: 'Charges',
+                        value: fmtMoney(t.charges),
+                      ),
+                      const SizedBox(height: 10),
+                      _ClaimInfoRow(
+                        icon: Icons.account_balance_wallet_outlined,
+                        label: 'Cash Advance',
+                        value: fmtMoney(t.cashAdvance),
+                      ),
+                      const SizedBox(height: 10),
+                      _ClaimInfoRow(
+                        icon: Icons.payments_outlined,
+                        label: 'Payment Status',
+                        value: t.paymentStatus,
+                      ),
+                      const SizedBox(height: 10),
+                      _ClaimInfoRow(
+                        icon: Icons.check_circle_outline,
+                        label: 'Picked Up',
+                        value: t.pickedUp ? 'Yes' : 'No',
+                      ),
+                      const SizedBox(height: 10),
+                      _ClaimInfoRow(
+                        icon: Icons.schedule,
+                        label: 'Collect Time',
+                        value: t.pickedUp ? fmtDateTime12(t.updatedAt) : '-',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Comment',
+                  style: Theme.of(ctx).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Theme.of(ctx).dividerColor),
+                  ),
+                  child: Text(
+                    (t.comment?.trim().isNotEmpty ?? false)
+                        ? t.comment!
+                        : '-',
+                    style: Theme.of(ctx)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: AppColor.textPrimary),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
