@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/features/inventory/presentation/dialogs/driver_dialogs.dart';
+import 'package:tkt_pos/features/inventory/presentation/pages/driver_print_page.dart';
 import 'package:tkt_pos/widgets/glass_popup_menu.dart';
 
 class DriverActionsMenu extends StatelessWidget {
@@ -42,7 +43,7 @@ class DriverActionsMenu extends StatelessWidget {
             await showEditDriverDialog(context, controller, driver);
             break;
           case 'print':
-            // Placeholder for upcoming print workflow.
+            Get.to(() => DriverPrintPage(driverId: driver.id));
             break;
         }
       },
