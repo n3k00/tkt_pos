@@ -35,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => _instance;
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 15;
 
   // Migrations: create new tables when upgrading from v1
   @override
@@ -71,6 +71,14 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 13) {
         await m.createTable(transactionEditHistory);
+      }
+      if (from < 14) {
+        await m.addColumn(drivers, drivers.roomFee);
+        await m.addColumn(drivers, drivers.laborFee);
+        await m.addColumn(drivers, drivers.deliveryFee);
+      }
+      if (from < 15) {
+        await m.addColumn(drivers, drivers.paidOut);
       }
     },
   );

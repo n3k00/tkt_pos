@@ -50,21 +50,22 @@ class InventoryController extends GetxController {
 
   Future<void> loadAllDrivers() async {
     isLoading.value = true;
+    List<Driver> list = const <Driver>[];
     try {
-      final list = await (db.select(db.drivers)
+      list = await (db.select(db.drivers)
             ..orderBy([
               (d) => drift.OrderingTerm.desc(d.date),
               (d) => drift.OrderingTerm.asc(d.name),
             ]))
           .get();
       drivers.assignAll(list);
-      // Load transactions for each driver
-      for (final d in list) {
-        await loadTransactionsByDriverToMap(d.id);
-      }
     } finally {
       isLoading.value = false;
     }
+    // Populate transactions map without blocking the loader
+    await Future.wait(
+      list.map((d) => loadTransactionsByDriverToMap(d.id)),
+    );
   }
 
   Future<void> setDate(DateTime date) async {
@@ -158,7 +159,11 @@ class InventoryController extends GetxController {
 
   Future<void> updateDriver({required int id, required DateTime date, required String name}) async {
     await db.update(db.drivers).replace(
-          Driver(id: id, date: date, name: name),
+          DriversCompanion(
+            id: drift.Value(id),
+            date: drift.Value(date),
+            name: drift.Value(name),
+          ),
         );
     await loadAllDrivers();
   }

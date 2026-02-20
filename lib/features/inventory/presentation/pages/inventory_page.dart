@@ -170,15 +170,15 @@ class InventoryPage extends GetView<InventoryController> {
                           final q = controller.searchQuery.value.trim();
                           final bool filterByRows =
                               controller.showUnclaimedOnly.value ||
-                                  q.isNotEmpty;
+                              q.isNotEmpty;
                           final filteredDrivers = filterByRows
                               ? monthFiltered
-                                  .where(
-                                    (d) => controller
-                                        .filteredTransactionsForDriver(d.id)
-                                        .isNotEmpty,
-                                  )
-                                  .toList(growable: false)
+                                    .where(
+                                      (d) => controller
+                                          .filteredTransactionsForDriver(d.id)
+                                          .isNotEmpty,
+                                    )
+                                    .toList(growable: false)
                               : monthFiltered;
 
                           if (filteredDrivers.isEmpty) {
@@ -338,7 +338,7 @@ class _UnclaimedSwitch extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
-                    boxShadow: [
+                  boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 8,
@@ -375,6 +375,14 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
       final rows = widget.controller.filteredTransactionsForDriver(
         widget.driverId,
       );
+      Driver? driverInfo;
+      for (final d in widget.controller.drivers) {
+        if (d.id == widget.driverId) {
+          driverInfo = d;
+          break;
+        }
+      }
+      final bool isPaidOut = driverInfo?.paidOut ?? false;
       final bool showSummaryRow =
           !widget.controller.showUnclaimedOnly.value &&
           widget.controller.searchQuery.value.trim().isEmpty;
@@ -617,7 +625,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 ],
               );
             }),
-            if (showSummaryRow)
+            if (showSummaryRow) ...[
               DataRow(
                 cells: [
                   const DataCell(SizedBox()), // No
@@ -663,6 +671,40 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   const DataCell(SizedBox()), // Actions
                 ],
               ),
+              DataRow(
+                cells: [
+                  DataCell(
+                    Padding(
+                      padding: const EdgeInsets.only(left: Dimens.d16),
+                      child: Text(
+                        'Paid out status',
+                        style: headerStyle.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    Text(
+                      isPaidOut ? 'ငွေထုတ်ပေးပြီး' : 'ငွေထုတ်ရန်ကျန်',
+                      style: cellStyle.copyWith(
+                        color: isPaidOut ? Colors.green : Colors.redAccent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const DataCell(SizedBox()),
+                  const DataCell(SizedBox()),
+                  const DataCell(SizedBox()),
+                  const DataCell(SizedBox()),
+                  const DataCell(SizedBox()),
+                  const DataCell(SizedBox()),
+                  const DataCell(SizedBox()),
+                  const DataCell(SizedBox()),
+                  const DataCell(SizedBox()),
+                ],
+              ),
+            ],
           ],
         ),
       );
@@ -700,10 +742,9 @@ Future<DateTime?> _showMonthYearPickerDialog(
                     ),
                     Text(
                       tempYear.toString(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.chevron_right),
@@ -739,8 +780,8 @@ Future<DateTime?> _showMonthYearPickerDialog(
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
-                onPressed: () => Navigator.of(context)
-                    .pop(DateTime(tempYear, tempMonth, 1)),
+                onPressed: () =>
+                    Navigator.of(context).pop(DateTime(tempYear, tempMonth, 1)),
                 child: const Text('OK'),
               ),
             ],

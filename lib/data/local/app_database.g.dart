@@ -256,8 +256,64 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _roomFeeMeta = const VerificationMeta(
+    'roomFee',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, date, name];
+  late final GeneratedColumn<double> roomFee = GeneratedColumn<double>(
+    'room_fee',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _laborFeeMeta = const VerificationMeta(
+    'laborFee',
+  );
+  @override
+  late final GeneratedColumn<double> laborFee = GeneratedColumn<double>(
+    'labor_fee',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deliveryFeeMeta = const VerificationMeta(
+    'deliveryFee',
+  );
+  @override
+  late final GeneratedColumn<double> deliveryFee = GeneratedColumn<double>(
+    'delivery_fee',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paidOutMeta = const VerificationMeta(
+    'paidOut',
+  );
+  @override
+  late final GeneratedColumn<bool> paidOut = GeneratedColumn<bool>(
+    'paid_out',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("paid_out" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    date,
+    name,
+    roomFee,
+    laborFee,
+    deliveryFee,
+    paidOut,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -289,6 +345,33 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('room_fee')) {
+      context.handle(
+        _roomFeeMeta,
+        roomFee.isAcceptableOrUnknown(data['room_fee']!, _roomFeeMeta),
+      );
+    }
+    if (data.containsKey('labor_fee')) {
+      context.handle(
+        _laborFeeMeta,
+        laborFee.isAcceptableOrUnknown(data['labor_fee']!, _laborFeeMeta),
+      );
+    }
+    if (data.containsKey('delivery_fee')) {
+      context.handle(
+        _deliveryFeeMeta,
+        deliveryFee.isAcceptableOrUnknown(
+          data['delivery_fee']!,
+          _deliveryFeeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paid_out')) {
+      context.handle(
+        _paidOutMeta,
+        paidOut.isAcceptableOrUnknown(data['paid_out']!, _paidOutMeta),
+      );
+    }
     return context;
   }
 
@@ -310,6 +393,22 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      roomFee: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}room_fee'],
+      ),
+      laborFee: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}labor_fee'],
+      ),
+      deliveryFee: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}delivery_fee'],
+      ),
+      paidOut: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}paid_out'],
+      )!,
     );
   }
 
@@ -323,13 +422,35 @@ class Driver extends DataClass implements Insertable<Driver> {
   final int id;
   final DateTime date;
   final String name;
-  const Driver({required this.id, required this.date, required this.name});
+  final double? roomFee;
+  final double? laborFee;
+  final double? deliveryFee;
+  final bool paidOut;
+  const Driver({
+    required this.id,
+    required this.date,
+    required this.name,
+    this.roomFee,
+    this.laborFee,
+    this.deliveryFee,
+    required this.paidOut,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || roomFee != null) {
+      map['room_fee'] = Variable<double>(roomFee);
+    }
+    if (!nullToAbsent || laborFee != null) {
+      map['labor_fee'] = Variable<double>(laborFee);
+    }
+    if (!nullToAbsent || deliveryFee != null) {
+      map['delivery_fee'] = Variable<double>(deliveryFee);
+    }
+    map['paid_out'] = Variable<bool>(paidOut);
     return map;
   }
 
@@ -338,6 +459,16 @@ class Driver extends DataClass implements Insertable<Driver> {
       id: Value(id),
       date: Value(date),
       name: Value(name),
+      roomFee: roomFee == null && nullToAbsent
+          ? const Value.absent()
+          : Value(roomFee),
+      laborFee: laborFee == null && nullToAbsent
+          ? const Value.absent()
+          : Value(laborFee),
+      deliveryFee: deliveryFee == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deliveryFee),
+      paidOut: Value(paidOut),
     );
   }
 
@@ -350,6 +481,10 @@ class Driver extends DataClass implements Insertable<Driver> {
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       name: serializer.fromJson<String>(json['name']),
+      roomFee: serializer.fromJson<double?>(json['roomFee']),
+      laborFee: serializer.fromJson<double?>(json['laborFee']),
+      deliveryFee: serializer.fromJson<double?>(json['deliveryFee']),
+      paidOut: serializer.fromJson<bool>(json['paidOut']),
     );
   }
   @override
@@ -359,19 +494,41 @@ class Driver extends DataClass implements Insertable<Driver> {
       'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
       'name': serializer.toJson<String>(name),
+      'roomFee': serializer.toJson<double?>(roomFee),
+      'laborFee': serializer.toJson<double?>(laborFee),
+      'deliveryFee': serializer.toJson<double?>(deliveryFee),
+      'paidOut': serializer.toJson<bool>(paidOut),
     };
   }
 
-  Driver copyWith({int? id, DateTime? date, String? name}) => Driver(
+  Driver copyWith({
+    int? id,
+    DateTime? date,
+    String? name,
+    Value<double?> roomFee = const Value.absent(),
+    Value<double?> laborFee = const Value.absent(),
+    Value<double?> deliveryFee = const Value.absent(),
+    bool? paidOut,
+  }) => Driver(
     id: id ?? this.id,
     date: date ?? this.date,
     name: name ?? this.name,
+    roomFee: roomFee.present ? roomFee.value : this.roomFee,
+    laborFee: laborFee.present ? laborFee.value : this.laborFee,
+    deliveryFee: deliveryFee.present ? deliveryFee.value : this.deliveryFee,
+    paidOut: paidOut ?? this.paidOut,
   );
   Driver copyWithCompanion(DriversCompanion data) {
     return Driver(
       id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
       name: data.name.present ? data.name.value : this.name,
+      roomFee: data.roomFee.present ? data.roomFee.value : this.roomFee,
+      laborFee: data.laborFee.present ? data.laborFee.value : this.laborFee,
+      deliveryFee: data.deliveryFee.present
+          ? data.deliveryFee.value
+          : this.deliveryFee,
+      paidOut: data.paidOut.present ? data.paidOut.value : this.paidOut,
     );
   }
 
@@ -380,46 +537,75 @@ class Driver extends DataClass implements Insertable<Driver> {
     return (StringBuffer('Driver(')
           ..write('id: $id, ')
           ..write('date: $date, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('roomFee: $roomFee, ')
+          ..write('laborFee: $laborFee, ')
+          ..write('deliveryFee: $deliveryFee, ')
+          ..write('paidOut: $paidOut')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, date, name);
+  int get hashCode =>
+      Object.hash(id, date, name, roomFee, laborFee, deliveryFee, paidOut);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Driver &&
           other.id == this.id &&
           other.date == this.date &&
-          other.name == this.name);
+          other.name == this.name &&
+          other.roomFee == this.roomFee &&
+          other.laborFee == this.laborFee &&
+          other.deliveryFee == this.deliveryFee &&
+          other.paidOut == this.paidOut);
 }
 
 class DriversCompanion extends UpdateCompanion<Driver> {
   final Value<int> id;
   final Value<DateTime> date;
   final Value<String> name;
+  final Value<double?> roomFee;
+  final Value<double?> laborFee;
+  final Value<double?> deliveryFee;
+  final Value<bool> paidOut;
   const DriversCompanion({
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.name = const Value.absent(),
+    this.roomFee = const Value.absent(),
+    this.laborFee = const Value.absent(),
+    this.deliveryFee = const Value.absent(),
+    this.paidOut = const Value.absent(),
   });
   DriversCompanion.insert({
     this.id = const Value.absent(),
     required DateTime date,
     required String name,
+    this.roomFee = const Value.absent(),
+    this.laborFee = const Value.absent(),
+    this.deliveryFee = const Value.absent(),
+    this.paidOut = const Value.absent(),
   }) : date = Value(date),
        name = Value(name);
   static Insertable<Driver> custom({
     Expression<int>? id,
     Expression<DateTime>? date,
     Expression<String>? name,
+    Expression<double>? roomFee,
+    Expression<double>? laborFee,
+    Expression<double>? deliveryFee,
+    Expression<bool>? paidOut,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (name != null) 'name': name,
+      if (roomFee != null) 'room_fee': roomFee,
+      if (laborFee != null) 'labor_fee': laborFee,
+      if (deliveryFee != null) 'delivery_fee': deliveryFee,
+      if (paidOut != null) 'paid_out': paidOut,
     });
   }
 
@@ -427,11 +613,19 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     Value<int>? id,
     Value<DateTime>? date,
     Value<String>? name,
+    Value<double?>? roomFee,
+    Value<double?>? laborFee,
+    Value<double?>? deliveryFee,
+    Value<bool>? paidOut,
   }) {
     return DriversCompanion(
       id: id ?? this.id,
       date: date ?? this.date,
       name: name ?? this.name,
+      roomFee: roomFee ?? this.roomFee,
+      laborFee: laborFee ?? this.laborFee,
+      deliveryFee: deliveryFee ?? this.deliveryFee,
+      paidOut: paidOut ?? this.paidOut,
     );
   }
 
@@ -447,6 +641,18 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (roomFee.present) {
+      map['room_fee'] = Variable<double>(roomFee.value);
+    }
+    if (laborFee.present) {
+      map['labor_fee'] = Variable<double>(laborFee.value);
+    }
+    if (deliveryFee.present) {
+      map['delivery_fee'] = Variable<double>(deliveryFee.value);
+    }
+    if (paidOut.present) {
+      map['paid_out'] = Variable<bool>(paidOut.value);
+    }
     return map;
   }
 
@@ -455,7 +661,11 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     return (StringBuffer('DriversCompanion(')
           ..write('id: $id, ')
           ..write('date: $date, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('roomFee: $roomFee, ')
+          ..write('laborFee: $laborFee, ')
+          ..write('deliveryFee: $deliveryFee, ')
+          ..write('paidOut: $paidOut')
           ..write(')'))
         .toString();
   }
@@ -4103,12 +4313,20 @@ typedef $$DriversTableCreateCompanionBuilder =
       Value<int> id,
       required DateTime date,
       required String name,
+      Value<double?> roomFee,
+      Value<double?> laborFee,
+      Value<double?> deliveryFee,
+      Value<bool> paidOut,
     });
 typedef $$DriversTableUpdateCompanionBuilder =
     DriversCompanion Function({
       Value<int> id,
       Value<DateTime> date,
       Value<String> name,
+      Value<double?> roomFee,
+      Value<double?> laborFee,
+      Value<double?> deliveryFee,
+      Value<bool> paidOut,
     });
 
 final class $$DriversTableReferences
@@ -4207,6 +4425,26 @@ class $$DriversTableFilterComposer
 
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get roomFee => $composableBuilder(
+    column: $table.roomFee,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get laborFee => $composableBuilder(
+    column: $table.laborFee,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get deliveryFee => $composableBuilder(
+    column: $table.deliveryFee,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get paidOut => $composableBuilder(
+    column: $table.paidOut,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4310,6 +4548,26 @@ class $$DriversTableOrderingComposer
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<double> get roomFee => $composableBuilder(
+    column: $table.roomFee,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get laborFee => $composableBuilder(
+    column: $table.laborFee,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get deliveryFee => $composableBuilder(
+    column: $table.deliveryFee,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get paidOut => $composableBuilder(
+    column: $table.paidOut,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DriversTableAnnotationComposer
@@ -4329,6 +4587,20 @@ class $$DriversTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get roomFee =>
+      $composableBuilder(column: $table.roomFee, builder: (column) => column);
+
+  GeneratedColumn<double> get laborFee =>
+      $composableBuilder(column: $table.laborFee, builder: (column) => column);
+
+  GeneratedColumn<double> get deliveryFee => $composableBuilder(
+    column: $table.deliveryFee,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get paidOut =>
+      $composableBuilder(column: $table.paidOut, builder: (column) => column);
 
   Expression<T> transactionsRefs<T extends Object>(
     Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
@@ -4443,13 +4715,37 @@ class $$DriversTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String> name = const Value.absent(),
-              }) => DriversCompanion(id: id, date: date, name: name),
+                Value<double?> roomFee = const Value.absent(),
+                Value<double?> laborFee = const Value.absent(),
+                Value<double?> deliveryFee = const Value.absent(),
+                Value<bool> paidOut = const Value.absent(),
+              }) => DriversCompanion(
+                id: id,
+                date: date,
+                name: name,
+                roomFee: roomFee,
+                laborFee: laborFee,
+                deliveryFee: deliveryFee,
+                paidOut: paidOut,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required DateTime date,
                 required String name,
-              }) => DriversCompanion.insert(id: id, date: date, name: name),
+                Value<double?> roomFee = const Value.absent(),
+                Value<double?> laborFee = const Value.absent(),
+                Value<double?> deliveryFee = const Value.absent(),
+                Value<bool> paidOut = const Value.absent(),
+              }) => DriversCompanion.insert(
+                id: id,
+                date: date,
+                name: name,
+                roomFee: roomFee,
+                laborFee: laborFee,
+                deliveryFee: deliveryFee,
+                paidOut: paidOut,
+              ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
