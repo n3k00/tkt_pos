@@ -25,11 +25,24 @@ class DriverActionsMenu extends StatelessWidget {
             ],
           ),
         ),
+        PopupMenuItem(
+          value: 'print',
+          child: Row(
+            children: const [
+              Icon(Icons.print_outlined, size: 18),
+              SizedBox(width: 8),
+              Text('Print'),
+            ],
+          ),
+        ),
       ],
       onSelected: (value) async {
         switch (value) {
           case 'edit':
             await showEditDriverDialog(context, controller, driver);
+            break;
+          case 'print':
+            // Placeholder for upcoming print workflow.
             break;
         }
       },
