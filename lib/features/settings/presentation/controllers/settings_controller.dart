@@ -23,10 +23,9 @@ class SettingsController extends GetxController {
       final info = await PackageInfo.fromPlatform();
       final version = info.version;
       final build = info.buildNumber;
-      appVersion.value = 'v$version (beta)';
-      if (build.isNotEmpty) {
-        appVersion.value = 'v$version+$build (beta)';
-      }
+      appVersion.value = build.isEmpty
+          ? 'v$version'
+          : 'v$version+$build';
     } catch (_) {
       appVersion.value = 'beta';
     }
