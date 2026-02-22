@@ -520,6 +520,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  myanmar_tools:
+    dependency: "direct main"
+    description:
+      name: myanmar_tools
+      sha256: "105071bef44ec028974087f3bcb209d1732a6b149005c82689ee6e868036d9c1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   package_config:
     dependency: transitive
     description:

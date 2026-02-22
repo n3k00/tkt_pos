@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:myanmar_tools/myanmar_tools.dart';
 
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/resources/strings.dart';
@@ -19,6 +20,7 @@ class DriverPrintController extends GetxController {
 
   final int driverId;
   final AppDatabase _db = AppDatabase();
+  final ZawGyiConverter _zgConverter = ZawGyiConverter();
 
   final RxBool isLoading = true.obs;
   final Rxn<Driver> driver = Rxn<Driver>();
@@ -142,9 +144,7 @@ class DriverPrintController extends GetxController {
   }
 
   Future<Uint8List> _buildPdfBytes(Driver currentDriver) async {
-    final fontData = await rootBundle.load(
-      'assets/fonts/Pyidaungsu_Regular.ttf',
-    );
+    final fontData = await rootBundle.load('assets/fonts/ZAWGYI_ONE.TTF');
     final unicodeFont = pw.Font.ttf(fontData);
     final pdfTheme = pw.ThemeData.withFont(
       base: unicodeFont,
@@ -163,82 +163,89 @@ class DriverPrintController extends GetxController {
     );
     final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
 
-    List<List<String>> buildTableRows() {
+    List<List<String>> buildDataRows() {
       final rows = <List<String>>[];
       for (final entry in transactions.asMap().entries) {
         final index = entry.key + 1;
         final t = entry.value;
         rows.add([
-          '$index',
-          t.customerName ?? '-',
-          t.phone,
-          t.parcelType,
-          t.number,
-          Format.money(t.charges),
-          t.paymentStatus,
-          Format.money(t.cashAdvance),
-          '',
-          t.comment ?? '-',
+          _zg('$index'),
+          _zg(t.customerName ?? '-'),
+          _zg(t.phone),
+          _zg(t.parcelType),
+          _zg(t.number),
+          _zg(Format.money(t.charges)),
+          _zg(t.paymentStatus),
+          _zg(Format.money(t.cashAdvance)),
+          _zg(''),
+          _zg(t.comment ?? '-'),
         ]);
       }
-      rows.add([
-        '',
-        'Total Charges (Pending)',
-        '',
-        '',
-        '',
-        Format.money(totalChargesPending),
-        '',
-        Format.money(totalCashAdvance),
-        '',
-        '',
-      ]);
+      return rows;
+    }
+
+    List<List<String>> summaryRows() {
+      final rows = <List<String>>[
+        [
+          _zg(''),
+          _zg('Total Charges (Pending)'),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg(Format.money(totalChargesPending)),
+          _zg(''),
+          _zg(Format.money(totalCashAdvance)),
+          _zg(''),
+          _zg(''),
+        ],
+      ];
+
       void addDeductionRow(String label, double amount) {
         if (amount <= 0) return;
         rows.add([
-          '',
-          label,
-          '',
-          '',
-          '',
-          '-${Format.money(amount)}',
-          '',
-          '',
-          '',
-          '',
+          _zg(''),
+          _zg(label),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg('-${Format.money(amount)}'),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg(''),
         ]);
       }
 
       addDeductionRow('Room Fee', roomFeeValue);
       addDeductionRow('Labor Fee', laborFeeValue);
       addDeductionRow('Delivery Fee', deliveryFeeValue);
+
       rows.addAll([
         [
-          '',
-          'Paid Out Amount',
-          '',
-          '',
-          '',
-          Format.money(netAmount),
-          '',
-          '',
-          '',
-          '',
+          _zg(''),
+          _zg('Paid Out Amount'),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg(Format.money(netAmount)),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg(''),
         ],
         [
-          '',
-          'Paid out status',
-          paidOut.value ? 'ငွေထုတ်ပေးပြီး' : 'ငွေထုတ်ရန် ကျန်',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
+          _zg(''),
+          _zg('Paid out status'),
+          _zg(paidOut.value ? 'ငွေထုတ်ပေးပြီး' : 'ငွေထုတ်ရန် ကျန်'),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg(''),
+          _zg(''),
         ],
       ]);
-
       return rows;
     }
 
@@ -253,64 +260,103 @@ class DriverPrintController extends GetxController {
       AppString.colCashAdvance,
       'Signed',
       AppString.colComment,
-    ];
+    ].map(_zg).toList();
 
-    doc.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4.landscape,
-        margin: const pw.EdgeInsets.all(24),
-        theme: pdfTheme,
-        build: (context) => [
-          pw.Padding(
-            padding: const pw.EdgeInsets.all(24),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text('Incoming Parcel Slip', style: headerStyle),
-                pw.SizedBox(height: 12),
-                pw.Row(
-                  children: [
-                    pw.Expanded(
-                      child: pw.Text(
-                        'Driver: ${currentDriver.name}',
+    final chunkSize = 13;
+    final dataRows = buildDataRows();
+    final dataChunks = <List<List<String>>>[];
+    for (var i = 0; i < dataRows.length; i += chunkSize) {
+      dataChunks.add(
+        dataRows.sublist(
+          i,
+          i + chunkSize > dataRows.length ? dataRows.length : i + chunkSize,
+        ),
+      );
+    }
+    if (dataChunks.isEmpty) {
+      dataChunks.add([]);
+    }
+    final summary = summaryRows();
+
+    for (var i = 0; i < dataChunks.length; i++) {
+      final chunk = dataChunks[i];
+      final isLast = i == dataChunks.length - 1;
+      if (isLast) {
+        chunk.addAll(summary);
+      }
+
+      doc.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4.landscape,
+          margin: const pw.EdgeInsets.all(24),
+          theme: pdfTheme,
+          build: (context) => [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(24),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(_zg('Incoming Parcel Slip'), style: headerStyle),
+                  pw.SizedBox(height: 12),
+                  pw.Row(
+                    children: [
+                      pw.Expanded(
+                        child: pw.Text(
+                          _zg('Driver: ${currentDriver.name}'),
+                          style: subtitleStyle,
+                        ),
+                      ),
+                      pw.Text(
+                        _zg('Date: ${Format.date(currentDriver.date)}'),
                         style: subtitleStyle,
                       ),
-                    ),
-                    pw.Text(
-                      'Date: ${Format.date(currentDriver.date)}',
-                      style: subtitleStyle,
-                    ),
-                  ],
-                ),
-                pw.SizedBox(height: 24),
-                pw.TableHelper.fromTextArray(
-                  headers: headers,
-                  data: buildTableRows(),
-                  headerStyle: bold,
-                  headerDecoration: const pw.BoxDecoration(
-                    color: PdfColors.grey300,
+                    ],
                   ),
-                  cellAlignment: pw.Alignment.centerLeft,
-                  cellStyle: const pw.TextStyle(fontSize: 10),
-                  cellAlignments: {
-                    5: pw.Alignment.centerRight,
-                    7: pw.Alignment.centerRight,
-                  },
-                  columnWidths: {
-                    0: const pw.FixedColumnWidth(30),
-                    2: const pw.FixedColumnWidth(90),
-                    4: const pw.FixedColumnWidth(70),
-                    5: const pw.FixedColumnWidth(80),
-                    7: const pw.FixedColumnWidth(90),
-                    8: const pw.FixedColumnWidth(70),
-                  },
-                ),
-              ],
+                  pw.SizedBox(height: 24),
+                  pw.TableHelper.fromTextArray(
+                    headers: headers,
+                    data: chunk,
+                    headerStyle: bold,
+                    headerDecoration: const pw.BoxDecoration(
+                      color: PdfColors.grey300,
+                    ),
+                    cellAlignment: pw.Alignment.centerLeft,
+                    cellStyle: const pw.TextStyle(fontSize: 10),
+                    cellAlignments: {
+                      5: pw.Alignment.centerRight,
+                      7: pw.Alignment.centerRight,
+                    },
+                    columnWidths: {
+                      0: const pw.FixedColumnWidth(30),
+                      2: const pw.FixedColumnWidth(90),
+                      4: const pw.FixedColumnWidth(70),
+                      5: const pw.FixedColumnWidth(80),
+                      7: const pw.FixedColumnWidth(90),
+                      8: const pw.FixedColumnWidth(70),
+                    },
+                  ),
+                  if (!isLast)
+                    pw.Align(
+                      alignment: pw.Alignment.centerRight,
+                      child: pw.Text(
+                        _zg('Continued on next page...'),
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+          footer: (context) => pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Text(
+              _zg('Page ${context.pageNumber} / ${context.pagesCount}'),
+              style: const pw.TextStyle(fontSize: 10),
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
 
     return doc.save();
   }
@@ -342,4 +388,6 @@ class DriverPrintController extends GetxController {
   void setPaidOut(bool value) {
     paidOut.value = value;
   }
+
+  String _zg(String value) => _zgConverter.unicodeToZawGyi(value);
 }

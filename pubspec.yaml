@@ -47,6 +47,7 @@ dependencies:
   package_info_plus: ^8.0.2
   pdf: ^3.11.0
   printing: ^5.13.4
+  myanmar_tools: ^0.0.2
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +76,8 @@ flutter:
 
   assets:
     - assets/fonts/Pyidaungsu_Regular.ttf
+    - assets/fonts/Pyidaungsu_Book_Regular.ttf
+    - assets/fonts/ZAWGYI_ONE.TTF
 
   # To add assets to your application, add an assets section, like this:
   # assets:
