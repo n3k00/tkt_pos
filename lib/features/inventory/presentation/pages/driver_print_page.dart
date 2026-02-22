@@ -26,10 +26,10 @@ class DriverPrintPage extends StatelessWidget {
             actions: [
               TextButton.icon(
                 onPressed: () async {
-                  await controller.saveAdjustments();
+                  await controller.printSlip();
                   Get.snackbar(
                     'Print',
-                    'Printing workflow coming soon.',
+                    'Sent to printer.',
                     snackPosition: SnackPosition.BOTTOM,
                   );
                 },
@@ -732,10 +732,10 @@ class _FeesEditor extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: FilledButton.icon(
                 onPressed: () async {
-                  await controller.saveAdjustments();
+                  await controller.printSlip();
                   Get.snackbar(
                     'Print',
-                    'Printing workflow coming soon.',
+                    'Sent to printer.',
                     snackPosition: SnackPosition.BOTTOM,
                   );
                 },
