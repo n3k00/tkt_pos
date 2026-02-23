@@ -12,6 +12,7 @@ import 'package:printing/printing.dart';
 import 'package:myanmar_tools/myanmar_tools.dart';
 
 import 'package:tkt_pos/data/local/app_database.dart';
+import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
 
@@ -141,6 +142,10 @@ class DriverPrintController extends GetxController {
           ),
         );
     driver.value = updatedDriver;
+    if (Get.isRegistered<InventoryController>()) {
+      final inventoryController = Get.find<InventoryController>();
+      await inventoryController.refreshDriverById(driverId);
+    }
   }
 
   Future<Uint8List> _buildPdfBytes(Driver currentDriver) async {
@@ -375,7 +380,6 @@ class DriverPrintController extends GetxController {
     if (currentDriver == null) return;
 
     _ensureFeeDefaults();
-    await saveAdjustments();
 
     final bytes = await _buildPdfBytes(currentDriver);
     if (Platform.isWindows) {

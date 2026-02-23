@@ -99,6 +99,21 @@ class InventoryController extends GetxController {
     transactionsByDriver.refresh();
   }
 
+  Future<void> refreshDriverById(int driverId) async {
+    final query = db.select(db.drivers)..where((d) => d.id.equals(driverId));
+    final results = await query.get();
+    if (results.isEmpty) return;
+    final updatedDriver = results.first;
+    final index = drivers.indexWhere((d) => d.id == driverId);
+    if (index >= 0) {
+      drivers[index] = updatedDriver;
+      drivers.refresh();
+    } else {
+      drivers.add(updatedDriver);
+    }
+    await loadTransactionsByDriverToMap(driverId);
+  }
+
   void setSearch(String q) {
     searchQuery.value = q;
   }

@@ -388,10 +388,65 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
           widget.controller.searchQuery.value.trim().isEmpty;
       final headerStyle = AppTextStyles.tableHeader;
       final cellStyle = AppTextStyles.tableCell;
+      final double roomFee = driverInfo?.roomFee ?? 0;
+      final double laborFee = driverInfo?.laborFee ?? 0;
+      final double deliveryFee = driverInfo?.deliveryFee ?? 0;
       final totalCharges = rows
           .where((t) => t.paymentStatus.trim() == AppString.paymentPending)
           .fold<double>(0, (s, t) => s + t.charges);
       final totalAdvance = rows.fold<double>(0, (s, t) => s + t.cashAdvance);
+      final double totalDeductions = roomFee + laborFee + deliveryFee;
+      final double paidOutAmount = totalCharges - totalDeductions;
+      List<DataRow> buildFeeRows(Driver? info) {
+        final feeRows = <DataRow>[];
+        void addFee(String label, double? amount) {
+          if (amount == null || amount <= 0) return;
+          feeRows.add(
+            DataRow(
+              cells: [
+                const DataCell(SizedBox()), // No
+                DataCell(
+                  Padding(
+                    padding: const EdgeInsets.only(left: Dimens.d16),
+                    child: Text(
+                      label,
+                      style: cellStyle.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                const DataCell(SizedBox()), // Phone placeholder
+                const DataCell(SizedBox()), // Parcel type
+                const DataCell(SizedBox()), // Number
+                DataCell(
+                  SizedBox(
+                    width: AppTableWidths.charges,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '- ${Format.money(amount)}',
+                        style: headerStyle.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColor.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const DataCell(SizedBox()), // Payment status
+                const DataCell(SizedBox()), // Cash advance
+                const DataCell(SizedBox()), // Picked up
+                const DataCell(SizedBox()), // Collect time
+                const DataCell(SizedBox()), // Actions
+              ],
+            ),
+          );
+        }
+
+        addFee('Room Fee', info?.roomFee);
+        addFee('Labor Fee', info?.laborFee);
+        addFee('Delivery Fee', info?.deliveryFee);
+        return feeRows;
+      }
 
       return AppDataTable(
         table: DataTable(
@@ -629,7 +684,17 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               DataRow(
                 cells: [
                   const DataCell(SizedBox()), // No
-                  const DataCell(SizedBox()), // Name
+                  DataCell(
+                    Padding(
+                      padding: const EdgeInsets.only(left: Dimens.d16),
+                      child: Text(
+                        'Total Charges',
+                        style: headerStyle.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ), // Name
                   const DataCell(SizedBox()), // Phone placeholder
                   const DataCell(SizedBox()), // Parcel type
                   const DataCell(SizedBox()), // Number
@@ -671,6 +736,47 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   const DataCell(SizedBox()), // Actions
                 ],
               ),
+              ...buildFeeRows(driverInfo),
+              if (totalDeductions > 0)
+                DataRow(
+                  cells: [
+                    const DataCell(SizedBox()), // No
+                    DataCell(
+                      Padding(
+                        padding: const EdgeInsets.only(left: Dimens.d16),
+                        child: Text(
+                          'Paid out amount',
+                          style: headerStyle.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const DataCell(SizedBox()), // Phone placeholder
+                    const DataCell(SizedBox()), // Parcel type
+                    const DataCell(SizedBox()), // Number
+                    DataCell(
+                      SizedBox(
+                        width: AppTableWidths.charges,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            Format.money(paidOutAmount),
+                            style: headerStyle.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: AppColor.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const DataCell(SizedBox()), // Payment status
+                    const DataCell(SizedBox()), // Cash advance
+                    const DataCell(SizedBox()), // Picked up
+                    const DataCell(SizedBox()), // Collect time
+                    const DataCell(SizedBox()), // Actions
+                  ],
+                ),
               DataRow(
                 cells: [
                   DataCell(

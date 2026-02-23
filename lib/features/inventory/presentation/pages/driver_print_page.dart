@@ -21,27 +21,7 @@ class DriverPrintPage extends StatelessWidget {
         final transactions = controller.transactions;
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Print Preview'),
-            actions: [
-              TextButton.icon(
-                onPressed: () async {
-                  await controller.printSlip();
-                  Get.snackbar(
-                    'Print',
-                    'Sent to printer.',
-                    snackPosition: SnackPosition.BOTTOM,
-                  );
-                },
-                icon: const Icon(Icons.print, color: Colors.white),
-                label: const Text(
-                  'Print',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
-          ),
+          appBar: AppBar(title: const Text('Print Preview')),
           body: controller.isLoading.value
               ? const Center(child: CircularProgressIndicator())
               : driver == null
@@ -620,7 +600,7 @@ class _FeesEditor extends StatelessWidget {
     );
 
     Widget feeField({
-      required TextEditingController controller,
+      required TextEditingController textController,
       required String label,
       required IconData icon,
     }) {
@@ -629,7 +609,8 @@ class _FeesEditor extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              controller: controller,
+              controller: textController,
+              enabled: !controller.paidOut.value,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
@@ -689,19 +670,19 @@ class _FeesEditor extends StatelessWidget {
             Row(
               children: [
                 feeField(
-                  controller: controller.roomFeeCtrl,
+                  textController: controller.roomFeeCtrl,
                   label: 'Room Fee',
                   icon: Icons.home_work_outlined,
                 ),
                 const SizedBox(width: 16),
                 feeField(
-                  controller: controller.laborFeeCtrl,
+                  textController: controller.laborFeeCtrl,
                   label: 'Labor Fee',
                   icon: Icons.engineering_outlined,
                 ),
                 const SizedBox(width: 16),
                 feeField(
-                  controller: controller.deliveryFeeCtrl,
+                  textController: controller.deliveryFeeCtrl,
                   label: 'Delivery Fee',
                   icon: Icons.local_shipping_outlined,
                 ),
@@ -724,24 +705,63 @@ class _FeesEditor extends StatelessWidget {
                       : 'Pending payout',
                 ),
                 value: controller.paidOut.value,
-                onChanged: controller.setPaidOut,
+                onChanged: controller.paidOut.value
+                    ? null
+                    : controller.setPaidOut,
               ),
             ),
             const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton.icon(
-                onPressed: () async {
-                  await controller.printSlip();
-                  Get.snackbar(
-                    'Print',
-                    'Sent to printer.',
-                    snackPosition: SnackPosition.BOTTOM,
-                  );
-                },
-                icon: const Icon(Icons.print),
-                label: const Text('Print'),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final confirmed =
+                        await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Confirm Save'),
+                            content: const Text(
+                              'Save current slip settings to the database?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                              FilledButton(
+                                onPressed: () => Navigator.of(ctx).pop(true),
+                                child: const Text('Yes, Save'),
+                              ),
+                            ],
+                          ),
+                        ) ??
+                        false;
+                    if (!confirmed) return;
+                    await controller.saveAdjustments();
+                    Get.snackbar(
+                      'Saved',
+                      'Slip settings updated in database.',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  },
+                  icon: const Icon(Icons.save_outlined),
+                  label: const Text('Save'),
+                ),
+                const SizedBox(width: 12),
+                FilledButton.icon(
+                  onPressed: () async {
+                    await controller.printSlip();
+                    Get.snackbar(
+                      'Print',
+                      'Sent to printer.',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  },
+                  icon: const Icon(Icons.print),
+                  label: const Text('Print'),
+                ),
+              ],
             ),
           ],
         ),
