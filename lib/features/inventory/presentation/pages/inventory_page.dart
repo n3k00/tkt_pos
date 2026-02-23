@@ -737,7 +737,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 ],
               ),
               ...buildFeeRows(driverInfo),
-              if (totalDeductions > 0)
+              if (totalDeductions > 0 && totalCharges > 0)
                 DataRow(
                   cells: [
                     const DataCell(SizedBox()), // No

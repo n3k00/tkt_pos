@@ -370,72 +370,78 @@ class DriverPrintPage extends StatelessWidget {
                                                       context,
                                                       controller,
                                                     ),
-                                                    DataRow(
-                                                      cells: [
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        DataCell(
-                                                          Text(
-                                                            'Paid Out Amount',
-                                                            style: Theme.of(context)
-                                                                .textTheme
-                                                                .titleSmall
-                                                                ?.copyWith(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                ),
+                                                    if (controller
+                                                            .totalChargesPending >
+                                                        0)
+                                                      DataRow(
+                                                        cells: [
+                                                          const DataCell(
+                                                            SizedBox(),
                                                           ),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        DataCell(
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .centerRight,
-                                                            child: Text(
-                                                              Format.money(
-                                                                controller
-                                                                    .netAmount,
-                                                              ),
+                                                          DataCell(
+                                                            Text(
+                                                              'Paid Out Amount',
                                                               style: Theme.of(context)
                                                                   .textTheme
-                                                                  .titleMedium
+                                                                  .titleSmall
                                                                   ?.copyWith(
                                                                     fontWeight:
                                                                         FontWeight
-                                                                            .w700,
-                                                                    color: AppColor
-                                                                        .textPrimary,
+                                                                            .w600,
                                                                   ),
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .right,
                                                             ),
                                                           ),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          DataCell(
+                                                            Align(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .centerRight,
+                                                              child: Text(
+                                                                Format.money(
+                                                                  controller
+                                                                      .netAmount,
+                                                                ),
+                                                                style: Theme.of(
+                                                                  context,
+                                                                )
+                                                                    .textTheme
+                                                                    .titleMedium
+                                                                    ?.copyWith(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w700,
+                                                                      color: AppColor
+                                                                          .textPrimary,
+                                                                    ),
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .right,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     DataRow(
                                                       cells: [
                                                         const DataCell(
