@@ -705,9 +705,7 @@ class _FeesEditor extends StatelessWidget {
                       : 'Pending payout',
                 ),
                 value: controller.paidOut.value,
-                onChanged: controller.paidOut.value
-                    ? null
-                    : controller.setPaidOut,
+                onChanged: controller.setPaidOut,
               ),
             ),
             const SizedBox(height: 16),
