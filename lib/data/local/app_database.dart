@@ -56,12 +56,28 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(transactionEditHistory);
       }
       if (from < 14) {
-        await m.addColumn(drivers, drivers.roomFee);
-        await m.addColumn(drivers, drivers.laborFee);
-        await m.addColumn(drivers, drivers.deliveryFee);
+        await _addColumnIfMissing(
+          tableName: 'drivers',
+          columnName: 'room_fee',
+          addColumn: () => m.addColumn(drivers, drivers.roomFee),
+        );
+        await _addColumnIfMissing(
+          tableName: 'drivers',
+          columnName: 'labor_fee',
+          addColumn: () => m.addColumn(drivers, drivers.laborFee),
+        );
+        await _addColumnIfMissing(
+          tableName: 'drivers',
+          columnName: 'delivery_fee',
+          addColumn: () => m.addColumn(drivers, drivers.deliveryFee),
+        );
       }
       if (from < 15) {
-        await m.addColumn(drivers, drivers.paidOut);
+        await _addColumnIfMissing(
+          tableName: 'drivers',
+          columnName: 'paid_out',
+          addColumn: () => m.addColumn(drivers, drivers.paidOut),
+        );
       }
     },
   );
@@ -522,6 +538,16 @@ END
         .map((row) => row.data['name'])
         .whereType<String>()
         .toSet();
+  }
+
+  Future<void> _addColumnIfMissing({
+    required String tableName,
+    required String columnName,
+    required Future<void> Function() addColumn,
+  }) async {
+    final columns = await _getColumnNames(tableName);
+    if (columns.contains(columnName)) return;
+    await addColumn();
   }
 }
 
