@@ -49,25 +49,8 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(reportTransactions);
       }
       if (from < 12) {
-        // Rebuild trip tables using Drift-managed schema and ensure indices exist
-        try {
-          await customStatement('DROP TABLE IF EXISTS trip_main');
-        } catch (_) {}
-        try {
-          await customStatement('DROP TABLE IF EXISTS trip_manifests');
-        } catch (_) {}
-        await m.createTable(tripMains);
-        await m.createTable(tripManifests);
-        try {
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_trip_manifests_driver_id ON trip_manifests(driver_id)',
-          );
-        } catch (_) {}
-        try {
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_trip_main_date ON trip_main(date)',
-          );
-        } catch (_) {}
+        // Rebuild trip tables while preserving any legacy data
+        await _rebuildTripTablesWithCopy(m);
       }
       if (from < 13) {
         await m.createTable(transactionEditHistory);
@@ -380,6 +363,165 @@ class AppDatabase extends _$AppDatabase {
     } catch (e) {
       return null;
     }
+  }
+
+  Future<void> _rebuildTripTablesWithCopy(Migrator m) async {
+    await _rebuildTripMainWithCopy(m);
+    await _rebuildTripManifestsWithCopy(m);
+    await _ensureTripTableIndexes();
+  }
+
+  Future<void> _rebuildTripMainWithCopy(Migrator m) async {
+    const tableName = 'trip_main';
+    const legacyName = 'trip_main_legacy';
+    final legacyExists = await _tableExists(legacyName);
+    if (legacyExists) {
+      await customStatement('DROP TABLE IF EXISTS "$tableName"');
+      await m.createTable(tripMains);
+      await _copyTripMainData(legacyName);
+      await customStatement('DROP TABLE IF EXISTS "$legacyName"');
+      return;
+    }
+    final existed = await _tableExists(tableName);
+    if (!existed) {
+      await m.createTable(tripMains);
+      return;
+    }
+    await customStatement('ALTER TABLE "$tableName" RENAME TO "$legacyName"');
+    try {
+      await m.createTable(tripMains);
+      await _copyTripMainData(legacyName);
+      await customStatement('DROP TABLE IF EXISTS "$legacyName"');
+    } catch (_) {
+      await customStatement('DROP TABLE IF EXISTS "$tableName"');
+      await customStatement('ALTER TABLE "$legacyName" RENAME TO "$tableName"');
+      rethrow;
+    }
+  }
+
+  Future<void> _rebuildTripManifestsWithCopy(Migrator m) async {
+    const tableName = 'trip_manifests';
+    const legacyName = 'trip_manifests_legacy';
+    final legacyExists = await _tableExists(legacyName);
+    if (legacyExists) {
+      await customStatement('DROP TABLE IF EXISTS "$tableName"');
+      await m.createTable(tripManifests);
+      await _copyTripManifestData(legacyName);
+      await customStatement('DROP TABLE IF EXISTS "$legacyName"');
+      return;
+    }
+    final existed = await _tableExists(tableName);
+    if (!existed) {
+      await m.createTable(tripManifests);
+      return;
+    }
+    await customStatement('ALTER TABLE "$tableName" RENAME TO "$legacyName"');
+    try {
+      await m.createTable(tripManifests);
+      await _copyTripManifestData(legacyName);
+      await customStatement('DROP TABLE IF EXISTS "$legacyName"');
+    } catch (_) {
+      await customStatement('DROP TABLE IF EXISTS "$tableName"');
+      await customStatement('ALTER TABLE "$legacyName" RENAME TO "$tableName"');
+      rethrow;
+    }
+  }
+
+  Future<void> _ensureTripTableIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_trip_manifests_driver_id ON trip_manifests(driver_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_trip_main_date ON trip_main(date)',
+    );
+  }
+
+  Future<void> _copyTripMainData(String legacyName) async {
+    final columns = await _getColumnNames(legacyName);
+    if (!columns.contains('id')) {
+      return;
+    }
+    final sql = '''
+INSERT INTO trip_main (
+  id, date, driver_name, car_id, commission, labor_cost, support_payment, room_fee, created_at, updated_at
+)
+SELECT
+  id,
+  ${_legacyDateExpression(columns.contains('date') ? 'date' : null)} AS date,
+  ${_selectOrNull(columns, 'driver_name')} AS driver_name,
+  ${_selectOrNull(columns, 'car_id')} AS car_id,
+  ${_selectOrNull(columns, 'commission')} AS commission,
+  ${_selectOrNull(columns, 'labor_cost')} AS labor_cost,
+  ${_selectOrNull(columns, 'support_payment')} AS support_payment,
+  ${_selectOrNull(columns, 'room_fee')} AS room_fee,
+  ${_selectOrNull(columns, 'created_at')} AS created_at,
+  ${_selectOrNull(columns, 'updated_at')} AS updated_at
+FROM "$legacyName";
+''';
+    await customStatement(sql);
+  }
+
+  Future<void> _copyTripManifestData(String legacyName) async {
+    final columns = await _getColumnNames(legacyName);
+    if (!columns.contains('id') || !columns.contains('driver_id')) {
+      return;
+    }
+    final sql = '''
+INSERT INTO trip_manifests (
+  id, driver_id, customer_name, delivery_city, phone, parcel_type, number_of_parcel,
+  cash_advance, payment_pending, payment_paid, created_at, updated_at
+)
+SELECT
+  id,
+  driver_id,
+  ${_selectOrNull(columns, 'customer_name')} AS customer_name,
+  ${_selectOrNull(columns, 'delivery_city')} AS delivery_city,
+  ${_selectOrNull(columns, 'phone')} AS phone,
+  ${_selectOrNull(columns, 'parcel_type')} AS parcel_type,
+  ${_selectOrNull(columns, 'number_of_parcel')} AS number_of_parcel,
+  ${_selectOrNull(columns, 'cash_advance')} AS cash_advance,
+  ${_selectOrNull(columns, 'payment_pending')} AS payment_pending,
+  ${_selectOrNull(columns, 'payment_paid')} AS payment_paid,
+  ${_selectOrNull(columns, 'created_at')} AS created_at,
+  ${_selectOrNull(columns, 'updated_at')} AS updated_at
+FROM "$legacyName";
+''';
+    await customStatement(sql);
+  }
+
+  String _legacyDateExpression(String? column) {
+    if (column == null) return 'NULL';
+    return '''
+CASE
+  WHEN typeof($column) = 'integer' THEN $column
+  WHEN typeof($column) = 'real' THEN CAST($column AS INTEGER)
+  WHEN typeof($column) = 'text' THEN COALESCE(CAST(strftime('%s', $column) AS INTEGER) * 1000, CAST($column AS INTEGER))
+  ELSE NULL
+END
+''';
+  }
+
+  String _selectOrNull(Set<String> columns, String name) {
+    return columns.contains(name) ? name : 'NULL';
+  }
+
+  Future<bool> _tableExists(String tableName) async {
+    final result = await customSelect(
+      'SELECT 1 FROM sqlite_master WHERE type = ? AND name = ? LIMIT 1',
+      variables: [
+        const Variable<String>('table'),
+        Variable<String>(tableName),
+      ],
+    ).get();
+    return result.isNotEmpty;
+  }
+
+  Future<Set<String>> _getColumnNames(String tableName) async {
+    final rows = await customSelect('PRAGMA table_info("$tableName")').get();
+    return rows
+        .map((row) => row.data['name'])
+        .whereType<String>()
+        .toSet();
   }
 }
 
