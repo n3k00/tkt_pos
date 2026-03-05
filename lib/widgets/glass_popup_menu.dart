@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class GlassPopupMenuButton<T> extends StatelessWidget {
   const GlassPopupMenuButton({
@@ -26,11 +28,11 @@ class GlassPopupMenuButton<T> extends StatelessWidget {
     return Theme(
       data: theme.copyWith(
         popupMenuTheme: theme.popupMenuTheme.copyWith(
-        color: Colors.white.withValues(alpha: 0.85),
+        color: AppColor.white.withValues(alpha: 0.85),
           elevation: 12,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.35)),
+            borderRadius: BorderRadius.circular(Dimens.radiusMDPlus),
+            side: BorderSide(color: AppColor.white.withValues(alpha: 0.35)),
           ),
         ),
       ),

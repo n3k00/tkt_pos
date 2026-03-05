@@ -8,6 +8,7 @@ import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class ReportsPage extends GetView<ReportsController> {
   const ReportsPage({super.key});
@@ -30,19 +31,20 @@ class ReportsPage extends GetView<ReportsController> {
                 trailing: HeaderSearchField(
                   hint: AppString.searchReportsHint,
                   onChanged: controller.setSearch,
+                  borderRadius: BorderRadius.circular(Dimens.radiusSM),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: Dimens.spacingXXS),
               _StatCards(controller: controller),
-              const SizedBox(height: 16),
+              const SizedBox(height: Dimens.spacingMD),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingMD),
                 child: Row(
                   children: [
                     const Text(
                       AppString.reportTransactionsTitle,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: Dimens.fontSizeSubtitle,
                         fontWeight: FontWeight.w700,
                         color: AppColor.textPrimary,
                       ),
@@ -52,7 +54,7 @@ class ReportsPage extends GetView<ReportsController> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: Dimens.spacingXS),
               Expanded(child: _ReportsTable(controller: controller)),
             ],
           ),
@@ -70,7 +72,7 @@ class _StatCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingMD),
       child: Obx(() {
         return Row(
           children: [
@@ -78,22 +80,22 @@ class _StatCards extends StatelessWidget {
               title: AppString.totalCount,
               value: controller.totalCount.toString(),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: Dimens.spacingSM),
             _StatCard(
               title: AppString.totalCharges,
               value: Format.money(controller.totalChargesPendingAndAdvance),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: Dimens.spacingSM),
             _StatCard(
               title: AppString.statPaymentPending,
               value: Format.money(controller.totalChargesPending),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: Dimens.spacingSM),
             _StatCard(
               title: AppString.statPaymentPaid,
               value: Format.money(controller.totalChargesPaid),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: Dimens.spacingSM),
             _StatCard(
               title: AppString.statCashAdvance,
               value: Format.money(controller.totalCashAdvance),
@@ -115,21 +117,21 @@ class _StatCard extends StatelessWidget {
     return Expanded(
       child: Container(
         height: 110,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Dimens.spacingMD),
         decoration: BoxDecoration(
           color: AppColor.card,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(Dimens.radiusMD),
           border: Border.all(color: AppColor.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: const TextStyle(color: AppColor.textSecondary)),
-            const SizedBox(height: 6),
+            const SizedBox(height: Dimens.spacingMicro),
             Text(
               value,
               style: const TextStyle(
-                fontSize: 22,
+                fontSize: Dimens.fontSizeStat,
                 fontWeight: FontWeight.w800,
                 color: AppColor.textPrimary,
               ),
@@ -176,12 +178,17 @@ class _ReportsTableState extends State<_ReportsTable> {
         final mm = d.month.toString().padLeft(2, '0');
         final yyyy = d.year.toString();
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.fromLTRB(
+            Dimens.spacingMD,
+            0,
+            Dimens.spacingMD,
+            Dimens.spacingMD,
+          ),
           child: Card(
             margin: EdgeInsets.zero,
             color: AppColor.card,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(Dimens.radiusMD),
               side: const BorderSide(color: AppColor.border),
             ),
             child: SizedBox(
@@ -197,7 +204,12 @@ class _ReportsTableState extends State<_ReportsTable> {
         );
       }
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsets.fromLTRB(
+          Dimens.spacingMD,
+          0,
+          Dimens.spacingMD,
+          Dimens.spacingMD,
+        ),
         child: AppDataTable(
           table: DataTable(
             columnSpacing: 16,
@@ -289,13 +301,16 @@ class _DatePickerButton extends StatelessWidget {
       final label = _formatDisplay(date);
       return InkWell(
         onTap: () => _pickDate(context),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Dimens.spacingSM,
+            vertical: Dimens.spacingXS,
+          ),
           decoration: BoxDecoration(
             color: AppColor.card,
             border: Border.all(color: AppColor.border),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(Dimens.radiusXS),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -305,7 +320,7 @@ class _DatePickerButton extends StatelessWidget {
                 size: 18,
                 color: AppColor.textPrimary,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: Dimens.spacingXS),
               Text(label, style: const TextStyle(color: AppColor.textPrimary)),
             ],
           ),

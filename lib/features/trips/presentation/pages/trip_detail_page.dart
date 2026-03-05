@@ -5,6 +5,7 @@ import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/resources/table_widths.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/styles.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/features/trips/data/trip_repository.dart';
 
 class TripDetailPage extends StatelessWidget {
@@ -17,13 +18,13 @@ class TripDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Trip Detail')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Dimens.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header DataTable showing trip meta as column labels
             _TripHeaderTable(trip: trip),
-            const SizedBox(height: 16),
+            const SizedBox(height: Dimens.spacingMD),
             Expanded(
               child: FutureBuilder<List<TripManifest>>(
                 future: repo.getTripManifests(trip.id),
@@ -58,14 +59,14 @@ class _TripHeaderTable extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: DataTableTheme(
         data: const DataTableThemeData(
-          headingRowColor: WidgetStatePropertyAll(Color(0xFFF2F4F7)),
+          headingRowColor: WidgetStatePropertyAll(AppColor.surfaceBackground),
           headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
           dividerThickness: 0.6,
           dataRowMinHeight: 36,
           dataRowMaxHeight: 36,
         ),
         child: DataTable(
-          columnSpacing: 24,
+          columnSpacing: Dimens.spacingXL,
           showCheckboxColumn: false,
           columns: [
             DataColumn(
@@ -127,9 +128,9 @@ class _ManifestsTableState extends State<_ManifestsTable> {
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     side: BorderSide(
-                      color: Colors.black12.withValues(alpha: 0.08),
+                      color: AppColor.border,
                     ),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(Dimens.radiusXS),
                   ),
                   child: DataTable(
                     columnSpacing: 16,
@@ -138,7 +139,7 @@ class _ManifestsTableState extends State<_ManifestsTable> {
                     columns: [
                       DataColumn(
                         label: Padding(
-                          padding: const EdgeInsets.only(left: 16),
+                          padding: const EdgeInsets.only(left: Dimens.spacingMD),
                           child: Text('No', style: headerStyle),
                         ),
                       ),
@@ -216,7 +217,7 @@ class _ManifestsTableState extends State<_ManifestsTable> {
                           cells: [
                             DataCell(
                               Padding(
-                                padding: const EdgeInsets.only(left: 16),
+                                padding: const EdgeInsets.only(left: Dimens.spacingMD),
                                 child: Text(i.toString(), style: cellStyle),
                               ),
                             ),
@@ -279,7 +280,7 @@ class _ManifestsTableState extends State<_ManifestsTable> {
                       if (list.isNotEmpty)
                         DataRow(
                           color: const WidgetStatePropertyAll(
-                            Color(0xFFF2F4F7),
+                            AppColor.surfaceBackground,
                           ),
                           cells: [
                             const DataCell(SizedBox()),

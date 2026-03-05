@@ -9,6 +9,7 @@ import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -39,6 +40,7 @@ class HomePage extends GetView<HomeController> {
                       child: HeaderSearchField(
                         hint: AppString.searchHint,
                         onChanged: controller.setSearch,
+                        borderRadius: BorderRadius.circular(Dimens.radiusSM),
                       ),
                     ),
                   ],
@@ -168,7 +170,7 @@ Future<void> _showAddTripMainDialog(
                       validator: (v) =>
                           (v == null || v.trim().isEmpty) ? 'Required' : null,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: Dimens.spacingSM),
                     Row(
                       children: [
                         Expanded(child: Text('Date: ${Format.date(date)}')),
@@ -186,7 +188,7 @@ Future<void> _showAddTripMainDialog(
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: Dimens.spacingSM),
                     TextFormField(
                       controller: carCtrl,
                       keyboardType: TextInputType.text,

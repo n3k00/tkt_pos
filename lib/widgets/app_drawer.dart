@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 /// Slim, icon-only sidebar drawer inspired by the provided design.
 /// Keeps existing GetX navigation behavior and route names.
@@ -13,7 +14,7 @@ class AppDrawer extends StatelessWidget {
     final String currentRoute = Get.currentRoute;
 
     Color iconColor(bool selected) =>
-        selected ? AppColor.primaryDark : Colors.black.withValues(alpha: 0.55);
+        selected ? AppColor.primaryDark : AppColor.textSecondary;
 
     // Simple nav model to reduce repetition
     const topItems = <_NavItem>[
@@ -27,25 +28,27 @@ class AppDrawer extends StatelessWidget {
 
     return Drawer(
       width: 88,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColor.transparent,
       elevation: 0,
       child: SafeArea(
         child: Center(
           child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 12),
+            margin:
+                const EdgeInsets.symmetric(vertical: Dimens.spacingSM),
             decoration: BoxDecoration(
               color: AppColor.white,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(Dimens.radiusXXL),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
+                  color: AppColor.textPrimary.withValues(alpha: 0.06),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(vertical: Dimens.spacingSM),
               child: Column(
                 children: [
                   // Brand / App icon
@@ -53,8 +56,8 @@ class AppDrawer extends StatelessWidget {
                     size: 48,
                     child: Icon(Icons.dashboard, color: AppColor.primaryDark),
                   ),
-                  const SizedBox(height: 8),
-                  const Divider(height: 24),
+                  const SizedBox(height: Dimens.spacingXS),
+                  const Divider(height: Dimens.spacingXL),
 
                   // Nav buttons
                   // Top nav buttons
@@ -88,7 +91,7 @@ class AppDrawer extends StatelessWidget {
                         color: iconColor(currentRoute == it.route),
                       )),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: Dimens.spacingSM),
                 ],
               ),
             ),
@@ -117,21 +120,21 @@ class _NavIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: Dimens.spacingMicro),
       child: Tooltip(
         message: tooltip,
         waitDuration: const Duration(milliseconds: 300),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(Dimens.radiusLG),
           child: Container(
             width: 56,
             height: 56,
             decoration: BoxDecoration(
               color: selected
                   ? AppColor.primary.withValues(alpha: 0.12)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
+                  : AppColor.transparent,
+              borderRadius: BorderRadius.circular(Dimens.radiusLG),
             ),
             child: Center(child: Icon(icon, color: color, size: 26)),
           ),

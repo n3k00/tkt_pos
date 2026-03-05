@@ -59,88 +59,34 @@ class InventoryPage extends GetView<InventoryController> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PageHeader(
+              const PageHeader(
                 title: AppString.inventory,
-                crumbs: const ['Inventory'],
+                crumbs: ['Inventory'],
                 showBack: false,
-                trailing: Obx(() {
-                  final selected = controller.selectedDate.value;
-                  final label =
-                      '${_monthNames[selected.month - 1]} ${selected.year}';
-                  final bool isUnclaimedOnly =
-                      controller.showUnclaimedOnly.value;
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _UnclaimedSwitch(
-                        isActive: isUnclaimedOnly,
-                        onChanged: controller.setUnclaimedOnly,
-                      ),
-                      const SizedBox(width: Dimens.d12),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 320),
-                        child: SizedBox(
-                          width: 280,
-                          height: 48,
-                          child: HeaderSearchField(
-                            hint: AppString.searchHint,
-                            onChanged: controller.setSearch,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: Dimens.d12),
-                      Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: AppColor.card,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColor.border),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () => _openMonthPicker(context),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.calendar_month,
-                                    color: AppColor.textPrimary,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    label,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          color: AppColor.textPrimary,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                }),
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Dimens.spacingMD,
+                  vertical: Dimens.spacingSM,
+                ),
+                child: _FiltersToolbar(
+                  controller: controller,
+                  onPickMonth: () => _openMonthPicker(context),
+                ),
+              ),
+              const SizedBox(height: Dimens.spacingSM),
               Expanded(
                 child: Padding(
-                  padding: Dimens.screen,
+                  padding: const EdgeInsets.fromLTRB(
+                    Dimens.spacingMD,
+                    0,
+                    Dimens.spacingMD,
+                    Dimens.spacingMD,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: Dimens.d16),
+                      const SizedBox(height: Dimens.spacingMD),
                       Expanded(
                         child: Obx(() {
                           if (controller.isLoading.value) {
@@ -190,7 +136,7 @@ class InventoryPage extends GetView<InventoryController> {
                           return ListView.separated(
                             itemCount: filteredDrivers.length,
                             separatorBuilder: (_, __) =>
-                                const SizedBox(height: Dimens.d24),
+                                const SizedBox(height: Dimens.spacingXL),
                             itemBuilder: (context, index) {
                               final d = filteredDrivers[index];
                               return _DriverSection(
@@ -222,21 +168,59 @@ class _DriverSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateStr = Format.date(driver.date);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(dateStr, style: AppTextStyles.sectionTitle(context)),
-            ),
-            Expanded(
-              child: Text(
-                driver.name,
-                style: AppTextStyles.sectionTitle(context),
+    return _SectionCard(
+      title: driver.name,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: Dimens.spacingSM,
+            runSpacing: Dimens.spacingXS,
+            children: [
+              _MetaChip(icon: Icons.event, label: 'Date', value: dateStr),
+            ],
+          ),
+          const SizedBox(height: Dimens.spacingSM),
+          Wrap(
+            spacing: Dimens.spacingSM,
+            runSpacing: Dimens.spacingSM,
+            children: [
+              _FeeStat(
+                label: AppString.driverRoomFee,
+                amount: driver.roomFee,
+                highlight: (driver.roomFee ?? 0) > 0,
               ),
-            ),
-            Row(
+              _FeeStat(
+                label: AppString.driverLaborFee,
+                amount: driver.laborFee,
+                highlight: (driver.laborFee ?? 0) > 0,
+              ),
+              _FeeStat(
+                label: AppString.driverDeliveryFee,
+                amount: driver.deliveryFee,
+                highlight: (driver.deliveryFee ?? 0) > 0,
+              ),
+              _FeeStat(
+                label: AppString.driverTotalCharges,
+                amount: controller.totalChargesForDriver(driver.id),
+                highlight:
+                    (controller.totalChargesForDriver(driver.id) ?? 0) > 0,
+              ),
+              _FeeStat(
+                label: AppString.driverPaidOutAmount,
+                amount: controller.paidOutAmountForDriver(driver.id),
+                highlight:
+                    (controller.paidOutAmountForDriver(driver.id) ?? 0) > 0,
+              ),
+              _StatusBadge(isPaidOut: driver.paidOut),
+            ],
+          ),
+          const SizedBox(height: Dimens.spacingSM),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Wrap(
+              spacing: Dimens.spacingXS,
+              runSpacing: Dimens.spacingXS,
               children: [
                 ElevatedButton.icon(
                   onPressed: () =>
@@ -245,24 +229,23 @@ class _DriverSection extends StatelessWidget {
                   label: const Text(AppString.addTransaction),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                      horizontal: Dimens.spacingMD,
+                      vertical: Dimens.spacingSM,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(Dimens.radiusXS),
                     ),
                     textStyle: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
-                const SizedBox(width: Dimens.d8),
                 DriverActionsMenu(driver: driver, controller: controller),
               ],
             ),
-          ],
-        ),
-        const SizedBox(height: Dimens.d8),
-        _DriverTransactionsTable(controller: controller, driverId: driver.id),
-      ],
+          ),
+          const SizedBox(height: Dimens.spacingSM),
+          _DriverTransactionsTable(controller: controller, driverId: driver.id),
+        ],
+      ),
     );
   }
 
@@ -281,10 +264,10 @@ class _UnclaimedSwitch extends StatelessWidget {
     const double width = 150;
     const double height = 44;
     const double knobSize = 32;
-    final Color activeBg = const Color(0xFF00C853);
-    final Color inactiveBg = Colors.grey[300]!;
-    final Color activeBorder = const Color(0xFF6EF3A1);
-    final Color inactiveBorder = Colors.grey[400]!;
+    final Color activeBg = AppColor.primary;
+    final Color inactiveBg = AppColor.surfaceBackground;
+    final Color activeBorder = AppColor.secondary;
+    final Color inactiveBorder = AppColor.border;
 
     return GestureDetector(
       onTap: () => onChanged(!isActive),
@@ -295,7 +278,7 @@ class _UnclaimedSwitch extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: isActive ? activeBg : inactiveBg,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(Dimens.radiusXXXL),
           border: Border.all(
             width: 3,
             color: isActive ? activeBorder : inactiveBorder,
@@ -317,10 +300,10 @@ class _UnclaimedSwitch extends StatelessWidget {
                   right: isActive ? knobSize + 14 : 16,
                 ),
                 child: Text(
-                  'Unclaimed',
+                  AppString.filterUnclaimedOnly,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: isActive ? const Color(0xFF064D1F) : Colors.white,
+                    color: isActive ? AppColor.primaryDark : AppColor.white,
                   ),
                 ),
               ),
@@ -334,13 +317,15 @@ class _UnclaimedSwitch extends StatelessWidget {
               child: Container(
                 width: knobSize,
                 height: knobSize,
-                margin: const EdgeInsets.symmetric(horizontal: 6),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: Dimens.spacingMicro,
+                ),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white,
+                  color: AppColor.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
+                      color: AppColor.textPrimary.withValues(alpha: 0.15),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -350,6 +335,79 @@ class _UnclaimedSwitch extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _FeeStat extends StatelessWidget {
+  const _FeeStat({
+    required this.label,
+    required this.amount,
+    this.highlight = false,
+  });
+
+  final String label;
+  final double? amount;
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Dimens.spacingSM),
+      decoration: BoxDecoration(
+        color: highlight
+            ? AppColor.primary.withValues(alpha: 0.08)
+            : AppColor.surfaceBackground,
+        borderRadius: BorderRadius.circular(Dimens.radiusSM),
+        border: Border.all(
+          color: highlight ? AppColor.primary : AppColor.border,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: AppColor.textSecondary),
+          ),
+          const SizedBox(height: Dimens.spacingXXS),
+          Text(
+            Format.money(amount ?? 0),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: highlight ? AppColor.primaryDark : AppColor.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.isPaidOut});
+  final bool isPaidOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isPaidOut ? AppColor.success : AppColor.warning;
+    final label = isPaidOut ? 'Paid out' : 'Pending payout';
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimens.spacingSM,
+        vertical: Dimens.spacingXXS,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(Dimens.radiusSM),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -391,9 +449,8 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
       final double roomFee = driverInfo?.roomFee ?? 0;
       final double laborFee = driverInfo?.laborFee ?? 0;
       final double deliveryFee = driverInfo?.deliveryFee ?? 0;
-      final totalCharges = rows
-          .where((t) => t.paymentStatus.trim() == AppString.paymentPending)
-          .fold<double>(0, (s, t) => s + t.charges);
+      final totalCharges =
+          rows.fold<double>(0, (s, t) => s + t.charges);
       final totalAdvance = rows.fold<double>(0, (s, t) => s + t.cashAdvance);
       final double totalDeductions = roomFee + laborFee + deliveryFee;
       final double paidOutAmount = totalCharges - totalDeductions;
@@ -407,7 +464,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 const DataCell(SizedBox()), // No
                 DataCell(
                   Padding(
-                    padding: const EdgeInsets.only(left: Dimens.d16),
+                    padding: const EdgeInsets.only(left: Dimens.spacingMD),
                     child: Text(
                       label,
                       style: cellStyle.copyWith(fontWeight: FontWeight.w600),
@@ -442,9 +499,9 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
           );
         }
 
-        addFee('Room Fee', info?.roomFee);
-        addFee('Labor Fee', info?.laborFee);
-        addFee('Delivery Fee', info?.deliveryFee);
+        addFee(AppString.driverRoomFee, info?.roomFee);
+        addFee(AppString.driverLaborFee, info?.laborFee);
+        addFee(AppString.driverDeliveryFee, info?.deliveryFee);
         return feeRows;
       }
 
@@ -455,7 +512,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
           columns: [
             DataColumn(
               label: Padding(
-                padding: const EdgeInsets.only(left: Dimens.d16),
+                padding: const EdgeInsets.only(left: Dimens.spacingMD),
                 child: Text(AppString.colNo, style: headerStyle),
               ),
             ),
@@ -542,7 +599,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 cells: [
                   DataCell(
                     Padding(
-                      padding: const EdgeInsets.only(left: Dimens.d16),
+                      padding: const EdgeInsets.only(left: Dimens.spacingMD),
                       child: Text(idx.toString(), style: cellStyle),
                     ),
                     onTap: openDetails,
@@ -636,7 +693,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                       width: AppTableWidths.pickedUp,
                       child: Center(
                         child: t.pickedUp
-                            ? const Icon(Icons.check, color: Colors.green)
+                            ? const Icon(Icons.check, color: AppColor.success)
                             : ElevatedButton(
                                 onPressed: () => showClaimTransactionDialog(
                                   context,
@@ -645,8 +702,8 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
+                                    horizontal: Dimens.spacingSM,
+                                    vertical: Dimens.spacingXS,
                                   ),
                                 ),
                                 child: const Text('Claim'),
@@ -686,9 +743,9 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   const DataCell(SizedBox()), // No
                   DataCell(
                     Padding(
-                      padding: const EdgeInsets.only(left: Dimens.d16),
+                      padding: const EdgeInsets.only(left: Dimens.spacingMD),
                       child: Text(
-                        'Total Charges',
+                        AppString.driverTotalCharges,
                         style: headerStyle.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -743,7 +800,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                     const DataCell(SizedBox()), // No
                     DataCell(
                       Padding(
-                        padding: const EdgeInsets.only(left: Dimens.d16),
+                        padding: const EdgeInsets.only(left: Dimens.spacingMD),
                         child: Text(
                           'Paid out amount',
                           style: headerStyle.copyWith(
@@ -781,7 +838,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                 cells: [
                   DataCell(
                     Padding(
-                      padding: const EdgeInsets.only(left: Dimens.d16),
+                      padding: const EdgeInsets.only(left: Dimens.spacingMD),
                       child: Text(
                         'Paid out status',
                         style: headerStyle.copyWith(
@@ -794,7 +851,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                     Text(
                       isPaidOut ? 'ငွေထုတ်ပေးပြီး' : 'ငွေထုတ်ရန်ကျန်',
                       style: cellStyle.copyWith(
-                        color: isPaidOut ? Colors.green : Colors.redAccent,
+                        color: isPaidOut ? AppColor.success : AppColor.error,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -860,7 +917,7 @@ Future<DateTime?> _showMonthYearPickerDialog(
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: Dimens.spacingSM),
                 SizedBox(
                   width: 320,
                   child: Wrap(
@@ -896,4 +953,187 @@ Future<DateTime?> _showMonthYearPickerDialog(
       );
     },
   );
+}
+
+class _FiltersToolbar extends StatelessWidget {
+  const _FiltersToolbar({required this.controller, required this.onPickMonth});
+
+  final InventoryController controller;
+  final VoidCallback onPickMonth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final selected = controller.selectedDate.value;
+      final monthLabel = '${_monthNames[selected.month - 1]} ${selected.year}';
+      final bool isUnclaimedOnly = controller.showUnclaimedOnly.value;
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Dimens.spacingSM,
+          vertical: Dimens.spacingXXS,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: HeaderSearchField(
+                hint: AppString.searchHint,
+                onChanged: controller.setSearch,
+                borderRadius: BorderRadius.circular(Dimens.radiusSM),
+              ),
+            ),
+            const SizedBox(width: Dimens.spacingSM),
+            _MonthChip(label: monthLabel, onTap: onPickMonth),
+            const SizedBox(width: Dimens.spacingSM),
+            Row(
+              children: [
+                Text(
+                  AppString.filterUnclaimedOnly,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColor.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: Dimens.spacingXS),
+                Switch.adaptive(
+                  value: isUnclaimedOnly,
+                  activeColor: AppColor.primary,
+                  onChanged: controller.setUnclaimedOnly,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  const _MetaChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimens.spacingSM,
+        vertical: Dimens.spacingXXS,
+      ),
+      decoration: BoxDecoration(
+        color: AppColor.surfaceBackground,
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: AppColor.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppColor.textSecondary),
+          const SizedBox(width: Dimens.spacingXXS),
+          Text(
+            '$label: $value',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColor.textPrimary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({required this.child, this.title, this.subtitle});
+
+  final Widget child;
+  final String? title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColor.card,
+        borderRadius: BorderRadius.circular(Dimens.radiusSM),
+        border: Border.all(color: AppColor.border),
+      ),
+      padding: const EdgeInsets.all(Dimens.spacingMD),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) ...[
+            Text(
+              title!,
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColor.textPrimary,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: Dimens.spacingXXS),
+              Text(
+                subtitle!,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColor.textSecondary,
+                ),
+              ),
+            ],
+            const SizedBox(height: Dimens.spacingSM),
+          ],
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthChip extends StatelessWidget {
+  const _MonthChip({required this.label, required this.onTap});
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      borderRadius: BorderRadius.circular(Dimens.radiusSM),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Dimens.spacingMD,
+          vertical: Dimens.spacingXXS,
+        ),
+        decoration: BoxDecoration(
+          color: AppColor.surfaceBackground,
+          borderRadius: BorderRadius.circular(Dimens.radiusSM),
+          border: Border.all(color: AppColor.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.calendar_month,
+              color: AppColor.textPrimary,
+              size: 18,
+            ),
+            const SizedBox(width: Dimens.spacingXXS),
+            Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

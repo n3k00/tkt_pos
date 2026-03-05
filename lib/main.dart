@@ -61,22 +61,22 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColor.card,
           elevation: 0,
-          surfaceTintColor: Colors.transparent,
+          surfaceTintColor: AppColor.transparent,
           foregroundColor: AppColor.textPrimary,
           iconTheme: IconThemeData(color: AppColor.textPrimary),
           titleTextStyle: TextStyle(
             color: AppColor.textPrimary,
-            fontSize: 18,
+            fontSize: Dimens.fontSizeSubtitle,
             fontWeight: FontWeight.w600,
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColor.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColor.white,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(Dimens.radiusSM),
             ),
           ),
         ),

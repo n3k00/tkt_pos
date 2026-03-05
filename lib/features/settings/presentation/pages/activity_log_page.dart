@@ -8,6 +8,7 @@ import 'package:tkt_pos/widgets/app_data_table.dart';
 import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class ActivityLogPage extends GetView<ActivityLogController> {
   const ActivityLogPage({super.key});
@@ -37,7 +38,12 @@ class ActivityLogPage extends GetView<ActivityLogController> {
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(
+                    Dimens.spacingMD,
+                    0,
+                    Dimens.spacingMD,
+                    Dimens.spacingMD,
+                  ),
                   child: Obx(() {
                     if (controller.isLoading.value) {
                       return const Center(child: CircularProgressIndicator());
@@ -57,7 +63,7 @@ class ActivityLogPage extends GetView<ActivityLogController> {
                         ]).toList();
                     return AppDataTable(
                       table: DataTable(
-                        columnSpacing: 16,
+                        columnSpacing: Dimens.spacingMD,
                         horizontalMargin: 12,
                         headingRowHeight: 44,
                         columns: const [
@@ -165,13 +171,16 @@ class _TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDeletion ? Colors.redAccent : AppColor.primaryDark;
+    final color = isDeletion ? AppColor.error : AppColor.primaryDark;
     final label = isDeletion ? 'Deleted' : 'Edit';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimens.spacingXS,
+        vertical: Dimens.spacingXXS,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(Dimens.radiusMD),
       ),
       child: Text(
         label,
@@ -213,7 +222,7 @@ Future<void> _showHistoryDetailsDialog(
                   .bodySmall
                   ?.copyWith(color: AppColor.textSecondary),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: Dimens.spacingSM),
             AppDataTable(
               table: DataTable(
                 columnSpacing: 12,

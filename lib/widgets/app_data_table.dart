@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class AppDataTable extends StatefulWidget {
   const AppDataTable({super.key, required this.table});
@@ -46,9 +47,10 @@ class _AppDataTableState extends State<AppDataTable> {
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
-                        color: Colors.black12.withValues(alpha: 0.08),
+                        color: AppColor.border,
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius:
+                          BorderRadius.circular(Dimens.radiusXS),
                     ),
                     child: widget.table,
                   ),
@@ -61,4 +63,3 @@ class _AppDataTableState extends State<AppDataTable> {
     );
   }
 }
-

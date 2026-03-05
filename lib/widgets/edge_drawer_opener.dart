@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 /// Invisible edge zone on the far left that opens the Drawer when the
 /// cursor enters (desktop) or when a drag starts (touch/trackpad).
@@ -72,28 +74,28 @@ class _EdgeDrawerOpenerState extends State<EdgeDrawerOpener> {
                       duration: const Duration(milliseconds: 200),
                       opacity: _hover ? 0.95 : 0.7,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(Dimens.radiusXL),
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                           child: Container(
                             width: widget.width - 2,
                             height: widget.handleHeight,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(Dimens.radiusXL),
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  Colors.white.withValues(alpha: 0.35),
-                                  Colors.white.withValues(alpha: 0.18),
+                                  AppColor.white.withValues(alpha: 0.35),
+                                  AppColor.white.withValues(alpha: 0.18),
                                 ],
                               ),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.4),
+                                color: AppColor.white.withValues(alpha: 0.4),
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
+                                  color: AppColor.textPrimary.withValues(alpha: 0.08),
                                   blurRadius: 16,
                                   offset: const Offset(0, 8),
                                 ),

@@ -15,6 +15,7 @@ import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class DriverPrintController extends GetxController {
   DriverPrintController(this.driverId);
@@ -159,11 +160,11 @@ class DriverPrintController extends GetxController {
 
     final doc = pw.Document();
     final headerStyle = pw.TextStyle(
-      fontSize: 20,
+      fontSize: Dimens.fontSizeTitle,
       fontWeight: pw.FontWeight.bold,
     );
     final subtitleStyle = pw.TextStyle(
-      fontSize: 12,
+      fontSize: Dimens.fontSizeCaption,
       fontWeight: pw.FontWeight.bold,
     );
     final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
@@ -293,11 +294,11 @@ class DriverPrintController extends GetxController {
       doc.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4.landscape,
-          margin: const pw.EdgeInsets.all(24),
+          margin: const pw.EdgeInsets.all(Dimens.spacingXL),
           theme: pdfTheme,
           build: (context) => [
             pw.Padding(
-              padding: const pw.EdgeInsets.all(24),
+              padding: const pw.EdgeInsets.all(Dimens.spacingXL),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [

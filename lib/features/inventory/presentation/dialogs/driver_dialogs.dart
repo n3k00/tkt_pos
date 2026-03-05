@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/resources/strings.dart';
 
 Future<void> showEditDriverDialog(
   BuildContext context,
@@ -18,7 +20,7 @@ Future<void> showEditDriverDialog(
       return StatefulBuilder(
         builder: (ctx, setState) {
           return AlertDialog(
-            title: const Text('Edit Driver'),
+            title: const Text(AppString.dialogEditDriver),
             content: SizedBox(
               width: 400,
               child: Form(
@@ -32,12 +34,12 @@ Future<void> showEditDriverDialog(
                       autofocus: true,
                       textInputAction: TextInputAction.done,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: Dimens.fontSizeBodyLarge,
                         height: 1.35,
-                        color: Colors.black87,
+                        color: AppColor.textPrimary,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Driver name',
+                        hintText: AppString.dialogDriverNameHint,
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -46,15 +48,15 @@ Future<void> showEditDriverDialog(
                         filled: true,
                         fillColor: AppColor.surfaceBackground,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
                           borderSide: const BorderSide(color: AppColor.border),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
                           borderSide: const BorderSide(color: AppColor.border),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
                           borderSide: const BorderSide(
                             color: AppColor.primaryDark,
                             width: 1.5,
@@ -67,10 +69,10 @@ Future<void> showEditDriverDialog(
                         ),
                       ),
                       validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Name is required'
+                          ? AppString.dialogDriverNameRequired
                           : null,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: Dimens.spacingSM),
                     Row(
                       children: [
                         Expanded(
@@ -79,7 +81,8 @@ Future<void> showEditDriverDialog(
                               final dd = date.day.toString().padLeft(2, '0');
                               final mm = date.month.toString().padLeft(2, '0');
                               final yyyy = date.year.toString().padLeft(4, '0');
-                              return Text('Date: $dd/$mm/$yyyy');
+                              return Text(
+                                  '${AppString.dialogDateLabel}: $dd/$mm/$yyyy');
                             },
                           ),
                         ),
@@ -95,7 +98,7 @@ Future<void> showEditDriverDialog(
                               setState(() => date = picked);
                             }
                           },
-                          child: const Text('Pick Date'),
+                          child: const Text(AppString.dialogPickDate),
                         ),
                       ],
                     ),
@@ -106,7 +109,7 @@ Future<void> showEditDriverDialog(
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
+                child: const Text(AppString.dialogCancel),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -120,7 +123,7 @@ Future<void> showEditDriverDialog(
                   // ignore: use_build_context_synchronously
                   Navigator.of(ctx).pop();
                 },
-                child: const Text('Save'),
+                child: const Text(AppString.dialogSave),
               ),
             ],
           );
@@ -145,7 +148,7 @@ Future<void> showAddDriverDialog(
         child: StatefulBuilder(
           builder: (ctx, setState) {
             return AlertDialog(
-              title: const Text('Add Driver'),
+              title: const Text(AppString.dialogAddDriver),
               content: Form(
                 key: formKey,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -157,12 +160,12 @@ Future<void> showAddDriverDialog(
                     autofocus: true,
                     textInputAction: TextInputAction.done,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: Dimens.fontSizeBodyLarge,
                       height: 1.35,
-                      color: Colors.black87,
+                      color: AppColor.textPrimary,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Driver name',
+                      hintText: AppString.dialogDriverNameHint,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -171,15 +174,15 @@ Future<void> showAddDriverDialog(
                       filled: true,
                       fillColor: AppColor.surfaceBackground,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
                         borderSide: const BorderSide(color: AppColor.border),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
                         borderSide: const BorderSide(color: AppColor.border),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
                         borderSide: const BorderSide(
                           color: AppColor.primaryDark,
                           width: 1.5,
@@ -192,10 +195,10 @@ Future<void> showAddDriverDialog(
                       ),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Name is required'
+                        ? AppString.dialogDriverNameRequired
                         : null,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: Dimens.spacingSM),
                   Row(
                     children: [
                       Expanded(
@@ -204,7 +207,8 @@ Future<void> showAddDriverDialog(
                             final dd = date.day.toString().padLeft(2, '0');
                             final mm = date.month.toString().padLeft(2, '0');
                             final yyyy = date.year.toString().padLeft(4, '0');
-                            return Text('Date: $dd/$mm/$yyyy');
+                            return Text(
+                                '${AppString.dialogDateLabel}: $dd/$mm/$yyyy');
                           },
                         ),
                       ),
@@ -220,7 +224,7 @@ Future<void> showAddDriverDialog(
                             setState(() => date = picked);
                           }
                         },
-                        child: const Text('Pick Date'),
+                        child: const Text(AppString.dialogPickDate),
                       ),
                     ],
                   ),
@@ -230,7 +234,7 @@ Future<void> showAddDriverDialog(
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
+                child: const Text(AppString.dialogCancel),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -240,7 +244,7 @@ Future<void> showAddDriverDialog(
                   Navigator.of(ctx).pop();
                   await controller.addDriver(date: date, name: name);
                 },
-                child: const Text('Save'),
+                child: const Text(AppString.dialogSave),
               ),
             ],
           );

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:tkt_pos/data/local/app_database.dart';
+import 'package:tkt_pos/resources/strings.dart';
 
 class InventoryController extends GetxController {
   final AppDatabase db = AppDatabase();
@@ -8,8 +9,10 @@ class InventoryController extends GetxController {
   final Rx<DateTime> selectedDate = Rx<DateTime>(DateTime.now());
   final RxList<Driver> drivers = <Driver>[].obs;
   final Rx<int?> selectedDriverId = Rx<int?>(null);
-  final RxList<DbTransaction> transactions = <DbTransaction>[].obs; // legacy single-driver view
-  final RxMap<int, List<DbTransaction>> transactionsByDriver = <int, List<DbTransaction>>{}.obs;
+  final RxList<DbTransaction> transactions =
+      <DbTransaction>[].obs; // legacy single-driver view
+  final RxMap<int, List<DbTransaction>> transactionsByDriver =
+      <int, List<DbTransaction>>{}.obs;
   final RxString searchQuery = ''.obs;
   final RxBool isLoading = false.obs;
   final RxBool showUnclaimedOnly = false.obs;
@@ -27,10 +30,12 @@ class InventoryController extends GetxController {
       final start = DateTime(date.year, date.month, date.day);
       final end = start.add(const Duration(days: 1));
       final query = (db.select(db.drivers)
-            ..where(
-              (d) => d.date.isBiggerOrEqualValue(start) & d.date.isSmallerThanValue(end),
-            )
-            ..orderBy([(d) => drift.OrderingTerm.asc(d.name)]));
+        ..where(
+          (d) =>
+              d.date.isBiggerOrEqualValue(start) &
+              d.date.isSmallerThanValue(end),
+        )
+        ..orderBy([(d) => drift.OrderingTerm.asc(d.name)]));
       final list = await query.get();
       drivers.assignAll(list);
       // Reset selection if current selection not in list
@@ -52,20 +57,18 @@ class InventoryController extends GetxController {
     isLoading.value = true;
     List<Driver> list = const <Driver>[];
     try {
-      list = await (db.select(db.drivers)
-            ..orderBy([
-              (d) => drift.OrderingTerm.desc(d.date),
-              (d) => drift.OrderingTerm.asc(d.name),
-            ]))
-          .get();
+      list =
+          await (db.select(db.drivers)..orderBy([
+                (d) => drift.OrderingTerm.desc(d.date),
+                (d) => drift.OrderingTerm.asc(d.name),
+              ]))
+              .get();
       drivers.assignAll(list);
     } finally {
       isLoading.value = false;
     }
     // Populate transactions map without blocking the loader
-    await Future.wait(
-      list.map((d) => loadTransactionsByDriverToMap(d.id)),
-    );
+    await Future.wait(list.map((d) => loadTransactionsByDriverToMap(d.id)));
   }
 
   Future<void> setDate(DateTime date) async {
@@ -129,18 +132,20 @@ class InventoryController extends GetxController {
       filtered = filtered.where((t) => !t.pickedUp);
     }
     if (q.isEmpty) return filtered.toList(growable: false);
-    return filtered.where((t) {
-      final fields = <String?>[
-        t.customerName,
-        t.phone,
-        t.parcelType,
-        t.number,
-        t.paymentStatus,
-        t.cashAdvance.toString(),
-        t.charges.toString(),
-      ];
-      return fields.any((f) => (f ?? '').toLowerCase().contains(q));
-    }).toList(growable: false);
+    return filtered
+        .where((t) {
+          final fields = <String?>[
+            t.customerName,
+            t.phone,
+            t.parcelType,
+            t.number,
+            t.paymentStatus,
+            t.cashAdvance.toString(),
+            t.charges.toString(),
+          ];
+          return fields.any((f) => (f ?? '').toLowerCase().contains(q));
+        })
+        .toList(growable: false);
   }
 
   List<DbTransaction> filteredTransactionsForDriver(int driverId) {
@@ -151,29 +156,39 @@ class InventoryController extends GetxController {
       filtered = filtered.where((t) => !t.pickedUp);
     }
     if (q.isEmpty) return filtered.toList(growable: false);
-    return filtered.where((t) {
-      final fields = <String?>[
-        t.customerName,
-        t.phone,
-        t.parcelType,
-        t.number,
-        t.paymentStatus,
-        t.cashAdvance.toString(),
-        t.charges.toString(),
-      ];
-      return fields.any((f) => (f ?? '').toLowerCase().contains(q));
-    }).toList(growable: false);
+    return filtered
+        .where((t) {
+          final fields = <String?>[
+            t.customerName,
+            t.phone,
+            t.parcelType,
+            t.number,
+            t.paymentStatus,
+            t.cashAdvance.toString(),
+            t.charges.toString(),
+          ];
+          return fields.any((f) => (f ?? '').toLowerCase().contains(q));
+        })
+        .toList(growable: false);
   }
 
   Future<int> addDriver({required DateTime date, required String name}) async {
-    final id = await db.insertDriver(DriversCompanion.insert(date: date, name: name));
+    final id = await db.insertDriver(
+      DriversCompanion.insert(date: date, name: name),
+    );
     // reload list
     await loadAllDrivers();
     return id;
   }
 
-  Future<void> updateDriver({required int id, required DateTime date, required String name}) async {
-    await db.update(db.drivers).replace(
+  Future<void> updateDriver({
+    required int id,
+    required DateTime date,
+    required String name,
+  }) async {
+    await db
+        .update(db.drivers)
+        .replace(
           DriversCompanion(
             id: drift.Value(id),
             date: drift.Value(date),
@@ -217,7 +232,9 @@ class InventoryController extends GetxController {
   Future<void> updateTransaction(TransactionsCompanion companion) async {
     final success = await db.updateTransaction(companion);
     if (!success) return;
-    final driverId = companion.driverId.present ? companion.driverId.value : null;
+    final driverId = companion.driverId.present
+        ? companion.driverId.value
+        : null;
     if (driverId != null) {
       await loadTransactionsByDriverToMap(driverId);
     } else if (selectedDriverId.value != null) {
@@ -225,10 +242,15 @@ class InventoryController extends GetxController {
     }
   }
 
-  Future<void> claimTransaction({required DbTransaction tx, String? comment}) async {
+  Future<void> claimTransaction({
+    required DbTransaction tx,
+    String? comment,
+  }) async {
     await db.transaction(() async {
       // Partial update: only set pickedUp/comment/updatedAt
-      await (db.update(db.transactions)..where((t) => t.id.equals(tx.id))).write(
+      await (db.update(
+        db.transactions,
+      )..where((t) => t.id.equals(tx.id))).write(
         TransactionsCompanion(
           pickedUp: const drift.Value(true),
           comment: (comment == null || comment.trim().isEmpty)
@@ -244,5 +266,21 @@ class InventoryController extends GetxController {
       );
     });
     await loadTransactionsByDriverToMap(tx.driverId);
+  }
+
+  double? totalChargesForDriver(int driverId) {
+    final list = transactionsByDriver[driverId];
+    if (list == null) return 0;
+    return list.fold<double>(0, (sum, t) => sum + t.charges);
+  }
+
+  double? paidOutAmountForDriver(int driverId) {
+    final list = transactionsByDriver[driverId];
+    if (list == null) return 0;
+    return list.fold<double>(
+      0,
+      (sum, t) =>
+          sum + (t.paymentStatus == AppString.paymentPaid ? t.charges : 0),
+    );
   }
 }

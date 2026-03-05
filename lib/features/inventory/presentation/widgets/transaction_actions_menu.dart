@@ -4,6 +4,8 @@ import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/features/inventory/presentation/dialogs/transaction_dialogs.dart';
 import 'package:tkt_pos/widgets/glass_popup_menu.dart';
+import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class TransactionActionsMenu extends StatelessWidget {
   const TransactionActionsMenu({
@@ -34,8 +36,8 @@ class TransactionActionsMenu extends StatelessWidget {
           value: 'delete',
           child: Row(
             children: [
-              const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-              const SizedBox(width: 8),
+              const Icon(Icons.delete_outline, size: 18, color: AppColor.error),
+              const SizedBox(width: Dimens.spacingXS),
               Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ],
           ),
@@ -78,7 +80,7 @@ class _MenuRow extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, size: 18),
-        const SizedBox(width: 8),
+        const SizedBox(width: Dimens.spacingXS),
         Text(label),
       ],
     );

@@ -7,6 +7,8 @@ import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/resources/table_widths.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
+import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/resources/shapes.dart';
 
 class DriverPrintPage extends StatelessWidget {
   const DriverPrintPage({super.key, required this.driverId});
@@ -28,19 +30,19 @@ class DriverPrintPage extends StatelessWidget {
               ? const Center(child: Text('Driver not found.'))
               : Center(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(Dimens.spacingXL),
                     child: Column(
                       children: [
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 1123),
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(18),
+                              color: AppColor.white,
+                              borderRadius: BorderRadius.circular(Dimens.radiusXLPlus),
                               border: Border.all(color: AppColor.border),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
+                                  color: AppColor.textPrimary.withValues(alpha: 0.05),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -52,13 +54,13 @@ class DriverPrintPage extends StatelessWidget {
                                   child: IgnorePointer(
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(18),
+                                        borderRadius: BorderRadius.circular(Dimens.radiusXLPlus),
                                         gradient: LinearGradient(
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                           colors: [
-                                            Colors.white.withValues(alpha: 0.3),
-                                            Colors.white.withValues(
+                                            AppColor.white.withValues(alpha: 0.3),
+                                            AppColor.white.withValues(
                                               alpha: 0.06,
                                             ),
                                           ],
@@ -68,7 +70,7 @@ class DriverPrintPage extends StatelessWidget {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.all(24),
+                                  padding: const EdgeInsets.all(Dimens.spacingXL),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -82,7 +84,7 @@ class DriverPrintPage extends StatelessWidget {
                                               fontWeight: FontWeight.w800,
                                             ),
                                       ),
-                                      const SizedBox(height: 12),
+                                      const SizedBox(height: Dimens.spacingSM),
                                       Row(
                                         children: [
                                           Expanded(
@@ -104,16 +106,16 @@ class DriverPrintPage extends StatelessWidget {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 24),
+                                      const SizedBox(height: Dimens.spacingXL),
                                       DecoratedBox(
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
+                                          color: AppColor.white,
                                           border: Border.all(
                                             color: AppColor.border,
                                           ),
                                         ),
                                         child: Padding(
-                                          padding: const EdgeInsets.all(24),
+                                          padding: const EdgeInsets.all(Dimens.spacingXL),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -472,9 +474,10 @@ class DriverPrintPage extends StatelessWidget {
                                                                   controller
                                                                       .paidOut
                                                                       .value
-                                                                  ? Colors.green
-                                                                  : Colors
-                                                                        .redAccent,
+                                                                  ? AppColor
+                                                                      .success
+                                                                  : AppColor
+                                                                      .error,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w600,
@@ -518,7 +521,7 @@ class DriverPrintPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: Dimens.spacingXL),
                         _FeesEditor(controller: controller),
                       ],
                     ),
@@ -586,24 +589,19 @@ class _FeesEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     InputDecoration decoration(String label, IconData icon) => InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon, size: 18, color: AppColor.textSecondary),
-      filled: true,
-      fillColor: AppColor.surfaceBackground,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColor.border),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColor.border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColor.primaryDark, width: 1.5),
-      ),
-      isDense: true,
-    );
+          labelText: label,
+          prefixIcon: Icon(icon, size: 18, color: AppColor.textSecondary),
+          filled: true,
+          fillColor: AppColor.surfaceBackground,
+          contentPadding: Dimens.inputPaddingDense,
+          border: AppShapes.inputBorder(color: AppColor.border),
+          enabledBorder: AppShapes.inputBorder(color: AppColor.border),
+          focusedBorder: AppShapes.inputBorder(
+            color: AppColor.primaryDark,
+            width: 1.5,
+          ),
+          isDense: true,
+        );
 
     Widget feeField({
       required TextEditingController textController,
@@ -632,23 +630,23 @@ class _FeesEditor extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(Dimens.radiusXLPlus),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColor.primary.withValues(alpha: 0.08), Colors.white],
+          colors: [AppColor.primary.withValues(alpha: 0.08), AppColor.white],
         ),
         border: Border.all(color: AppColor.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColor.textPrimary.withValues(alpha: 0.04),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(Dimens.spacingLG),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -661,9 +659,9 @@ class _FeesEditor extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: AppColor.primary,
                   ),
-                  child: const Icon(Icons.edit_note, color: Colors.white),
+                  child: const Icon(Icons.edit_note, color: AppColor.white),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: Dimens.spacingSM),
                 Text(
                   'Slip Settings',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -680,13 +678,13 @@ class _FeesEditor extends StatelessWidget {
                   label: 'Room Fee',
                   icon: Icons.home_work_outlined,
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: Dimens.spacingMD),
                 feeField(
                   textController: controller.laborFeeCtrl,
                   label: 'Labor Fee',
                   icon: Icons.engineering_outlined,
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: Dimens.spacingMD),
                 feeField(
                   textController: controller.deliveryFeeCtrl,
                   label: 'Delivery Fee',
@@ -694,11 +692,11 @@ class _FeesEditor extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: Dimens.spacingSM),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingMD),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: Dimens.borderRadiusInput,
                 color: AppColor.surfaceBackground,
                 border: Border.all(color: AppColor.border),
               ),
@@ -714,7 +712,7 @@ class _FeesEditor extends StatelessWidget {
                 onChanged: controller.setPaidOut,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: Dimens.spacingMD),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -752,7 +750,7 @@ class _FeesEditor extends StatelessWidget {
                   icon: const Icon(Icons.save_outlined),
                   label: const Text('Save'),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: Dimens.spacingSM),
                 FilledButton.icon(
                   onPressed: () async {
                     await controller.printSlip();

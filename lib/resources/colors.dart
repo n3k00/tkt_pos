@@ -2,40 +2,40 @@
 import 'package:flutter/material.dart';
 
 class AppColor {
-  // Primary (soft wellness green like the screenshot)
-  static const Color primary = Color(0xFF3FAE73);
+  // Brand primaries
+  static const Color primary = Color(0xFF1EA97C);
+  static const Color primaryDark = Color(0xFF157A58);
+  static const Color primaryLight = Color(0xFFD8F1E6);
 
-  // Variants (light to dark)
-  static const Color primaryLight = Color(0xFFE6F3EC); // pale mint
-  static const Color primaryDark = Color(0xFF1F7A55); // deep green
+  // Accent / highlights
+  static const Color accent = Color(0xFFFF9C00);
+  static const Color secondary = Color(0xFF27AE60);
 
-  // Accent / Secondary greens
-  static const Color secondary = Color(0xFF7CCBA2); // soft green
-  static const Color accent = Color(0xFFA7E3C3); // mint highlight
+  // Neutrals & surfaces
+  static const Color background = Color(0xFFEDEFF2);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color card = surface;
+  static const Color surfaceBackground = Color(0xFFF8FAFB);
+  static const Color border = Color(0xFFE0E4E9);
 
-  // Text Colors (green-friendly neutrals)
-  static const Color textPrimary = Color(0xFF1B4332); // deep forest
-  static const Color textSecondary = Color(0xFF52796F); // desaturated
+  // Text colors
+  static const Color textPrimary = Color(0xFF1B1D21);
+  static const Color textSecondary = Color(0xFF6A717B);
+  static const Color textMuted = Color(0xFF9AA0AA);
+  static const Color textDefault = textPrimary;
 
-  // Backgrounds (warm, slightly greenish off-white)
-  static const Color background = Color(0xFFF3F5EE);
-  static const Color card = Color(0xFFFFFFFF);
-  static const Color surfaceBackground = Color(0xFFF6F8F2);
-
-  // Border / Line
-  static const Color border = Color(0xFFE5ECE5);
-
-  // Status
-  static const Color error = Color(0xFFEF5350);
-  static const Color success = Color(0xFF2E7D32);
-  static const Color warning = Color(0xFFF6C26B);
+  // Status colors
+  static const Color success = Color(0xFF27AE60);
+  static const Color error = Color(0xFFF14646);
+  static const Color info = Color(0xFF3A7BDF);
+  static const Color warning = Color(0xFFFFC857);
 
   // Common neutrals
-  static const Color textDefault = Colors.black87;
   static const Color white = Colors.white;
-  static const Color disabled = Color(0xFFBDBDBD);
+  static const Color disabled = Color(0xFFB7BEC7);
+  static const Color transparent = Colors.transparent;
 
-  // Drawer selection
-  static const Color drawerItemSelectedBackground = Color(0xFFEFF7F2);
-  static const Color drawerItemSelectedIconText = AppColor.primary;
+  // Drawer / navigation
+  static const Color drawerItemSelectedBackground = Color(0xFFE6F4EF);
+  static const Color drawerItemSelectedIconText = primary;
 }

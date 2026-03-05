@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/resources/colors.dart';
+import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/resources/shapes.dart';
 
 class PageHeader extends StatelessWidget {
   const PageHeader({
@@ -24,27 +26,32 @@ class PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      margin: const EdgeInsets.fromLTRB(
+        Dimens.spacingMD,
+        Dimens.spacingSM,
+        Dimens.spacingMD,
+        Dimens.spacingSM,
+      ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppShapes.cardRadius,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: Dimens.paddingCard,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppShapes.cardRadius,
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withValues(alpha: 0.25),
-                  Colors.white.withValues(alpha: 0.18),
+                  AppColor.white.withValues(alpha: 0.25),
+                  AppColor.white.withValues(alpha: 0.18),
                 ],
               ),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+              border: Border.all(color: AppColor.white.withValues(alpha: 0.35)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
+                  color: AppColor.textPrimary.withValues(alpha: 0.06),
                   blurRadius: 22,
                   offset: const Offset(0, 10),
                 ),
@@ -62,7 +69,7 @@ class PageHeader extends StatelessWidget {
                           children: [
                             if (showBack) ...[
                               _BackButton(onTap: onBack ?? () => Get.back()),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: Dimens.spacingXS),
                             ],
                             Flexible(
                               child: Text(
@@ -76,12 +83,12 @@ class PageHeader extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: Dimens.spacingXSPlus),
                       ],
                       Text(
                         title,
                         style: const TextStyle(
-                          fontSize: 26,
+                          fontSize: Dimens.fontSizeHeadline,
                           fontWeight: FontWeight.w800,
                           color: AppColor.textPrimary,
                         ),
@@ -90,7 +97,7 @@ class PageHeader extends StatelessWidget {
                   ),
                 ),
                 if (trailing != null) ...[
-                  const SizedBox(width: 16),
+                  const SizedBox(width: Dimens.spacingMD),
                   Flexible(
                     child: Align(
                       alignment: Alignment.topRight,
@@ -115,13 +122,13 @@ class _BackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(Dimens.radiusSM),
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
           color: AppColor.primaryLight,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(Dimens.radiusSM),
           border: Border.all(color: AppColor.border),
         ),
         child: const Icon(
@@ -139,9 +146,11 @@ class HeaderSearchField extends StatefulWidget {
     super.key,
     this.hint = 'Enter your search request...',
     this.onChanged,
+    this.borderRadius,
   });
   final String hint;
   final ValueChanged<String>? onChanged;
+  final BorderRadius? borderRadius;
 
   @override
   State<HeaderSearchField> createState() => _HeaderSearchFieldState();
@@ -165,54 +174,48 @@ class _HeaderSearchFieldState extends State<HeaderSearchField> {
   @override
   Widget build(BuildContext context) {
     final hasText = _controller.text.isNotEmpty;
+    final radius = widget.borderRadius ??
+        BorderRadius.circular(Dimens.radiusJumbo);
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: radius,
         boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
+          BoxShadow(
+            color: AppColor.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: TextField(
         controller: _controller,
         onChanged: widget.onChanged,
         style: const TextStyle(
-          fontSize: 16,
+          fontSize: Dimens.fontSizeBodyLarge,
           height: 1.4,
           color: AppColor.textPrimary,
         ),
         decoration: InputDecoration(
           hintText: widget.hint,
           hintStyle: const TextStyle(color: AppColor.textSecondary),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
-          ),
+          contentPadding: Dimens.inputPadding,
           filled: true,
           fillColor: AppColor.surfaceBackground,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(28),
-            borderSide: const BorderSide(color: AppColor.border),
+          border: AppShapes.inputBorder(color: AppColor.border).copyWith(
+            borderRadius: radius,
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(28),
-            borderSide: const BorderSide(color: AppColor.border),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(28),
-            borderSide: const BorderSide(
-              color: AppColor.primaryDark,
-              width: 1.2,
-            ),
-          ),
+          enabledBorder: AppShapes.inputBorder(color: AppColor.border)
+              .copyWith(borderRadius: radius),
+          focusedBorder: AppShapes.inputBorder(
+            color: AppColor.primaryDark,
+            width: 1.2,
+          ).copyWith(borderRadius: radius),
           suffixIcon: hasText
               ? Padding(
-                  padding: const EdgeInsets.only(right: 6),
+                  padding:
+                      const EdgeInsets.only(right: Dimens.spacingMicro),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(Dimens.radiusMDPlus),
                     onTap: () {
                       _controller.clear();
                       widget.onChanged?.call('');
@@ -234,7 +237,8 @@ class _HeaderSearchFieldState extends State<HeaderSearchField> {
                   ),
                 )
               : Padding(
-                  padding: const EdgeInsets.only(right: 6),
+                  padding:
+                      const EdgeInsets.only(right: Dimens.spacingMicro),
                   child: Container(
                     width: 28,
                     height: 28,

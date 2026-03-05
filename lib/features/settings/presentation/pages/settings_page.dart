@@ -7,6 +7,7 @@ import 'package:tkt_pos/features/settings/presentation/controllers/settings_cont
 import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
+import 'package:tkt_pos/resources/dimens.dart';
 
 class SettingsPage extends GetView<SettingsController> {
   const SettingsPage({super.key});
@@ -29,13 +30,13 @@ class SettingsPage extends GetView<SettingsController> {
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(Dimens.spacingMD),
                   children: [
                     Text(
                       'General',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: Dimens.spacingXS),
                     Obx(
                       () => SwitchListTile(
                         value: controller.compactTable.value,
@@ -46,12 +47,12 @@ class SettingsPage extends GetView<SettingsController> {
                         ),
                       ),
                     ),
-                    const Divider(height: 32),
+                    const Divider(height: Dimens.spacingXXL),
                     Text(
                       'Database',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: Dimens.spacingXS),
                     ListTile(
                       leading: const Icon(Icons.backup_outlined),
                       title: const Text('Backup database'),
@@ -135,7 +136,7 @@ class SettingsPage extends GetView<SettingsController> {
                       'About',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: Dimens.spacingXS),
                     const ListTile(
                       dense: true,
                       title: Text('App'),
