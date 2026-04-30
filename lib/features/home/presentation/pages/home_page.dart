@@ -1,99 +1,69 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/home/presentation/controllers/home_controller.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/strings.dart';
-import 'package:tkt_pos/widgets/app_drawer.dart';
-import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/widgets/desktop_shell.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.surfaceBackground,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddTripMainDialog(context, controller),
-        icon: const Icon(Icons.add),
-        label: const Text('New Trip'),
-      ),
-      drawer: const AppDrawer(),
-      drawerEnableOpenDragGesture: true,
-      drawerEdgeDragWidth: 80,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Dimens.spacingXL,
-                vertical: Dimens.spacingMD,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  PageHeader(
-                    title: AppString.title,
-                    showBack: false,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 280,
-                          child: HeaderSearchField(
-                            hint: AppString.searchHint,
-                            onChanged: controller.setSearch,
-                            borderRadius:
-                                BorderRadius.circular(Dimens.radiusMD),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: Dimens.spacingMD),
-                  Expanded(
-                    child: Obx(() {
-                      final rows = controller.items;
-                      if (rows.isEmpty) {
-                        return const _HomeEmptyState();
-                      }
-                      return DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: AppColor.white,
-                          borderRadius: BorderRadius.circular(Dimens.radiusMD),
-                          border: Border.all(color: AppColor.border),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  AppColor.textPrimary.withValues(alpha: 0.03),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: Dimens.spacingMD,
-                            vertical: Dimens.spacingMD,
-                          ),
-                          child: _TripMainTable(rows: rows),
-                        ),
-                      );
-                    }),
-                  ),
-                ],
+    return DesktopShell(
+      title: 'Home',
+      subtitle: 'Trip overview and dispatch records',
+      actions: [
+        FilledButton.icon(
+          onPressed: () => _showAddTripMainDialog(context, controller),
+          icon: const Icon(Icons.add),
+          label: const Text('New Trip'),
+        ),
+      ],
+      toolbar: Container(
+        height: 64,
+        padding: const EdgeInsets.all(Dimens.spacingSM),
+        decoration: BoxDecoration(
+          color: AppColor.white,
+          borderRadius: BorderRadius.circular(Dimens.radiusXS),
+          border: Border.all(color: AppColor.border),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 360,
+              child: HeaderSearchField(
+                hint: AppString.searchHint,
+                onChanged: controller.setSearch,
+                borderRadius: BorderRadius.circular(Dimens.radiusXS),
               ),
             ),
-          ),
-          EdgeDrawerOpener(),
-        ],
+          ],
+        ),
       ),
+      child: Obx(() {
+        final rows = controller.filteredItems;
+        if (rows.isEmpty) {
+          return const _HomeEmptyState();
+        }
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColor.white,
+            borderRadius: BorderRadius.circular(Dimens.radiusXS),
+            border: Border.all(color: AppColor.border),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(Dimens.spacingMD),
+            child: _TripMainTable(rows: rows),
+          ),
+        );
+      }),
     );
   }
 }
@@ -290,19 +260,17 @@ class _HomeEmptyState extends StatelessWidget {
           const SizedBox(height: Dimens.spacingMD),
           Text(
             AppString.noTripMainRecords,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(color: AppColor.textPrimary),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: AppColor.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: Dimens.spacingXS),
           Text(
             'Add your first trip to see summary data here.',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: AppColor.textSecondary),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColor.textSecondary),
             textAlign: TextAlign.center,
           ),
         ],

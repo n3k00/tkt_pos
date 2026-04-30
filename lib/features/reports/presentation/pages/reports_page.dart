@@ -1,64 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/reports/presentation/controllers/reports_controller.dart';
-import 'package:tkt_pos/widgets/app_drawer.dart';
-import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/widgets/desktop_shell.dart';
 
 class ReportsPage extends GetView<ReportsController> {
   const ReportsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AppDrawer(),
-      drawerEnableOpenDragGesture: true,
-      drawerEdgeDragWidth: 80,
-      body: Stack(
+    return DesktopShell(
+      title: AppString.reports,
+      subtitle: 'Daily collections, payment status, and cash advance totals',
+      toolbar: Container(
+        height: 64,
+        padding: const EdgeInsets.all(Dimens.spacingSM),
+        decoration: BoxDecoration(
+          color: AppColor.white,
+          borderRadius: BorderRadius.circular(Dimens.radiusXS),
+          border: Border.all(color: AppColor.border),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 360,
+              child: HeaderSearchField(
+                hint: AppString.searchReportsHint,
+                onChanged: controller.setSearch,
+                borderRadius: BorderRadius.circular(Dimens.radiusXS),
+              ),
+            ),
+            const Spacer(),
+            _DatePickerButton(controller: controller),
+          ],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PageHeader(
-                title: AppString.reports,
-                crumbs: const [AppString.home, AppString.reports],
-                showBack: false,
-                trailing: HeaderSearchField(
-                  hint: AppString.searchReportsHint,
-                  onChanged: controller.setSearch,
-                  borderRadius: BorderRadius.circular(Dimens.radiusSM),
-                ),
-              ),
-              const SizedBox(height: Dimens.spacingXXS),
-              _StatCards(controller: controller),
-              const SizedBox(height: Dimens.spacingMD),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingMD),
-                child: Row(
-                  children: [
-                    const Text(
-                      AppString.reportTransactionsTitle,
-                      style: TextStyle(
-                        fontSize: Dimens.fontSizeSubtitle,
-                        fontWeight: FontWeight.w700,
-                        color: AppColor.textPrimary,
-                      ),
-                    ),
-                    const Spacer(),
-                    _DatePickerButton(controller: controller),
-                  ],
-                ),
-              ),
-              const SizedBox(height: Dimens.spacingXS),
-              Expanded(child: _ReportsTable(controller: controller)),
-            ],
+          _StatCards(controller: controller),
+          const SizedBox(height: Dimens.spacingMD),
+          const Text(
+            AppString.reportTransactionsTitle,
+            style: TextStyle(
+              fontSize: Dimens.fontSizeSubtitle,
+              fontWeight: FontWeight.w700,
+              color: AppColor.textPrimary,
+            ),
           ),
-          EdgeDrawerOpener(),
+          const SizedBox(height: Dimens.spacingXS),
+          Expanded(child: _ReportsTable(controller: controller)),
         ],
       ),
     );
@@ -71,39 +67,36 @@ class _StatCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingMD),
-      child: Obx(() {
-        return Row(
-          children: [
-            _StatCard(
-              title: AppString.totalCount,
-              value: controller.totalCount.toString(),
-            ),
-            const SizedBox(width: Dimens.spacingSM),
-            _StatCard(
-              title: AppString.totalCharges,
-              value: Format.money(controller.totalChargesPendingAndAdvance),
-            ),
-            const SizedBox(width: Dimens.spacingSM),
-            _StatCard(
-              title: AppString.statPaymentPending,
-              value: Format.money(controller.totalChargesPending),
-            ),
-            const SizedBox(width: Dimens.spacingSM),
-            _StatCard(
-              title: AppString.statPaymentPaid,
-              value: Format.money(controller.totalChargesPaid),
-            ),
-            const SizedBox(width: Dimens.spacingSM),
-            _StatCard(
-              title: AppString.statCashAdvance,
-              value: Format.money(controller.totalCashAdvance),
-            ),
-          ],
-        );
-      }),
-    );
+    return Obx(() {
+      return Row(
+        children: [
+          _StatCard(
+            title: AppString.totalCount,
+            value: controller.totalCount.toString(),
+          ),
+          const SizedBox(width: Dimens.spacingSM),
+          _StatCard(
+            title: AppString.totalCharges,
+            value: Format.money(controller.totalChargesPendingAndAdvance),
+          ),
+          const SizedBox(width: Dimens.spacingSM),
+          _StatCard(
+            title: AppString.statPaymentPending,
+            value: Format.money(controller.totalChargesPending),
+          ),
+          const SizedBox(width: Dimens.spacingSM),
+          _StatCard(
+            title: AppString.statPaymentPaid,
+            value: Format.money(controller.totalChargesPaid),
+          ),
+          const SizedBox(width: Dimens.spacingSM),
+          _StatCard(
+            title: AppString.statCashAdvance,
+            value: Format.money(controller.totalCashAdvance),
+          ),
+        ],
+      );
+    });
   }
 }
 
@@ -177,93 +170,77 @@ class _ReportsTableState extends State<_ReportsTable> {
         final dd = d.day.toString().padLeft(2, '0');
         final mm = d.month.toString().padLeft(2, '0');
         final yyyy = d.year.toString();
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(
-            Dimens.spacingMD,
-            0,
-            Dimens.spacingMD,
-            Dimens.spacingMD,
+        return Card(
+          margin: EdgeInsets.zero,
+          color: AppColor.card,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Dimens.radiusXS),
+            side: const BorderSide(color: AppColor.border),
           ),
-          child: Card(
-            margin: EdgeInsets.zero,
-            color: AppColor.card,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(Dimens.radiusMD),
-              side: const BorderSide(color: AppColor.border),
-            ),
-            child: SizedBox(
-              height: 160,
-              child: Center(
-                child: Text(
-                  '${AppString.noReportsForDate} $dd/$mm/$yyyy',
-                  style: const TextStyle(color: AppColor.textSecondary),
-                ),
+          child: SizedBox(
+            height: 160,
+            child: Center(
+              child: Text(
+                '${AppString.noReportsForDate} $dd/$mm/$yyyy',
+                style: const TextStyle(color: AppColor.textSecondary),
               ),
             ),
           ),
         );
       }
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(
-          Dimens.spacingMD,
-          0,
-          Dimens.spacingMD,
-          Dimens.spacingMD,
-        ),
-        child: AppDataTable(
-          table: DataTable(
-            columnSpacing: 16,
-            horizontalMargin: 12,
-            showCheckboxColumn: false,
-            columns: const [
-              DataColumn(label: Text(AppString.colNo)),
-              DataColumn(label: Text(AppString.colDriver)),
-              DataColumn(label: Text(AppString.colCustomerName)),
-              DataColumn(label: Text(AppString.colPhone)),
-              DataColumn(label: Text(AppString.colParcelType)),
-              DataColumn(label: Text(AppString.colNumber)),
-              DataColumn(label: Center(child: Text(AppString.colCharges))),
-              DataColumn(label: Text(AppString.colPaymentStatus)),
-              DataColumn(label: Center(child: Text(AppString.colCashAdvance))),
-              DataColumn(label: Text(AppString.colComment)),
-            ],
-            rows: [
-              ...rows.asMap().entries.map((e) {
-                final i = e.key + 1;
-                final t = e.value;
-                return DataRow(
-                  cells: [
-                    DataCell(Text('$i')),
-                    DataCell(Text(controller.driverNameFor(t.driverId))),
-                    DataCell(Text(t.customerName ?? '-')),
-                    DataCell(Text(t.phone)),
-                    DataCell(Text(t.parcelType)),
-                    DataCell(Text(t.number)),
-                    DataCell(
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          Format.money(t.charges),
-                          textAlign: TextAlign.right,
-                        ),
+      return AppDataTable(
+        table: DataTable(
+          columnSpacing: 16,
+          horizontalMargin: 12,
+          showCheckboxColumn: false,
+          columns: const [
+            DataColumn(label: Text(AppString.colNo)),
+            DataColumn(label: Text(AppString.colDriver)),
+            DataColumn(label: Text(AppString.colCustomerName)),
+            DataColumn(label: Text(AppString.colPhone)),
+            DataColumn(label: Text(AppString.colParcelType)),
+            DataColumn(label: Text(AppString.colNumber)),
+            DataColumn(label: Center(child: Text(AppString.colCharges))),
+            DataColumn(label: Text(AppString.colPaymentStatus)),
+            DataColumn(label: Center(child: Text(AppString.colCashAdvance))),
+            DataColumn(label: Text(AppString.colComment)),
+          ],
+          rows: [
+            ...rows.asMap().entries.map((e) {
+              final i = e.key + 1;
+              final t = e.value;
+              return DataRow(
+                cells: [
+                  DataCell(Text('$i')),
+                  DataCell(Text(controller.driverNameFor(t.driverId))),
+                  DataCell(Text(t.customerName ?? '-')),
+                  DataCell(Text(t.phone)),
+                  DataCell(Text(t.parcelType)),
+                  DataCell(Text(t.number)),
+                  DataCell(
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        Format.money(t.charges),
+                        textAlign: TextAlign.right,
                       ),
                     ),
-                    DataCell(Text(t.paymentStatus)),
-                    DataCell(
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          Format.money(t.cashAdvance),
-                          textAlign: TextAlign.right,
-                        ),
+                  ),
+                  DataCell(Text(t.paymentStatus)),
+                  DataCell(
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        Format.money(t.cashAdvance),
+                        textAlign: TextAlign.right,
                       ),
                     ),
-                    DataCell(Text(t.comment ?? '-')),
-                  ],
-                );
-              }),
-            ],
-          ),
+                  ),
+                  DataCell(Text(t.comment ?? '-')),
+                ],
+              );
+            }),
+          ],
         ),
       );
     });
