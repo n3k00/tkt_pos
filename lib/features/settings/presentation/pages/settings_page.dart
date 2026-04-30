@@ -8,6 +8,8 @@ import 'package:tkt_pos/widgets/app_drawer.dart';
 import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/resources/strings.dart';
+import 'package:tkt_pos/widgets/app_snackbar.dart';
 
 class SettingsPage extends GetView<SettingsController> {
   const SettingsPage({super.key});
@@ -64,20 +66,24 @@ class SettingsPage extends GetView<SettingsController> {
                           final path = await controller.backupDb();
                           if (!context.mounted) return;
                           if (path == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Backup cancelled.'),
-                              ),
+                            AppSnackBars.show(
+                              context,
+                              message: AppString.snackbarBackupCancelled,
+                              type: AppSnackbarType.info,
                             );
                             return;
                           }
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Backup saved: $path')),
+                          AppSnackBars.show(
+                            context,
+                            message: AppString.snackbarBackupSaved(path),
+                            type: AppSnackbarType.success,
                           );
                         } catch (e) {
                           if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Backup failed: $e')),
+                          AppSnackBars.show(
+                            context,
+                            message: AppString.snackbarBackupFailed('$e'),
+                            type: AppSnackbarType.error,
                           );
                         }
                       },
@@ -90,36 +96,45 @@ class SettingsPage extends GetView<SettingsController> {
                       ),
                       onTap: () async {
                         try {
-                          final msg = await controller.restoreFromFileReplaceWithMessage();
+                          final msg = await controller
+                              .restoreFromFileReplaceWithMessage();
                           if (!context.mounted) return;
                           if (msg == null) {
                             showDialog(
                               context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('Restore complete'),
-                                content: const Text(
-                                  'The app will close now. Please reopen it manually to use the restored database.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(ctx).pop();
-                                      exit(0);
-                                    },
-                                    child: const Text('OK'),
+                              barrierDismissible: false,
+                              builder: (ctx) => PopScope(
+                                canPop: false,
+                                child: AlertDialog(
+                                  title: const Text('Restore complete'),
+                                  content: const Text(
+                                    'The app will close now. Please reopen it manually to use the restored database.',
                                   ),
-                                ],
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(ctx).pop();
+                                        exit(0);
+                                      },
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(msg)),
+                            AppSnackBars.show(
+                              context,
+                              message: msg,
+                              type: AppSnackbarType.warning,
                             );
                           }
                         } catch (e) {
                           if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Restore failed: $e')),
+                          AppSnackBars.show(
+                            context,
+                            message: AppString.snackbarRestoreFailed('$e'),
+                            type: AppSnackbarType.error,
                           );
                         }
                       },
@@ -142,13 +157,17 @@ class SettingsPage extends GetView<SettingsController> {
                       title: Text('App'),
                       subtitle: Text('TKT POS — Inventory Demo'),
                     ),
-                    Obx(() => ListTile(
-                          dense: true,
-                          title: const Text('Version'),
-                          subtitle: Text(controller.appVersion.value.isEmpty
+                    Obx(
+                      () => ListTile(
+                        dense: true,
+                        title: const Text('Version'),
+                        subtitle: Text(
+                          controller.appVersion.value.isEmpty
                               ? 'beta'
-                              : controller.appVersion.value),
-                        )),
+                              : controller.appVersion.value,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

@@ -29,6 +29,7 @@ class AppString {
   static const String driverStatusPaid = 'Paid out';
   static const String driverStatusPending = 'Pending payout';
   static const String filterUnclaimedOnly = 'Unclaimed only';
+  static const String driverNoFees = 'No additional fees';
   static const String dialogEditDriver = 'Edit Driver';
   static const String dialogAddDriver = 'Add Driver';
   static const String dialogDriverNameHint = 'Driver name';
@@ -54,6 +55,27 @@ class AppString {
   static const String dialogPickedUp = 'Picked up';
   static const String snackbarClaimValidation =
       '�?-�?_�?"�?��?,�?"�?�?�?��??�?� �?`�?S�?��?��?�?�';
+  static const String dialogDeleteWarning =
+      'This will remove the transaction permanently. This cannot be undone.';
+
+  // Snackbars
+  static const String snackbarTitleInfo = 'Info';
+  static const String snackbarTitleSuccess = 'Success';
+  static const String snackbarTitleWarning = 'Warning';
+  static const String snackbarTitleError = 'Error';
+  static const String snackbarSavedTitle = 'Saved';
+  static const String snackbarPrintTitle = 'Print';
+  static const String snackbarBackupCancelled = 'Backup cancelled.';
+  static String snackbarBackupSaved(String path) => 'Backup saved: $path';
+  static String snackbarBackupFailed(String reason) => 'Backup failed: $reason';
+  static String snackbarRestoreFailed(String reason) =>
+      'Restore failed: $reason';
+  static const String snackbarSlipSaved = 'Slip settings updated in database.';
+  static const String snackbarPrintSent = 'Sent to printer.';
+  static String snackbarTransactionAddFailed(String reason) =>
+      'Failed to add transaction: $reason';
+  static String snackbarTransactionUpdateFailed(String reason) =>
+      'Failed to update transaction: $reason';
 
   // Inventory table headers
   static const String colNo = 'No';

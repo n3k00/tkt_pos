@@ -317,6 +317,10 @@ class AppDatabase extends _$AppDatabase {
     return dest;
   }
 
+  /// Replaces the active database file with [backupPath].
+  ///
+  /// On success, the current singleton connection has been closed. Callers must
+  /// exit or restart the app before any further database reads or writes.
   static Future<String?> restoreFromBackup(String backupPath) async {
     try {
       final Directory dir = await getApplicationSupportDirectory();
@@ -457,7 +461,8 @@ class AppDatabase extends _$AppDatabase {
     if (!columns.contains('id')) {
       return;
     }
-    final sql = '''
+    final sql =
+        '''
 INSERT INTO trip_main (
   id, date, driver_name, car_id, commission, labor_cost, support_payment, room_fee, created_at, updated_at
 )
@@ -482,7 +487,8 @@ FROM "$legacyName";
     if (!columns.contains('id') || !columns.contains('driver_id')) {
       return;
     }
-    final sql = '''
+    final sql =
+        '''
 INSERT INTO trip_manifests (
   id, driver_id, customer_name, delivery_city, phone, parcel_type, number_of_parcel,
   cash_advance, payment_pending, payment_paid, created_at, updated_at
@@ -524,20 +530,14 @@ END
   Future<bool> _tableExists(String tableName) async {
     final result = await customSelect(
       'SELECT 1 FROM sqlite_master WHERE type = ? AND name = ? LIMIT 1',
-      variables: [
-        const Variable<String>('table'),
-        Variable<String>(tableName),
-      ],
+      variables: [const Variable<String>('table'), Variable<String>(tableName)],
     ).get();
     return result.isNotEmpty;
   }
 
   Future<Set<String>> _getColumnNames(String tableName) async {
     final rows = await customSelect('PRAGMA table_info("$tableName")').get();
-    return rows
-        .map((row) => row.data['name'])
-        .whereType<String>()
-        .toSet();
+    return rows.map((row) => row.data['name']).whereType<String>().toSet();
   }
 
   Future<void> _addColumnIfMissing({

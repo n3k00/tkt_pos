@@ -50,108 +50,113 @@ class InventoryPage extends GetView<InventoryController> {
       drawer: const AppDrawer(),
       drawerEnableOpenDragGesture: true,
       drawerEdgeDragWidth: 80,
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showAddDriverDialog(context, controller),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Driver'),
       ),
       body: Stack(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const PageHeader(
-                title: AppString.inventory,
-                crumbs: ['Inventory'],
-                showBack: false,
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Dimens.spacingXL,
+                vertical: Dimens.spacingMD,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Dimens.spacingMD,
-                  vertical: Dimens.spacingSM,
-                ),
-                child: _FiltersToolbar(
-                  controller: controller,
-                  onPickMonth: () => _openMonthPicker(context),
-                ),
-              ),
-              const SizedBox(height: Dimens.spacingSM),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Dimens.spacingMD,
-                    0,
-                    Dimens.spacingMD,
-                    Dimens.spacingMD,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const PageHeader(
+                    title: AppString.inventory,
+                    crumbs: ['Inventory'],
+                    showBack: false,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: Dimens.spacingMD),
-                      Expanded(
-                        child: Obx(() {
-                          if (controller.isLoading.value) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          final all = controller.drivers;
-                          if (all.isEmpty) {
-                            return const Center(
-                              child: Text(AppString.noDrivers),
-                            );
-                          }
-                          final selectedMonth = controller.selectedDate.value;
-                          final monthFiltered = all
-                              .where(
-                                (d) =>
-                                    d.date.year == selectedMonth.year &&
-                                    d.date.month == selectedMonth.month,
-                              )
-                              .toList(growable: false);
-                          if (monthFiltered.isEmpty) {
-                            return const Center(
-                              child: Text(AppString.noResults),
-                            );
-                          }
-                          final q = controller.searchQuery.value.trim();
-                          final bool filterByRows =
-                              controller.showUnclaimedOnly.value ||
-                              q.isNotEmpty;
-                          final filteredDrivers = filterByRows
-                              ? monthFiltered
-                                    .where(
-                                      (d) => controller
-                                          .filteredTransactionsForDriver(d.id)
-                                          .isNotEmpty,
-                                    )
-                                    .toList(growable: false)
-                              : monthFiltered;
+                  const SizedBox(height: Dimens.spacingMD),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(Dimens.spacingMD),
+                    decoration: BoxDecoration(
+                      color: AppColor.white,
+                      borderRadius: BorderRadius.circular(Dimens.radiusMD),
+                      border: Border.all(color: AppColor.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColor.textPrimary.withValues(alpha: 0.04),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: _FiltersToolbar(
+                      controller: controller,
+                      onPickMonth: () => _openMonthPicker(context),
+                    ),
+                  ),
+                  const SizedBox(height: Dimens.spacingMD),
+                  Expanded(
+                    child: Obx(() {
+                      if (controller.isLoading.value) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      final all = controller.drivers;
+                      if (all.isEmpty) {
+                        return const Center(
+                          child: Text(AppString.noDrivers),
+                        );
+                      }
+                      final selectedMonth = controller.selectedDate.value;
+                      final monthFiltered = all
+                          .where(
+                            (d) =>
+                                d.date.year == selectedMonth.year &&
+                                d.date.month == selectedMonth.month,
+                          )
+                          .toList(growable: false);
+                      if (monthFiltered.isEmpty) {
+                        return const Center(
+                          child: Text(AppString.noResults),
+                        );
+                      }
+                      final q = controller.searchQuery.value.trim();
+                      final bool filterByRows =
+                          controller.showUnclaimedOnly.value || q.isNotEmpty;
+                      final filteredDrivers = filterByRows
+                          ? monthFiltered
+                                .where(
+                                  (d) => controller
+                                      .filteredTransactionsForDriver(d.id)
+                                      .isNotEmpty,
+                                )
+                                .toList(growable: false)
+                          : monthFiltered;
 
-                          if (filteredDrivers.isEmpty) {
-                            return const Center(
-                              child: Text(AppString.noResults),
-                            );
-                          }
+                      if (filteredDrivers.isEmpty) {
+                        return const Center(
+                          child: Text(AppString.noResults),
+                        );
+                      }
 
-                          return ListView.separated(
-                            itemCount: filteredDrivers.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: Dimens.spacingXL),
-                            itemBuilder: (context, index) {
-                              final d = filteredDrivers[index];
-                              return _DriverSection(
-                                driver: d,
-                                controller: controller,
-                              );
-                            },
+                      return ListView.separated(
+                        padding:
+                            const EdgeInsets.only(bottom: Dimens.spacingXL),
+                        itemCount: filteredDrivers.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: Dimens.spacingLG),
+                        itemBuilder: (context, index) {
+                          final d = filteredDrivers[index];
+                          return _DriverSection(
+                            driver: d,
+                            controller: controller,
                           );
-                        }),
-                      ),
-                    ],
+                        },
+                      );
+                    }),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
           EdgeDrawerOpener(),
         ],
@@ -167,89 +172,221 @@ class _DriverSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = Format.date(driver.date);
     return _SectionCard(
       title: driver.name,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: Dimens.spacingSM,
-            runSpacing: Dimens.spacingXS,
-            children: [
-              _MetaChip(icon: Icons.event, label: 'Date', value: dateStr),
-            ],
-          ),
-          const SizedBox(height: Dimens.spacingSM),
-          Wrap(
-            spacing: Dimens.spacingSM,
-            runSpacing: Dimens.spacingSM,
-            children: [
-              _FeeStat(
-                label: AppString.driverRoomFee,
-                amount: driver.roomFee,
-                highlight: (driver.roomFee ?? 0) > 0,
-              ),
-              _FeeStat(
-                label: AppString.driverLaborFee,
-                amount: driver.laborFee,
-                highlight: (driver.laborFee ?? 0) > 0,
-              ),
-              _FeeStat(
-                label: AppString.driverDeliveryFee,
-                amount: driver.deliveryFee,
-                highlight: (driver.deliveryFee ?? 0) > 0,
-              ),
-              _FeeStat(
-                label: AppString.driverTotalCharges,
-                amount: controller.totalChargesForDriver(driver.id),
-                highlight:
-                    (controller.totalChargesForDriver(driver.id) ?? 0) > 0,
-              ),
-              _FeeStat(
-                label: AppString.driverPaidOutAmount,
-                amount: controller.paidOutAmountForDriver(driver.id),
-                highlight:
-                    (controller.paidOutAmountForDriver(driver.id) ?? 0) > 0,
-              ),
-              _StatusBadge(isPaidOut: driver.paidOut),
-            ],
-          ),
-          const SizedBox(height: Dimens.spacingSM),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Wrap(
-              spacing: Dimens.spacingXS,
-              runSpacing: Dimens.spacingXS,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final summary = _DriverSummary(
+            driver: driver,
+            controller: controller,
+          );
+          final transactions = _DriverTransactionsTable(
+            controller: controller,
+            driverId: driver.id,
+          );
+          final bool isWide = constraints.maxWidth > 900;
+
+          if (isWide) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ElevatedButton.icon(
-                  onPressed: () =>
-                      showAddTransactionDialog(context, controller, driver.id),
-                  icon: const Icon(Icons.add),
-                  label: const Text(AppString.addTransaction),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Dimens.spacingMD,
-                      vertical: Dimens.spacingSM,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(Dimens.radiusXS),
-                    ),
-                    textStyle: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
+                SizedBox(
+                  width: Dimens.spacingMD * 20,
+                  child: summary,
                 ),
-                DriverActionsMenu(driver: driver, controller: controller),
+                const SizedBox(width: Dimens.spacingLG),
+                Expanded(child: transactions),
               ],
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              summary,
+              const SizedBox(height: Dimens.spacingSM),
+              const Divider(color: AppColor.border),
+              transactions,
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DriverSummary extends StatelessWidget {
+  const _DriverSummary({required this.driver, required this.controller});
+
+  final Driver driver;
+  final InventoryController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final dateLabel = Format.date(driver.date);
+    final totalCharges = controller.totalChargesForDriver(driver.id) ?? 0;
+    final paidOut = controller.paidOutAmountForDriver(driver.id) ?? 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: Dimens.spacingXS,
+          runSpacing: Dimens.spacingXS,
+          children: [
+            _MetaChip(
+              icon: Icons.badge_outlined,
+              label: 'ID',
+              value: driver.id.toString(),
             ),
+            _MetaChip(
+              icon: Icons.event,
+              label: AppString.dialogDateLabel,
+              value: dateLabel,
+            ),
+          ],
+        ),
+        const SizedBox(height: Dimens.spacingSM),
+        _FeeBreakdownPanel(
+          roomFee: driver.roomFee ?? 0,
+          laborFee: driver.laborFee ?? 0,
+          deliveryFee: driver.deliveryFee ?? 0,
+        ),
+        const SizedBox(height: Dimens.spacingSM),
+        Wrap(
+          spacing: Dimens.spacingSM,
+          runSpacing: Dimens.spacingSM,
+          children: [
+            _FeeStat(
+              label: AppString.driverTotalCharges,
+              amount: totalCharges,
+              highlight: totalCharges > 0,
+            ),
+            _FeeStat(
+              label: AppString.driverPaidOutAmount,
+              amount: paidOut,
+              highlight: paidOut > 0,
+            ),
+            _StatusBadge(isPaidOut: driver.paidOut),
+          ],
+        ),
+        const SizedBox(height: Dimens.spacingSM),
+        Wrap(
+          spacing: Dimens.spacingXS,
+          runSpacing: Dimens.spacingXS,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () =>
+                  showAddTransactionDialog(context, controller, driver.id),
+              icon: const Icon(Icons.add),
+              label: const Text(AppString.addTransaction),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Dimens.spacingMD,
+                  vertical: Dimens.spacingSM,
+                ),
+              ),
+            ),
+            DriverActionsMenu(driver: driver, controller: controller),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FeeBreakdownPanel extends StatelessWidget {
+  const _FeeBreakdownPanel({
+    required this.roomFee,
+    required this.laborFee,
+    required this.deliveryFee,
+  });
+
+  final double roomFee;
+  final double laborFee;
+  final double deliveryFee;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final items = <Widget>[];
+    void addStat(IconData icon, String label, double amount) {
+      if (amount <= 0) return;
+      items.add(
+        Expanded(
+          child: _FeeIconStat(
+            icon: icon,
+            label: label,
+            amount: amount,
           ),
-          const SizedBox(height: Dimens.spacingSM),
-          _DriverTransactionsTable(controller: controller, driverId: driver.id),
+        ),
+      );
+    }
+
+    addStat(Icons.meeting_room_outlined, AppString.driverRoomFee, roomFee);
+    addStat(Icons.handyman_outlined, AppString.driverLaborFee, laborFee);
+    addStat(Icons.local_shipping_outlined, AppString.driverDeliveryFee, deliveryFee);
+
+    if (items.isEmpty) {
+      return Text(
+        AppString.driverNoFees,
+        style: AppTextStyles.caption(textTheme),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(Dimens.spacingSM),
+      decoration: BoxDecoration(
+        color: AppColor.card,
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+      ),
+      child: Row(
+        children: [
+          for (int i = 0; i < items.length; i++) ...[
+            items[i],
+            if (i != items.length - 1)
+              const SizedBox(width: Dimens.spacingSM),
+          ],
         ],
       ),
     );
   }
+}
 
-  // Date formatting moved to Format.date
+class _FeeIconStat extends StatelessWidget {
+  const _FeeIconStat({
+    required this.icon,
+    required this.label,
+    required this.amount,
+  });
+
+  final IconData icon;
+  final String label;
+  final double amount;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: AppColor.textSecondary),
+            const SizedBox(width: Dimens.spacingXXS),
+            Text(
+              label,
+              style: AppTextStyles.caption(textTheme),
+            ),
+          ],
+        ),
+        const SizedBox(height: Dimens.spacingXXS),
+        Text(
+          Format.money(amount),
+          style: AppTextStyles.subtitle(textTheme),
+        ),
+      ],
+    );
+  }
 }
 
 class _UnclaimedSwitch extends StatelessWidget {
@@ -353,6 +490,14 @@ class _FeeStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final double value = amount ?? 0;
+    if (!highlight && value <= 0) {
+      return Text(
+        '$label: ${Format.money(0)}',
+        style: AppTextStyles.caption(textTheme),
+      );
+    }
     return Container(
       padding: const EdgeInsets.all(Dimens.spacingSM),
       decoration: BoxDecoration(
@@ -369,15 +514,13 @@ class _FeeStat extends StatelessWidget {
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.labelMedium?.copyWith(color: AppColor.textSecondary),
+            style: AppTextStyles.caption(textTheme),
           ),
           const SizedBox(height: Dimens.spacingXXS),
           Text(
-            Format.money(amount ?? 0),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+            Format.money(value),
+            style: AppTextStyles.subtitle(
+              textTheme,
               color: highlight ? AppColor.primaryDark : AppColor.textPrimary,
             ),
           ),
@@ -694,13 +837,13 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                       child: Center(
                         child: t.pickedUp
                             ? const Icon(Icons.check, color: AppColor.success)
-                            : ElevatedButton(
+                            : OutlinedButton(
                                 onPressed: () => showClaimTransactionDialog(
                                   context,
                                   widget.controller,
                                   t,
                                 ),
-                                style: ElevatedButton.styleFrom(
+                                style: OutlinedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: Dimens.spacingSM,
                                     vertical: Dimens.spacingXS,
@@ -889,6 +1032,7 @@ Future<DateTime?> _showMonthYearPickerDialog(
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setState) {
+          final textTheme = Theme.of(context).textTheme;
           return AlertDialog(
             title: const Text('Select Month'),
             content: Column(
@@ -905,7 +1049,8 @@ Future<DateTime?> _showMonthYearPickerDialog(
                     ),
                     Text(
                       tempYear.toString(),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: AppTextStyles.subtitle(
+                        textTheme,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -919,10 +1064,10 @@ Future<DateTime?> _showMonthYearPickerDialog(
                 ),
                 const SizedBox(height: Dimens.spacingSM),
                 SizedBox(
-                  width: 320,
+                  width: Dimens.spacingMD * 20,
                   child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: Dimens.spacingXS,
+                    runSpacing: Dimens.spacingXS,
                     children: List.generate(12, (index) {
                       final monthIndex = index + 1;
                       final bool isSelected = tempMonth == monthIndex;
@@ -967,42 +1112,61 @@ class _FiltersToolbar extends StatelessWidget {
       final selected = controller.selectedDate.value;
       final monthLabel = '${_monthNames[selected.month - 1]} ${selected.year}';
       final bool isUnclaimedOnly = controller.showUnclaimedOnly.value;
-      return Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: Dimens.spacingSM,
-          vertical: Dimens.spacingXXS,
-        ),
-        child: Row(
+
+      Widget buildChips() {
+        return Wrap(
+          spacing: Dimens.spacingSM,
+          runSpacing: Dimens.spacingXS,
           children: [
-            Expanded(
-              child: HeaderSearchField(
-                hint: AppString.searchHint,
-                onChanged: controller.setSearch,
-                borderRadius: BorderRadius.circular(Dimens.radiusSM),
-              ),
+            _CommandChip(
+              icon: Icons.calendar_month,
+              label: monthLabel,
+              onTap: onPickMonth,
             ),
-            const SizedBox(width: Dimens.spacingSM),
-            _MonthChip(label: monthLabel, onTap: onPickMonth),
-            const SizedBox(width: Dimens.spacingSM),
-            Row(
-              children: [
-                Text(
-                  AppString.filterUnclaimedOnly,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColor.textSecondary,
-                  ),
-                ),
-                const SizedBox(width: Dimens.spacingXS),
-                Switch.adaptive(
-                  value: isUnclaimedOnly,
-                  activeColor: AppColor.primary,
-                  onChanged: controller.setUnclaimedOnly,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ],
+            _CommandChip(
+              icon: isUnclaimedOnly
+                  ? Icons.check_box
+                  : Icons.check_box_outline_blank,
+              label: AppString.filterUnclaimedOnly,
+              selected: isUnclaimedOnly,
+              onTap: () =>
+                  controller.setUnclaimedOnly(!controller.showUnclaimedOnly.value),
             ),
           ],
-        ),
+        );
+      }
+
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 720) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                HeaderSearchField(
+                  hint: AppString.searchHint,
+                  onChanged: controller.setSearch,
+                  borderRadius: BorderRadius.circular(Dimens.radiusMD),
+                ),
+                const SizedBox(height: Dimens.spacingSM),
+                buildChips(),
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(
+                child: HeaderSearchField(
+                  hint: AppString.searchHint,
+                  onChanged: controller.setSearch,
+                  borderRadius: BorderRadius.circular(Dimens.radiusMD),
+                ),
+              ),
+              const SizedBox(width: Dimens.spacingMD),
+              Flexible(child: buildChips()),
+            ],
+          );
+        },
       );
     });
   }
@@ -1021,13 +1185,14 @@ class _MetaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: Dimens.spacingSM,
         vertical: Dimens.spacingXXS,
       ),
       decoration: BoxDecoration(
-        color: AppColor.surfaceBackground,
+        color: AppColor.white,
         borderRadius: BorderRadius.circular(Dimens.radiusXS),
         border: Border.all(color: AppColor.border),
       ),
@@ -1038,9 +1203,10 @@ class _MetaChip extends StatelessWidget {
           const SizedBox(width: Dimens.spacingXXS),
           Text(
             '$label: $value',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppColor.textPrimary),
+            style: AppTextStyles.caption(
+              textTheme,
+              color: AppColor.textPrimary,
+            ),
           ),
         ],
       ),
@@ -1060,10 +1226,18 @@ class _SectionCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return Container(
       width: double.infinity,
+      margin: const EdgeInsets.only(bottom: Dimens.spacingMD),
       decoration: BoxDecoration(
-        color: AppColor.card,
-        borderRadius: BorderRadius.circular(Dimens.radiusSM),
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(Dimens.radiusMD),
         border: Border.all(color: AppColor.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColor.textPrimary.withValues(alpha: 0.03),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(Dimens.spacingMD),
       child: Column(
@@ -1072,18 +1246,13 @@ class _SectionCard extends StatelessWidget {
           if (title != null) ...[
             Text(
               title!,
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColor.textPrimary,
-              ),
+              style: AppTextStyles.subtitle(textTheme),
             ),
             if (subtitle != null) ...[
               const SizedBox(height: Dimens.spacingXXS),
               Text(
                 subtitle!,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: AppColor.textSecondary,
-                ),
+                style: AppTextStyles.body(textTheme),
               ),
             ],
             const SizedBox(height: Dimens.spacingSM),
@@ -1095,41 +1264,56 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _MonthChip extends StatelessWidget {
-  const _MonthChip({required this.label, required this.onTap});
+class _CommandChip extends StatelessWidget {
+  const _CommandChip({
+    required this.label,
+    this.icon,
+    this.onTap,
+    this.selected = false,
+  });
+
   final String label;
-  final VoidCallback onTap;
+  final IconData? icon;
+  final VoidCallback? onTap;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final Color borderColor =
+        selected ? AppColor.primary : AppColor.border;
+    final Color textColor =
+        selected ? AppColor.primaryDark : AppColor.textSecondary;
+    final Color bgColor = selected
+        ? AppColor.primary.withValues(alpha: 0.12)
+        : AppColor.white;
     return InkWell(
       borderRadius: BorderRadius.circular(Dimens.radiusSM),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: Dimens.spacingMD,
+          horizontal: Dimens.spacingSM,
           vertical: Dimens.spacingXXS,
         ),
         decoration: BoxDecoration(
-          color: AppColor.surfaceBackground,
+          color: bgColor,
           borderRadius: BorderRadius.circular(Dimens.radiusSM),
-          border: Border.all(color: AppColor.border),
+          border: Border.all(color: borderColor),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.calendar_month,
-              color: AppColor.textPrimary,
-              size: 18,
-            ),
-            const SizedBox(width: Dimens.spacingXXS),
+            if (icon != null) ...[
+              Icon(icon, size: 16, color: textColor),
+              const SizedBox(width: Dimens.spacingXXS),
+            ],
             Text(
               label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: AppTextStyles.caption(
+                textTheme,
+                color: textColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

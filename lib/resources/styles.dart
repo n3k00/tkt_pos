@@ -12,6 +12,48 @@ class AppTextStyles {
     color: AppColor.textDefault,
   );
 
+  // Subtitle used for cards/sections inside a page
+  static TextStyle subtitle(
+    TextTheme textTheme, {
+    Color? color,
+    FontWeight fontWeight = FontWeight.w700,
+  }) {
+    final base = textTheme.titleMedium ??
+        const TextStyle(fontSize: Dimens.fontSizeSubtitle);
+    return base.copyWith(
+      fontWeight: fontWeight,
+      color: color ?? AppColor.textPrimary,
+    );
+  }
+
+  // Default body text with optional emphasis overrides
+  static TextStyle body(
+    TextTheme textTheme, {
+    Color? color,
+    FontWeight? fontWeight,
+  }) {
+    final base =
+        textTheme.bodyMedium ?? const TextStyle(fontSize: Dimens.fontSizeBody);
+    return base.copyWith(
+      color: color ?? AppColor.textSecondary,
+      fontWeight: fontWeight,
+    );
+  }
+
+  // Small supporting labels/captions
+  static TextStyle caption(
+    TextTheme textTheme, {
+    Color? color,
+    FontWeight? fontWeight,
+  }) {
+    final base =
+        textTheme.bodySmall ?? const TextStyle(fontSize: Dimens.fontSizeCaption);
+    return base.copyWith(
+      color: color ?? AppColor.textSecondary,
+      fontWeight: fontWeight,
+    );
+  }
+
   // Table header
   static const TextStyle tableHeader = TextStyle(
     color: AppColor.textDefault,

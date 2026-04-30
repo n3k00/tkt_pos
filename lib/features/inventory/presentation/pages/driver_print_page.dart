@@ -9,6 +9,7 @@ import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/resources/shapes.dart';
+import 'package:tkt_pos/widgets/app_snackbar.dart';
 
 class DriverPrintPage extends StatelessWidget {
   const DriverPrintPage({super.key, required this.driverId});
@@ -23,15 +24,17 @@ class DriverPrintPage extends StatelessWidget {
         final transactions = controller.transactions;
 
         return Scaffold(
+          backgroundColor: AppColor.surfaceBackground,
           appBar: AppBar(title: const Text('Print Preview')),
           body: controller.isLoading.value
               ? const Center(child: CircularProgressIndicator())
               : driver == null
               ? const Center(child: Text('Driver not found.'))
-              : Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(Dimens.spacingXL),
-                    child: Column(
+              : SafeArea(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(Dimens.spacingXL),
+                      child: Column(
                       children: [
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 1123),
@@ -527,7 +530,7 @@ class DriverPrintPage extends StatelessWidget {
                     ),
                   ),
                 ),
-          backgroundColor: AppColor.surfaceBackground,
+              ),
         );
       },
     );
@@ -630,17 +633,13 @@ class _FeesEditor extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Dimens.radiusXLPlus),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColor.primary.withValues(alpha: 0.08), AppColor.white],
-        ),
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(Dimens.radiusMD),
         border: Border.all(color: AppColor.border),
         boxShadow: [
           BoxShadow(
-            color: AppColor.textPrimary.withValues(alpha: 0.04),
-            blurRadius: 18,
+            color: AppColor.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
@@ -741,10 +740,12 @@ class _FeesEditor extends StatelessWidget {
                         false;
                     if (!confirmed) return;
                     await controller.saveAdjustments();
-                    Get.snackbar(
-                      'Saved',
-                      'Slip settings updated in database.',
-                      snackPosition: SnackPosition.BOTTOM,
+                    if (!context.mounted) return;
+                    AppSnackBars.show(
+                      context,
+                      title: AppString.snackbarSavedTitle,
+                      message: AppString.snackbarSlipSaved,
+                      type: AppSnackbarType.success,
                     );
                   },
                   icon: const Icon(Icons.save_outlined),
@@ -754,10 +755,12 @@ class _FeesEditor extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: () async {
                     await controller.printSlip();
-                    Get.snackbar(
-                      'Print',
-                      'Sent to printer.',
-                      snackPosition: SnackPosition.BOTTOM,
+                    if (!context.mounted) return;
+                    AppSnackBars.show(
+                      context,
+                      title: AppString.snackbarPrintTitle,
+                      message: AppString.snackbarPrintSent,
+                      type: AppSnackbarType.info,
                     );
                   },
                   icon: const Icon(Icons.print),

@@ -23,9 +23,7 @@ class SettingsController extends GetxController {
       final info = await PackageInfo.fromPlatform();
       final version = info.version;
       final build = info.buildNumber;
-      appVersion.value = build.isEmpty
-          ? 'v$version'
-          : 'v$version+$build';
+      appVersion.value = build.isEmpty ? 'v$version' : 'v$version+$build';
     } catch (_) {
       appVersion.value = 'beta';
     }
@@ -40,7 +38,7 @@ class SettingsController extends GetxController {
     final location = await fs.getSaveLocation(
       suggestedName: suggestedName,
       acceptedTypeGroups: const [
-        fs.XTypeGroup(label: 'Database', extensions: ['db'])
+        fs.XTypeGroup(label: 'Database', extensions: ['db']),
       ],
     );
     if (location == null) return null; // user cancelled
@@ -49,6 +47,8 @@ class SettingsController extends GetxController {
     return path;
   }
 
+  // On true, the database connection has been closed and the caller must exit
+  // or restart the app before doing any more database work.
   Future<bool> restoreLatestBackup() async {
     final dir = await getApplicationSupportDirectory();
     final backupsDir = Directory(p.join(dir.path, 'backups'));
@@ -65,11 +65,12 @@ class SettingsController extends GetxController {
     return ok;
   }
 
-  // Pick a .db file and REPLACE current database with it
+  // Pick a .db file and replace the current database with it.
+  // On null, restore succeeded and the app must exit or restart immediately.
   Future<String?> restoreFromFileReplaceWithMessage() async {
     final xfile = await fs.openFile(
       acceptedTypeGroups: const [
-        fs.XTypeGroup(label: 'Database', extensions: ['db'])
+        fs.XTypeGroup(label: 'Database', extensions: ['db']),
       ],
     );
     if (xfile == null) return 'User cancelled.';
@@ -85,7 +86,9 @@ class SettingsController extends GetxController {
       }
       // Quick sanity check for SQLite header
       try {
-        final header = await src.openRead(0, 16).fold<List<int>>(<int>[], (p, e) => p..addAll(e));
+        final header = await src
+            .openRead(0, 16)
+            .fold<List<int>>(<int>[], (p, e) => p..addAll(e));
         final headerStr = String.fromCharCodes(header);
         if (!headerStr.startsWith('SQLite format 3')) {
           return 'Selected file is not a valid SQLite database.';
@@ -114,5 +117,4 @@ class SettingsController extends GetxController {
     final msg = await restoreFromFileReplaceWithMessage();
     return msg == null;
   }
-
 }
