@@ -19,11 +19,23 @@ class AppDrawer extends StatelessWidget {
     // Simple nav model to reduce repetition
     const topItems = <_NavItem>[
       _NavItem(icon: Icons.home, tooltip: 'Home', route: Routes.home),
-      _NavItem(icon: Icons.inventory_2, tooltip: 'Inventory', route: Routes.inventory),
-      _NavItem(icon: Icons.bar_chart, tooltip: 'Reports', route: Routes.reports),
+      _NavItem(
+        icon: Icons.inventory_2,
+        tooltip: 'Inventory',
+        route: Routes.inventory,
+      ),
+      _NavItem(
+        icon: Icons.bar_chart,
+        tooltip: 'Reports',
+        route: Routes.reports,
+      ),
     ];
     const bottomItems = <_NavItem>[
-      _NavItem(icon: Icons.settings, tooltip: 'Settings', route: Routes.settings),
+      _NavItem(
+        icon: Icons.settings,
+        tooltip: 'Settings',
+        route: Routes.settings,
+      ),
     ];
 
     return Drawer(
@@ -33,22 +45,14 @@ class AppDrawer extends StatelessWidget {
       child: SafeArea(
         child: Center(
           child: Container(
-            margin:
-                const EdgeInsets.symmetric(vertical: Dimens.spacingSM),
+            margin: const EdgeInsets.symmetric(vertical: Dimens.spacingSM),
             decoration: BoxDecoration(
               color: AppColor.white,
-              borderRadius: BorderRadius.circular(Dimens.radiusXXL),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColor.textPrimary.withValues(alpha: 0.06),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(Dimens.radiusXS),
+              border: Border.all(color: AppColor.border),
             ),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: Dimens.spacingSM),
+              padding: const EdgeInsets.symmetric(vertical: Dimens.spacingSM),
               child: Column(
                 children: [
                   // Brand / App icon
@@ -61,35 +65,39 @@ class AppDrawer extends StatelessWidget {
 
                   // Nav buttons
                   // Top nav buttons
-                  ...topItems.map((it) => _NavIconButton(
-                        icon: it.icon,
-                        tooltip: it.tooltip,
-                        selected: currentRoute == it.route,
-                        onTap: () {
-                          Get.back();
-                          if (currentRoute != it.route) {
-                            // Keep existing behavior: clear and go to target
-                            Get.offAllNamed(it.route);
-                          }
-                        },
-                        color: iconColor(currentRoute == it.route),
-                      )),
+                  ...topItems.map(
+                    (it) => _NavIconButton(
+                      icon: it.icon,
+                      tooltip: it.tooltip,
+                      selected: currentRoute == it.route,
+                      onTap: () {
+                        Get.back();
+                        if (currentRoute != it.route) {
+                          // Keep existing behavior: clear and go to target
+                          Get.offAllNamed(it.route);
+                        }
+                      },
+                      color: iconColor(currentRoute == it.route),
+                    ),
+                  ),
 
                   const Spacer(),
 
                   // Bottom nav buttons
-                  ...bottomItems.map((it) => _NavIconButton(
-                        icon: it.icon,
-                        tooltip: it.tooltip,
-                        selected: currentRoute == it.route,
-                        onTap: () {
-                          Get.back();
-                          if (currentRoute != it.route) {
-                            Get.offAllNamed(it.route);
-                          }
-                        },
-                        color: iconColor(currentRoute == it.route),
-                      )),
+                  ...bottomItems.map(
+                    (it) => _NavIconButton(
+                      icon: it.icon,
+                      tooltip: it.tooltip,
+                      selected: currentRoute == it.route,
+                      onTap: () {
+                        Get.back();
+                        if (currentRoute != it.route) {
+                          Get.offAllNamed(it.route);
+                        }
+                      },
+                      color: iconColor(currentRoute == it.route),
+                    ),
+                  ),
 
                   const SizedBox(height: Dimens.spacingSM),
                 ],
@@ -167,5 +175,9 @@ class _NavItem {
   final IconData icon;
   final String tooltip;
   final String route;
-  const _NavItem({required this.icon, required this.tooltip, required this.route});
+  const _NavItem({
+    required this.icon,
+    required this.tooltip,
+    required this.route,
+  });
 }

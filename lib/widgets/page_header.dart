@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/resources/colors.dart';
@@ -32,82 +31,59 @@ class PageHeader extends StatelessWidget {
         Dimens.spacingMD,
         Dimens.spacingSM,
       ),
-      child: ClipRRect(
-        borderRadius: AppShapes.cardRadius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            padding: Dimens.paddingCard,
-            decoration: BoxDecoration(
-              borderRadius: AppShapes.cardRadius,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColor.white.withValues(alpha: 0.25),
-                  AppColor.white.withValues(alpha: 0.18),
-                ],
-              ),
-              border: Border.all(color: AppColor.white.withValues(alpha: 0.35)),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColor.textPrimary.withValues(alpha: 0.06),
-                  blurRadius: 22,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (showBreadcrumbs) ...[
-                        Row(
-                          children: [
-                            if (showBack) ...[
-                              _BackButton(onTap: onBack ?? () => Get.back()),
-                              const SizedBox(width: Dimens.spacingXS),
-                            ],
-                            Flexible(
-                              child: Text(
-                                crumbs.isEmpty ? 'Home' : crumbs.join('  >  '),
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: AppColor.textSecondary,
-                                  fontSize: 13,
-                                ),
-                              ),
+      child: Container(
+        padding: Dimens.paddingCard,
+        decoration: BoxDecoration(
+          color: AppColor.white,
+          borderRadius: AppShapes.cardRadius,
+          border: Border.all(color: AppColor.border),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (showBreadcrumbs) ...[
+                    Row(
+                      children: [
+                        if (showBack) ...[
+                          _BackButton(onTap: onBack ?? () => Get.back()),
+                          const SizedBox(width: Dimens.spacingXS),
+                        ],
+                        Flexible(
+                          child: Text(
+                            crumbs.isEmpty ? 'Home' : crumbs.join('  >  '),
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColor.textSecondary,
+                              fontSize: 13,
                             ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
                       ],
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: Dimens.fontSizeHeadline,
-                          fontWeight: FontWeight.w800,
-                          color: AppColor.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (trailing != null) ...[
-                  const SizedBox(width: Dimens.spacingMD),
-                  Flexible(
-                    child: Align(
-                      alignment: Alignment.topRight,
-                      child: trailing!,
+                    ),
+                    const SizedBox(height: Dimens.spacingXSPlus),
+                  ],
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: Dimens.fontSizeHeadline,
+                      fontWeight: FontWeight.w800,
+                      color: AppColor.textPrimary,
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
+            if (trailing != null) ...[
+              const SizedBox(width: Dimens.spacingMD),
+              Flexible(
+                child: Align(alignment: Alignment.topRight, child: trailing!),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -174,19 +150,10 @@ class _HeaderSearchFieldState extends State<HeaderSearchField> {
   @override
   Widget build(BuildContext context) {
     final hasText = _controller.text.isNotEmpty;
-    final radius = widget.borderRadius ??
-        BorderRadius.circular(Dimens.radiusJumbo);
+    final radius =
+        widget.borderRadius ?? BorderRadius.circular(Dimens.radiusJumbo);
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        boxShadow: [
-          BoxShadow(
-            color: AppColor.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(borderRadius: radius),
       child: TextField(
         controller: _controller,
         onChanged: widget.onChanged,
@@ -201,34 +168,29 @@ class _HeaderSearchFieldState extends State<HeaderSearchField> {
           contentPadding: Dimens.inputPadding,
           filled: true,
           fillColor: AppColor.surfaceBackground,
-          border: AppShapes.inputBorder(color: AppColor.border).copyWith(
-            borderRadius: radius,
-          ),
-          enabledBorder: AppShapes.inputBorder(color: AppColor.border)
-              .copyWith(borderRadius: radius),
+          border: AppShapes.inputBorder(
+            color: AppColor.border,
+          ).copyWith(borderRadius: radius),
+          enabledBorder: AppShapes.inputBorder(
+            color: AppColor.border,
+          ).copyWith(borderRadius: radius),
           focusedBorder: AppShapes.inputBorder(
             color: AppColor.primaryDark,
             width: 1.2,
           ).copyWith(borderRadius: radius),
           suffixIcon: hasText
               ? Padding(
-                  padding:
-                      const EdgeInsets.only(right: Dimens.spacingMicro),
+                  padding: const EdgeInsets.only(right: Dimens.spacingMicro),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(Dimens.radiusMDPlus),
                     onTap: () {
                       _controller.clear();
                       widget.onChanged?.call('');
                     },
-                    child: Container(
+                    child: const SizedBox(
                       width: 28,
                       height: 28,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColor.border),
-                        color: AppColor.white,
-                      ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
                         size: 16,
                         color: AppColor.textSecondary,
@@ -237,17 +199,11 @@ class _HeaderSearchFieldState extends State<HeaderSearchField> {
                   ),
                 )
               : Padding(
-                  padding:
-                      const EdgeInsets.only(right: Dimens.spacingMicro),
-                  child: Container(
+                  padding: const EdgeInsets.only(right: Dimens.spacingMicro),
+                  child: const SizedBox(
                     width: 28,
                     height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColor.border),
-                      color: AppColor.white,
-                    ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.search,
                       size: 16,
                       color: AppColor.textSecondary,

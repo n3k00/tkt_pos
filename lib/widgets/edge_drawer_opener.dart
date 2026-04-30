@@ -81,7 +81,9 @@ class _EdgeDrawerOpenerState extends State<EdgeDrawerOpener> {
                             width: widget.width - 2,
                             height: widget.handleHeight,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(Dimens.radiusXL),
+                              borderRadius: BorderRadius.circular(
+                                Dimens.radiusXL,
+                              ),
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -90,16 +92,7 @@ class _EdgeDrawerOpenerState extends State<EdgeDrawerOpener> {
                                   AppColor.white.withValues(alpha: 0.18),
                                 ],
                               ),
-                              border: Border.all(
-                                color: AppColor.white.withValues(alpha: 0.4),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColor.textPrimary.withValues(alpha: 0.08),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
+                              border: Border.all(color: AppColor.border),
                             ),
                           ),
                         ),

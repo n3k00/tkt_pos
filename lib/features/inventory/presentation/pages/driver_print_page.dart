@@ -35,349 +35,263 @@ class DriverPrintPage extends StatelessWidget {
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(Dimens.spacingXL),
                       child: Column(
-                      children: [
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 1123),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: AppColor.white,
-                              borderRadius: BorderRadius.circular(Dimens.radiusXLPlus),
-                              border: Border.all(color: AppColor.border),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColor.textPrimary.withValues(alpha: 0.05),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
+                        children: [
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1123),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: AppColor.white,
+                                borderRadius: BorderRadius.circular(
+                                  Dimens.radiusXLPlus,
                                 ),
-                              ],
-                            ),
-                            child: Stack(
-                              children: [
-                                Positioned.fill(
-                                  child: IgnorePointer(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(Dimens.radiusXLPlus),
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            AppColor.white.withValues(alpha: 0.3),
-                                            AppColor.white.withValues(
-                                              alpha: 0.06,
-                                            ),
-                                          ],
+                                border: Border.all(color: AppColor.border),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: IgnorePointer(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            Dimens.radiusXLPlus,
+                                          ),
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              AppColor.white.withValues(
+                                                alpha: 0.3,
+                                              ),
+                                              AppColor.white.withValues(
+                                                alpha: 0.06,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(Dimens.spacingXL),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Incoming Parcel Slip',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineSmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                      ),
-                                      const SizedBox(height: Dimens.spacingSM),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              'Driver: ${driver.name}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                            ),
-                                          ),
-                                          Text(
-                                            'Date: ${Format.date(driver.date)}',
-                                            style: Theme.of(
-                                              context,
-                                            ).textTheme.titleMedium,
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: Dimens.spacingXL),
-                                      DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          color: AppColor.white,
-                                          border: Border.all(
-                                            color: AppColor.border,
-                                          ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(
+                                      Dimens.spacingXL,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Incoming Parcel Slip',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w800,
+                                              ),
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(Dimens.spacingXL),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              AppDataTable(
-                                                table: DataTable(
-                                                  columnSpacing: 12,
-                                                  headingRowHeight: 40,
-                                                  horizontalMargin: 12,
-                                                  columns: const [
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString.colNo,
+                                        const SizedBox(
+                                          height: Dimens.spacingSM,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                'Driver: ${driver.name}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                              ),
+                                            ),
+                                            Text(
+                                              'Date: ${Format.date(driver.date)}',
+                                              style: Theme.of(
+                                                context,
+                                              ).textTheme.titleMedium,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: Dimens.spacingXL,
+                                        ),
+                                        DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color: AppColor.white,
+                                            border: Border.all(
+                                              color: AppColor.border,
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(
+                                              Dimens.spacingXL,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                AppDataTable(
+                                                  table: DataTable(
+                                                    columnSpacing: 12,
+                                                    headingRowHeight: 40,
+                                                    horizontalMargin: 12,
+                                                    columns: const [
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString.colNo,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString
-                                                            .colCustomerName,
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString
+                                                              .colCustomerName,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString.colPhone,
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString.colPhone,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString.colParcelType,
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString
+                                                              .colParcelType,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString.colNumber,
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString.colNumber,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString.colCharges,
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString.colCharges,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString
-                                                            .colPaymentStatus,
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString
+                                                              .colPaymentStatus,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString
-                                                            .colCashAdvance,
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString
+                                                              .colCashAdvance,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text('Signed'),
-                                                    ),
-                                                    DataColumn(
-                                                      label: Text(
-                                                        AppString.colComment,
+                                                      DataColumn(
+                                                        label: Text('Signed'),
                                                       ),
-                                                    ),
-                                                  ],
-                                                  rows: [
-                                                    ...transactions.asMap().entries.map((
-                                                      e,
-                                                    ) {
-                                                      final idx = e.key + 1;
-                                                      final t = e.value;
-                                                      return DataRow(
-                                                        cells: [
-                                                          DataCell(
-                                                            Text('$idx'),
-                                                          ),
-                                                          DataCell(
-                                                            Text(
-                                                              t.customerName ??
-                                                                  '-',
+                                                      DataColumn(
+                                                        label: Text(
+                                                          AppString.colComment,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    rows: [
+                                                      ...transactions.asMap().entries.map((
+                                                        e,
+                                                      ) {
+                                                        final idx = e.key + 1;
+                                                        final t = e.value;
+                                                        return DataRow(
+                                                          cells: [
+                                                            DataCell(
+                                                              Text('$idx'),
                                                             ),
-                                                          ),
-                                                          DataCell(
-                                                            SizedBox(
-                                                              width:
-                                                                  AppTableWidths
-                                                                      .phone,
-                                                              child: Text(
-                                                                t.phone,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
+                                                            DataCell(
+                                                              Text(
+                                                                t.customerName ??
+                                                                    '-',
                                                               ),
                                                             ),
-                                                          ),
-                                                          DataCell(
-                                                            SizedBox(
-                                                              width:
-                                                                  AppTableWidths
-                                                                      .parcelType,
-                                                              child: Text(
-                                                                t.parcelType,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          DataCell(
-                                                            SizedBox(
-                                                              width:
-                                                                  AppTableWidths
-                                                                      .number,
-                                                              child: Text(
-                                                                t.number,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          DataCell(
-                                                            Align(
-                                                              alignment: Alignment
-                                                                  .centerRight,
-                                                              child: Text(
-                                                                Format.money(
-                                                                  t.charges,
+                                                            DataCell(
+                                                              SizedBox(
+                                                                width:
+                                                                    AppTableWidths
+                                                                        .phone,
+                                                                child: Text(
+                                                                  t.phone,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
                                                                 ),
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .right,
                                                               ),
                                                             ),
-                                                          ),
-                                                          DataCell(
-                                                            Text(
-                                                              t.paymentStatus,
-                                                            ),
-                                                          ),
-                                                          DataCell(
-                                                            Align(
-                                                              alignment: Alignment
-                                                                  .centerRight,
-                                                              child: Text(
-                                                                Format.money(
-                                                                  t.cashAdvance,
+                                                            DataCell(
+                                                              SizedBox(
+                                                                width: AppTableWidths
+                                                                    .parcelType,
+                                                                child: Text(
+                                                                  t.parcelType,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
                                                                 ),
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .right,
                                                               ),
                                                             ),
-                                                          ),
-                                                          const DataCell(
-                                                            Text(
-                                                              '______________',
-                                                            ),
-                                                          ),
-                                                          DataCell(
-                                                            Text(
-                                                              t.comment ?? '-',
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    }),
-                                                    DataRow(
-                                                      cells: [
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        DataCell(
-                                                          Text(
-                                                            'Total Charges (Pending)',
-                                                            style: Theme.of(context)
-                                                                .textTheme
-                                                                .titleSmall
-                                                                ?.copyWith(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
+                                                            DataCell(
+                                                              SizedBox(
+                                                                width:
+                                                                    AppTableWidths
+                                                                        .number,
+                                                                child: Text(
+                                                                  t.number,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
                                                                 ),
-                                                          ),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        DataCell(
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .centerRight,
-                                                            child: Text(
-                                                              Format.money(
-                                                                controller
-                                                                    .totalChargesPending,
                                                               ),
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .titleMedium
-                                                                  ?.copyWith(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w700,
-                                                                    color: AppColor
-                                                                        .textPrimary,
+                                                            ),
+                                                            DataCell(
+                                                              Align(
+                                                                alignment: Alignment
+                                                                    .centerRight,
+                                                                child: Text(
+                                                                  Format.money(
+                                                                    t.charges,
                                                                   ),
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .right,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        DataCell(
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .centerRight,
-                                                            child: Text(
-                                                              Format.money(
-                                                                controller
-                                                                    .totalCashAdvance,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .right,
+                                                                ),
                                                               ),
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .titleMedium
-                                                                  ?.copyWith(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w700,
-                                                                    color: AppColor
-                                                                        .textPrimary,
-                                                                  ),
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .right,
                                                             ),
-                                                          ),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    ..._feeRows(
-                                                      context,
-                                                      controller,
-                                                    ),
-                                                    if (controller
-                                                            .totalChargesPending >
-                                                        0)
+                                                            DataCell(
+                                                              Text(
+                                                                t.paymentStatus,
+                                                              ),
+                                                            ),
+                                                            DataCell(
+                                                              Align(
+                                                                alignment: Alignment
+                                                                    .centerRight,
+                                                                child: Text(
+                                                                  Format.money(
+                                                                    t.cashAdvance,
+                                                                  ),
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .right,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const DataCell(
+                                                              Text(
+                                                                '______________',
+                                                              ),
+                                                            ),
+                                                            DataCell(
+                                                              Text(
+                                                                t.comment ??
+                                                                    '-',
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      }),
                                                       DataRow(
                                                         cells: [
                                                           const DataCell(
@@ -385,7 +299,7 @@ class DriverPrintPage extends StatelessWidget {
                                                           ),
                                                           DataCell(
                                                             Text(
-                                                              'Paid Out Amount',
+                                                              'Total Charges (Pending)',
                                                               style: Theme.of(context)
                                                                   .textTheme
                                                                   .titleSmall
@@ -407,17 +321,42 @@ class DriverPrintPage extends StatelessWidget {
                                                           ),
                                                           DataCell(
                                                             Align(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .centerRight,
+                                                              alignment: Alignment
+                                                                  .centerRight,
                                                               child: Text(
                                                                 Format.money(
                                                                   controller
-                                                                      .netAmount,
+                                                                      .totalChargesPending,
                                                                 ),
-                                                                style: Theme.of(
-                                                                  context,
-                                                                )
+                                                                style: Theme.of(context)
+                                                                    .textTheme
+                                                                    .titleMedium
+                                                                    ?.copyWith(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w700,
+                                                                      color: AppColor
+                                                                          .textPrimary,
+                                                                    ),
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .right,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          DataCell(
+                                                            Align(
+                                                              alignment: Alignment
+                                                                  .centerRight,
+                                                              child: Text(
+                                                                Format.money(
+                                                                  controller
+                                                                      .totalCashAdvance,
+                                                                ),
+                                                                style: Theme.of(context)
                                                                     .textTheme
                                                                     .titleMedium
                                                                     ?.copyWith(
@@ -439,6 +378,137 @@ class DriverPrintPage extends StatelessWidget {
                                                           const DataCell(
                                                             SizedBox(),
                                                           ),
+                                                        ],
+                                                      ),
+                                                      ..._feeRows(
+                                                        context,
+                                                        controller,
+                                                      ),
+                                                      if (controller
+                                                              .totalChargesPending >
+                                                          0)
+                                                        DataRow(
+                                                          cells: [
+                                                            const DataCell(
+                                                              SizedBox(),
+                                                            ),
+                                                            DataCell(
+                                                              Text(
+                                                                'Paid Out Amount',
+                                                                style: Theme.of(context)
+                                                                    .textTheme
+                                                                    .titleSmall
+                                                                    ?.copyWith(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            const DataCell(
+                                                              SizedBox(),
+                                                            ),
+                                                            const DataCell(
+                                                              SizedBox(),
+                                                            ),
+                                                            const DataCell(
+                                                              SizedBox(),
+                                                            ),
+                                                            DataCell(
+                                                              Align(
+                                                                alignment: Alignment
+                                                                    .centerRight,
+                                                                child: Text(
+                                                                  Format.money(
+                                                                    controller
+                                                                        .netAmount,
+                                                                  ),
+                                                                  style: Theme.of(context)
+                                                                      .textTheme
+                                                                      .titleMedium
+                                                                      ?.copyWith(
+                                                                        fontWeight:
+                                                                            FontWeight.w700,
+                                                                        color: AppColor
+                                                                            .textPrimary,
+                                                                      ),
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .right,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const DataCell(
+                                                              SizedBox(),
+                                                            ),
+                                                            const DataCell(
+                                                              SizedBox(),
+                                                            ),
+                                                            const DataCell(
+                                                              SizedBox(),
+                                                            ),
+                                                            const DataCell(
+                                                              SizedBox(),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      DataRow(
+                                                        cells: [
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          DataCell(
+                                                            Text(
+                                                              'Paid out status',
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .titleSmall
+                                                                  ?.copyWith(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                          DataCell(
+                                                            Text(
+                                                              controller
+                                                                      .paidOut
+                                                                      .value
+                                                                  ? AppString
+                                                                        .paidOutStatusPaidMm
+                                                                  : AppString
+                                                                        .paidOutStatusPendingMm,
+                                                              style: TextStyle(
+                                                                color:
+                                                                    controller
+                                                                        .paidOut
+                                                                        .value
+                                                                    ? AppColor
+                                                                          .success
+                                                                    : AppColor
+                                                                          .error,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
+                                                          const DataCell(
+                                                            SizedBox(),
+                                                          ),
                                                           const DataCell(
                                                             SizedBox(),
                                                           ),
@@ -447,90 +517,27 @@ class DriverPrintPage extends StatelessWidget {
                                                           ),
                                                         ],
                                                       ),
-                                                    DataRow(
-                                                      cells: [
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        DataCell(
-                                                          Text(
-                                                            'Paid out status',
-                                                            style: Theme.of(context)
-                                                                .textTheme
-                                                                .titleSmall
-                                                                ?.copyWith(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                        DataCell(
-                                                          Text(
-                                                            controller
-                                                                    .paidOut
-                                                                    .value
-                                                                ? AppString.paidOutStatusPaidMm
-                                                                : AppString.paidOutStatusPendingMm,
-                                                            style: TextStyle(
-                                                              color:
-                                                                  controller
-                                                                      .paidOut
-                                                                      .value
-                                                                  ? AppColor
-                                                                      .success
-                                                                  : AppColor
-                                                                      .error,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                        const DataCell(
-                                                          SizedBox(),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: Dimens.spacingXL),
-                        _FeesEditor(controller: controller),
-                      ],
+                          const SizedBox(height: Dimens.spacingXL),
+                          _FeesEditor(controller: controller),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
         );
       },
     );
@@ -592,19 +599,19 @@ class _FeesEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     InputDecoration decoration(String label, IconData icon) => InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, size: 18, color: AppColor.textSecondary),
-          filled: true,
-          fillColor: AppColor.surfaceBackground,
-          contentPadding: Dimens.inputPaddingDense,
-          border: AppShapes.inputBorder(color: AppColor.border),
-          enabledBorder: AppShapes.inputBorder(color: AppColor.border),
-          focusedBorder: AppShapes.inputBorder(
-            color: AppColor.primaryDark,
-            width: 1.5,
-          ),
-          isDense: true,
-        );
+      labelText: label,
+      prefixIcon: Icon(icon, size: 18, color: AppColor.textSecondary),
+      filled: true,
+      fillColor: AppColor.surfaceBackground,
+      contentPadding: Dimens.inputPaddingDense,
+      border: AppShapes.inputBorder(color: AppColor.border),
+      enabledBorder: AppShapes.inputBorder(color: AppColor.border),
+      focusedBorder: AppShapes.inputBorder(
+        color: AppColor.primaryDark,
+        width: 1.5,
+      ),
+      isDense: true,
+    );
 
     Widget feeField({
       required TextEditingController textController,
@@ -636,13 +643,6 @@ class _FeesEditor extends StatelessWidget {
         color: AppColor.white,
         borderRadius: BorderRadius.circular(Dimens.radiusMD),
         border: Border.all(color: AppColor.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColor.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(Dimens.spacingLG),

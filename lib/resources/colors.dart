@@ -12,11 +12,11 @@ class AppColor {
   static const Color secondary = Color(0xFF27AE60);
 
   // Neutrals & surfaces
-  static const Color background = Color(0xFFEDEFF2);
+  static const Color background = Color(0xFFF3F4F6);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color card = surface;
-  static const Color surfaceBackground = Color(0xFFF8FAFB);
-  static const Color border = Color(0xFFE0E4E9);
+  static const Color surfaceBackground = Color(0xFFF7F8FA);
+  static const Color border = Color(0xFFD6DAE0);
 
   // Text colors
   static const Color textPrimary = Color(0xFF1B1D21);
@@ -36,6 +36,6 @@ class AppColor {
   static const Color transparent = Colors.transparent;
 
   // Drawer / navigation
-  static const Color drawerItemSelectedBackground = Color(0xFFE6F4EF);
+  static const Color drawerItemSelectedBackground = Color(0xFFEAF3EF);
   static const Color drawerItemSelectedIconText = primary;
 }

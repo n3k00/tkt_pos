@@ -122,14 +122,11 @@ class _ManifestsTableState extends State<_ManifestsTable> {
               scrollDirection: Axis.horizontal,
               child: ConstrainedBox(
                 constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                child: Card(
-                  color: AppColor.white,
+                child: Container(
                   clipBehavior: Clip.antiAlias,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      color: AppColor.border,
-                    ),
+                  decoration: BoxDecoration(
+                    color: AppColor.white,
+                    border: Border.all(color: AppColor.border),
                     borderRadius: BorderRadius.circular(Dimens.radiusXS),
                   ),
                   child: DataTable(
@@ -139,7 +136,9 @@ class _ManifestsTableState extends State<_ManifestsTable> {
                     columns: [
                       DataColumn(
                         label: Padding(
-                          padding: const EdgeInsets.only(left: Dimens.spacingMD),
+                          padding: const EdgeInsets.only(
+                            left: Dimens.spacingMD,
+                          ),
                           child: Text('No', style: headerStyle),
                         ),
                       ),
@@ -217,7 +216,9 @@ class _ManifestsTableState extends State<_ManifestsTable> {
                           cells: [
                             DataCell(
                               Padding(
-                                padding: const EdgeInsets.only(left: Dimens.spacingMD),
+                                padding: const EdgeInsets.only(
+                                  left: Dimens.spacingMD,
+                                ),
                                 child: Text(i.toString(), style: cellStyle),
                               ),
                             ),

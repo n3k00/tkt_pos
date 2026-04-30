@@ -330,40 +330,32 @@ class _HomeEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: AppColor.white,
-              borderRadius: BorderRadius.circular(Dimens.radiusXXL),
-              border: Border.all(color: AppColor.border),
-            ),
-            child: const Icon(
+      child: Container(
+        height: 96,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColor.white,
+          border: Border.all(color: AppColor.border),
+          borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
               Icons.map_outlined,
-              size: 48,
+              size: 24,
               color: AppColor.textSecondary,
             ),
-          ),
-          const SizedBox(height: Dimens.spacingMD),
-          Text(
-            AppString.noTripMainRecords,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: AppColor.textPrimary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: Dimens.spacingXS),
-          Text(
-            'Add your first trip to see summary data here.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColor.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(width: Dimens.spacingSM),
+            Text(
+              AppString.noTripMainRecords,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: AppColor.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

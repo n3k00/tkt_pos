@@ -28,11 +28,11 @@ class GlassPopupMenuButton<T> extends StatelessWidget {
     return Theme(
       data: theme.copyWith(
         popupMenuTheme: theme.popupMenuTheme.copyWith(
-        color: AppColor.white.withValues(alpha: 0.85),
-          elevation: 12,
+          color: AppColor.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Dimens.radiusMDPlus),
-            side: BorderSide(color: AppColor.white.withValues(alpha: 0.35)),
+            borderRadius: BorderRadius.circular(Dimens.radiusXS),
+            side: const BorderSide(color: AppColor.border),
           ),
         ),
       ),

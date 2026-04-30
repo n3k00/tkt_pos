@@ -11,54 +11,72 @@ class Dimens {
   static const double spacingXXS = base; // 4
   static const double spacingXSPlus = base * 2.5; // 10
   static const double spacingXS = base * 2; // 8
-  static const double spacingSM = base * 3; // 12
-  static const double spacingMD = base * 4; // 16
-  static const double spacingLG = base * 5; // 20
-  static const double spacingXL = base * 6; // 24
-  static const double spacingXXL = base * 8; // 32
-  static const double spacingSection = base * 10; // 40
+  static const double spacingSM = base * 2.5; // 10
+  static const double spacingMD = base * 3; // 12
+  static const double spacingLG = base * 4; // 16
+  static const double spacingXL = base * 5; // 20
+  static const double spacingXXL = base * 6; // 24
+  static const double spacingSection = base * 8; // 32
 
   // Border radius scale
-  static const double radiusXS = base * 2; // 8
-  static const double radiusSM = base * 2.5; // 10
-  static const double radiusMD = base * 3; // 12
-  static const double radiusMDPlus = base * 3.5; // 14
-  static const double radiusLG = base * 4; // 16
-  static const double radiusXL = base * 5; // 20
-  static const double radiusXLPlus = base * 4.5; // 18
-  static const double radiusXXL = base * 6; // 24
-  static const double radiusXXXL = base * 7.5; // 30
-  static const double radiusJumbo = base * 7; // 28
+  static const double radiusXS = base; // 4
+  static const double radiusSM = base; // 4
+  static const double radiusMD = base * 1.5; // 6
+  static const double radiusMDPlus = base * 1.5; // 6
+  static const double radiusLG = base * 1.5; // 6
+  static const double radiusXL = base * 1.5; // 6
+  static const double radiusXLPlus = base * 1.5; // 6
+  static const double radiusXXL = base * 1.5; // 6
+  static const double radiusXXXL = base * 1.5; // 6
+  static const double radiusJumbo = base * 1.5; // 6
   static const double radiusPill = 999; // effectively pill/fully rounded
-  static const double radiusInput = radiusJumbo;
-  static const BorderRadius borderRadiusInput =
-      BorderRadius.all(Radius.circular(radiusInput));
+  static const double radiusInput = radiusXS;
+  static const BorderRadius borderRadiusInput = BorderRadius.all(
+    Radius.circular(radiusInput),
+  );
 
   // Padding helpers
-  static const EdgeInsets paddingScreen =
-      EdgeInsets.symmetric(horizontal: spacingXL, vertical: spacingLG);
-  static const EdgeInsets paddingCard =
-      EdgeInsets.all(spacingMD); // default card padding
-  static const EdgeInsets paddingList =
-      EdgeInsets.symmetric(horizontal: spacingXL, vertical: spacingMD);
-  static const EdgeInsets paddingSection =
-      EdgeInsets.symmetric(vertical: spacingSection, horizontal: spacingXL);
+  static const EdgeInsets paddingScreen = EdgeInsets.symmetric(
+    horizontal: spacingXL,
+    vertical: spacingLG,
+  );
+  static const EdgeInsets paddingCard = EdgeInsets.all(
+    spacingMD,
+  ); // default card padding
+  static const EdgeInsets paddingList = EdgeInsets.symmetric(
+    horizontal: spacingXL,
+    vertical: spacingMD,
+  );
+  static const EdgeInsets paddingSection = EdgeInsets.symmetric(
+    vertical: spacingSection,
+    horizontal: spacingXL,
+  );
 
   // Input paddings
-  static const EdgeInsets inputPadding16 =
-      EdgeInsets.symmetric(horizontal: spacingSM, vertical: spacingMD);
-  static const EdgeInsets inputPadding14 =
-      EdgeInsets.symmetric(horizontal: spacingSM, vertical: spacingSM + base);
-  static const EdgeInsets inputCompact =
-      EdgeInsets.symmetric(horizontal: spacingSM, vertical: spacingXS);
+  static const EdgeInsets inputPadding16 = EdgeInsets.symmetric(
+    horizontal: spacingSM,
+    vertical: spacingSM,
+  );
+  static const EdgeInsets inputPadding14 = EdgeInsets.symmetric(
+    horizontal: spacingSM,
+    vertical: spacingXSPlus,
+  );
+  static const EdgeInsets inputCompact = EdgeInsets.symmetric(
+    horizontal: spacingSM,
+    vertical: spacingXS,
+  );
   static const EdgeInsets inputPadding = inputPadding16;
   static const EdgeInsets inputPaddingDense = inputPadding14;
 
   // Margin helpers
-  static const EdgeInsets marginCard =
-      EdgeInsets.symmetric(horizontal: spacingXL, vertical: spacingMD);
-  static const EdgeInsets marginSection =
-      EdgeInsets.only(top: spacingSection, bottom: spacingSection / 2);
+  static const EdgeInsets marginCard = EdgeInsets.symmetric(
+    horizontal: spacingXL,
+    vertical: spacingMD,
+  );
+  static const EdgeInsets marginSection = EdgeInsets.only(
+    top: spacingSection,
+    bottom: spacingSection / 2,
+  );
 
   // Typography scale
   static const double fontSizeCaption = 12;
@@ -75,6 +93,6 @@ class Dimens {
   static const double fontSizeStat = 22;
 
   // DataTable row heights
-  static const double tableRowMinHeight = 55;
-  static const double tableRowMaxHeight = 55;
+  static const double tableRowMinHeight = 44;
+  static const double tableRowMaxHeight = 44;
 }

@@ -49,12 +49,21 @@ class MyApp extends StatelessWidget {
         primaryColor: AppColor.primary,
         scaffoldBackgroundColor: AppColor.background,
         cardColor: AppColor.card,
-        dataTableTheme: const DataTableThemeData(
-          headingRowColor: WidgetStatePropertyAll(Color(0xFFF2F4F7)),
-          headingTextStyle: TextStyle(fontWeight: FontWeight.w700),
-          dividerThickness: 0.6,
+        dataTableTheme: DataTableThemeData(
+          headingRowColor: const WidgetStatePropertyAll(Color(0xFFEFF1F4)),
+          headingTextStyle: const TextStyle(fontWeight: FontWeight.w700),
+          dividerThickness: 0.8,
           dataRowMinHeight: Dimens.tableRowMinHeight,
           dataRowMaxHeight: Dimens.tableRowMaxHeight,
+          dataRowColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return AppColor.drawerItemSelectedBackground;
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return AppColor.surfaceBackground;
+            }
+            return null;
+          }),
         ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColor.primary,
@@ -80,7 +89,7 @@ class MyApp extends StatelessWidget {
             foregroundColor: AppColor.white,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(Dimens.radiusSM),
+              borderRadius: BorderRadius.circular(Dimens.radiusXS),
             ),
           ),
         ),
