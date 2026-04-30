@@ -930,52 +930,55 @@ Future<DateTime?> _showMonthYearPickerDialog(
           return fluent.ContentDialog(
             constraints: const BoxConstraints(maxWidth: 460),
             title: const Text('Select Month'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.chevron_left),
-                      onPressed: tempYear > minYear
-                          ? () => setState(() => tempYear -= 1)
-                          : null,
-                    ),
-                    Text(
-                      tempYear.toString(),
-                      style: AppTextStyles.subtitle(
-                        textTheme,
-                        fontWeight: FontWeight.w600,
+            content: Material(
+              type: MaterialType.transparency,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left),
+                        onPressed: tempYear > minYear
+                            ? () => setState(() => tempYear -= 1)
+                            : null,
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: tempYear < maxYear
-                          ? () => setState(() => tempYear += 1)
-                          : null,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Dimens.spacingSM),
-                SizedBox(
-                  width: Dimens.spacingMD * 20,
-                  child: Wrap(
-                    spacing: Dimens.spacingXS,
-                    runSpacing: Dimens.spacingXS,
-                    children: List.generate(12, (index) {
-                      final monthIndex = index + 1;
-                      final bool isSelected = tempMonth == monthIndex;
-                      return ChoiceChip(
-                        label: Text(_monthNames[index]),
-                        selected: isSelected,
-                        onSelected: (_) =>
-                            setState(() => tempMonth = monthIndex),
-                      );
-                    }),
+                      Text(
+                        tempYear.toString(),
+                        style: AppTextStyles.subtitle(
+                          textTheme,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.chevron_right),
+                        onPressed: tempYear < maxYear
+                            ? () => setState(() => tempYear += 1)
+                            : null,
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: Dimens.spacingSM),
+                  SizedBox(
+                    width: Dimens.spacingMD * 20,
+                    child: Wrap(
+                      spacing: Dimens.spacingXS,
+                      runSpacing: Dimens.spacingXS,
+                      children: List.generate(12, (index) {
+                        final monthIndex = index + 1;
+                        final bool isSelected = tempMonth == monthIndex;
+                        return ChoiceChip(
+                          label: Text(_monthNames[index]),
+                          selected: isSelected,
+                          onSelected: (_) =>
+                              setState(() => tempMonth = monthIndex),
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              ),
             ),
             actions: [
               fluent.Button(
