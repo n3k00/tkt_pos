@@ -103,8 +103,8 @@ class ReportsController extends GetxController {
   bool _isPaid(String status) {
     final s = status.trim();
     if (s.toLowerCase() == 'paid') return true;
-    if (s == AppString.paymentPaid) return true; // 'ပေးပြီး'
-    if (s == 'ငွေရှင်းပြီး') {
+    if (s == AppString.paymentPaid) return true;
+    if (s == AppString.paymentPaidAltMm) {
       return true; // alternative MM wording commonly used
     }
     return false;

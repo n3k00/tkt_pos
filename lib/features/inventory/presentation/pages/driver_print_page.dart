@@ -470,8 +470,8 @@ class DriverPrintPage extends StatelessWidget {
                                                             controller
                                                                     .paidOut
                                                                     .value
-                                                                ? 'ငွေထုတ်ပေးပြီး'
-                                                                : 'ငွေထုတ်ရန် ကျန်',
+                                                                ? AppString.paidOutStatusPaidMm
+                                                                : AppString.paidOutStatusPendingMm,
                                                             style: TextStyle(
                                                               color:
                                                                   controller

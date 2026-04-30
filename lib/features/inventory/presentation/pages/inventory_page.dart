@@ -96,15 +96,11 @@ class InventoryPage extends GetView<InventoryController> {
                   Expanded(
                     child: Obx(() {
                       if (controller.isLoading.value) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
+                        return const Center(child: CircularProgressIndicator());
                       }
                       final all = controller.drivers;
                       if (all.isEmpty) {
-                        return const Center(
-                          child: Text(AppString.noDrivers),
-                        );
+                        return const Center(child: Text(AppString.noDrivers));
                       }
                       final selectedMonth = controller.selectedDate.value;
                       final monthFiltered = all
@@ -115,9 +111,7 @@ class InventoryPage extends GetView<InventoryController> {
                           )
                           .toList(growable: false);
                       if (monthFiltered.isEmpty) {
-                        return const Center(
-                          child: Text(AppString.noResults),
-                        );
+                        return const Center(child: Text(AppString.noResults));
                       }
                       final q = controller.searchQuery.value.trim();
                       final bool filterByRows =
@@ -133,14 +127,13 @@ class InventoryPage extends GetView<InventoryController> {
                           : monthFiltered;
 
                       if (filteredDrivers.isEmpty) {
-                        return const Center(
-                          child: Text(AppString.noResults),
-                        );
+                        return const Center(child: Text(AppString.noResults));
                       }
 
                       return ListView.separated(
-                        padding:
-                            const EdgeInsets.only(bottom: Dimens.spacingXL),
+                        padding: const EdgeInsets.only(
+                          bottom: Dimens.spacingXL,
+                        ),
                         itemCount: filteredDrivers.length,
                         separatorBuilder: (_, __) =>
                             const SizedBox(height: Dimens.spacingLG),
@@ -190,10 +183,7 @@ class _DriverSection extends StatelessWidget {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: Dimens.spacingMD * 20,
-                  child: summary,
-                ),
+                SizedBox(width: Dimens.spacingMD * 20, child: summary),
                 const SizedBox(width: Dimens.spacingLG),
                 Expanded(child: transactions),
               ],
@@ -313,18 +303,18 @@ class _FeeBreakdownPanel extends StatelessWidget {
       if (amount <= 0) return;
       items.add(
         Expanded(
-          child: _FeeIconStat(
-            icon: icon,
-            label: label,
-            amount: amount,
-          ),
+          child: _FeeIconStat(icon: icon, label: label, amount: amount),
         ),
       );
     }
 
     addStat(Icons.meeting_room_outlined, AppString.driverRoomFee, roomFee);
     addStat(Icons.handyman_outlined, AppString.driverLaborFee, laborFee);
-    addStat(Icons.local_shipping_outlined, AppString.driverDeliveryFee, deliveryFee);
+    addStat(
+      Icons.local_shipping_outlined,
+      AppString.driverDeliveryFee,
+      deliveryFee,
+    );
 
     if (items.isEmpty) {
       return Text(
@@ -343,8 +333,7 @@ class _FeeBreakdownPanel extends StatelessWidget {
         children: [
           for (int i = 0; i < items.length; i++) ...[
             items[i],
-            if (i != items.length - 1)
-              const SizedBox(width: Dimens.spacingSM),
+            if (i != items.length - 1) const SizedBox(width: Dimens.spacingSM),
           ],
         ],
       ),
@@ -373,17 +362,11 @@ class _FeeIconStat extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: AppColor.textSecondary),
             const SizedBox(width: Dimens.spacingXXS),
-            Text(
-              label,
-              style: AppTextStyles.caption(textTheme),
-            ),
+            Text(label, style: AppTextStyles.caption(textTheme)),
           ],
         ),
         const SizedBox(height: Dimens.spacingXXS),
-        Text(
-          Format.money(amount),
-          style: AppTextStyles.subtitle(textTheme),
-        ),
+        Text(Format.money(amount), style: AppTextStyles.subtitle(textTheme)),
       ],
     );
   }
@@ -512,10 +495,7 @@ class _FeeStat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: AppTextStyles.caption(textTheme),
-          ),
+          Text(label, style: AppTextStyles.caption(textTheme)),
           const SizedBox(height: Dimens.spacingXXS),
           Text(
             Format.money(value),
@@ -592,8 +572,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
       final double roomFee = driverInfo?.roomFee ?? 0;
       final double laborFee = driverInfo?.laborFee ?? 0;
       final double deliveryFee = driverInfo?.deliveryFee ?? 0;
-      final totalCharges =
-          rows.fold<double>(0, (s, t) => s + t.charges);
+      final totalCharges = rows.fold<double>(0, (s, t) => s + t.charges);
       final totalAdvance = rows.fold<double>(0, (s, t) => s + t.cashAdvance);
       final double totalDeductions = roomFee + laborFee + deliveryFee;
       final double paidOutAmount = totalCharges - totalDeductions;
@@ -983,7 +962,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                     Padding(
                       padding: const EdgeInsets.only(left: Dimens.spacingMD),
                       child: Text(
-                        'Paid out status',
+                        AppString.paidOutStatusLabel,
                         style: headerStyle.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -992,7 +971,9 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                   DataCell(
                     Text(
-                      isPaidOut ? 'ငွေထုတ်ပေးပြီး' : 'ငွေထုတ်ရန်ကျန်',
+                      isPaidOut
+                          ? AppString.paidOutStatusPaidMm
+                          : AppString.paidOutStatusPendingMm,
                       style: cellStyle.copyWith(
                         color: isPaidOut ? AppColor.success : AppColor.error,
                         fontWeight: FontWeight.w600,
@@ -1129,8 +1110,9 @@ class _FiltersToolbar extends StatelessWidget {
                   : Icons.check_box_outline_blank,
               label: AppString.filterUnclaimedOnly,
               selected: isUnclaimedOnly,
-              onTap: () =>
-                  controller.setUnclaimedOnly(!controller.showUnclaimedOnly.value),
+              onTap: () => controller.setUnclaimedOnly(
+                !controller.showUnclaimedOnly.value,
+              ),
             ),
           ],
         );
@@ -1244,16 +1226,10 @@ class _SectionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (title != null) ...[
-            Text(
-              title!,
-              style: AppTextStyles.subtitle(textTheme),
-            ),
+            Text(title!, style: AppTextStyles.subtitle(textTheme)),
             if (subtitle != null) ...[
               const SizedBox(height: Dimens.spacingXXS),
-              Text(
-                subtitle!,
-                style: AppTextStyles.body(textTheme),
-              ),
+              Text(subtitle!, style: AppTextStyles.body(textTheme)),
             ],
             const SizedBox(height: Dimens.spacingSM),
           ],
@@ -1280,10 +1256,10 @@ class _CommandChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final Color borderColor =
-        selected ? AppColor.primary : AppColor.border;
-    final Color textColor =
-        selected ? AppColor.primaryDark : AppColor.textSecondary;
+    final Color borderColor = selected ? AppColor.primary : AppColor.border;
+    final Color textColor = selected
+        ? AppColor.primaryDark
+        : AppColor.textSecondary;
     final Color bgColor = selected
         ? AppColor.primary.withValues(alpha: 0.12)
         : AppColor.white;

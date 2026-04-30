@@ -898,7 +898,7 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
           cashAdvanceCtrl: _cashAdvanceCtrl,
           paymentStatus: _paymentStatus,
           cashAdvanceLabel: AppString.dialogCashAdvanceOptional,
-          phoneRequiredMessage: 'ဖုန်းနံပါတ် ထည့်ပါ',
+          phoneRequiredMessage: AppString.dialogPhoneRequiredMm,
           onPaymentStatusChanged: (value) => setState(() {
             _paymentStatus = value ?? _paymentStatus;
           }),

@@ -53,8 +53,9 @@ class AppString {
   static const String dialogCashAdvanceOptional = 'Cash Advance (optional)';
   static const String dialogComment = 'Comment';
   static const String dialogPickedUp = 'Picked up';
+  static const String dialogPhoneRequiredMm = 'ဖုန်းနံပါတ် ထည့်ပါ';
   static const String snackbarClaimValidation =
-      '�?-�?_�?"�?��?,�?"�?�?�?��??�?� �?`�?S�?��?��?�?�';
+      'Please fill in the required transaction fields.';
   static const String dialogDeleteWarning =
       'This will remove the transaction permanently. This cannot be undone.';
 
@@ -103,4 +104,11 @@ class AppString {
   // Payment statuses
   static const String paymentPending = 'Pending';
   static const String paymentPaid = 'Paid';
+  static const String paymentPaidAltMm = 'ငွေရှင်းပြီး';
+
+  // Zawgyi/PDF output source strings. Keep these as Unicode and convert only
+  // at the output boundary where Zawgyi is required.
+  static const String paidOutStatusLabel = 'Paid out status';
+  static const String paidOutStatusPaidMm = 'ငွေထုတ်ပေးပြီး';
+  static const String paidOutStatusPendingMm = 'ငွေထုတ်ရန် ကျန်';
 }

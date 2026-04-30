@@ -241,8 +241,12 @@ class DriverPrintController extends GetxController {
         ],
         [
           _zg(''),
-          _zg('Paid out status'),
-          _zg(paidOut.value ? 'ငွေထုတ်ပေးပြီး' : 'ငွေထုတ်ရန် ကျန်'),
+          _zg(AppString.paidOutStatusLabel),
+          _zg(
+            paidOut.value
+                ? AppString.paidOutStatusPaidMm
+                : AppString.paidOutStatusPendingMm,
+          ),
           _zg(''),
           _zg(''),
           _zg(''),
