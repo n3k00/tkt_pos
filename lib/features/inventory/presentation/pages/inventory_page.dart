@@ -1,3 +1,4 @@
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
@@ -48,10 +49,16 @@ class InventoryPage extends GetView<InventoryController> {
       title: AppString.inventory,
       subtitle: 'Drivers, parcels, collection status, and payout tracking',
       actions: [
-        FilledButton.icon(
+        fluent.FilledButton(
           onPressed: () => showAddDriverDialog(context, controller),
-          icon: const Icon(Icons.add),
-          label: const Text('Add Driver'),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, size: 16),
+              SizedBox(width: Dimens.spacingXXS),
+              Text('Add Driver'),
+            ],
+          ),
         ),
       ],
       toolbar: _DesktopToolbar(
@@ -235,16 +242,16 @@ class _DriverSummary extends StatelessWidget {
           spacing: Dimens.spacingXS,
           runSpacing: Dimens.spacingXS,
           children: [
-            OutlinedButton.icon(
+            fluent.Button(
               onPressed: () =>
                   showAddTransactionDialog(context, controller, driver.id),
-              icon: const Icon(Icons.add),
-              label: const Text(AppString.addTransaction),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Dimens.spacingMD,
-                  vertical: Dimens.spacingSM,
-                ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, size: 16),
+                  SizedBox(width: Dimens.spacingXXS),
+                  Text(AppString.addTransaction),
+                ],
               ),
             ),
             DriverActionsMenu(driver: driver, controller: controller),
@@ -339,94 +346,6 @@ class _FeeIconStat extends StatelessWidget {
         const SizedBox(height: Dimens.spacingXXS),
         Text(Format.money(amount), style: AppTextStyles.subtitle(textTheme)),
       ],
-    );
-  }
-}
-
-class _UnclaimedSwitch extends StatelessWidget {
-  const _UnclaimedSwitch({required this.isActive, required this.onChanged});
-
-  final bool isActive;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    const Duration duration = Duration(milliseconds: 250);
-    const double width = 150;
-    const double height = 44;
-    const double knobSize = 32;
-    final Color activeBg = AppColor.primary;
-    final Color inactiveBg = AppColor.surfaceBackground;
-    final Color activeBorder = AppColor.secondary;
-    final Color inactiveBorder = AppColor.border;
-
-    return GestureDetector(
-      onTap: () => onChanged(!isActive),
-      child: AnimatedContainer(
-        duration: duration,
-        curve: Curves.easeInOut,
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: isActive ? activeBg : inactiveBg,
-          borderRadius: BorderRadius.circular(Dimens.radiusXXXL),
-          border: Border.all(
-            width: 3,
-            color: isActive ? activeBorder : inactiveBorder,
-          ),
-        ),
-        child: Stack(
-          children: [
-            AnimatedAlign(
-              duration: duration,
-              curve: Curves.easeInOut,
-              alignment: isActive
-                  ? Alignment.centerLeft
-                  : Alignment.centerRight,
-              child: AnimatedPadding(
-                duration: duration,
-                curve: Curves.easeInOut,
-                padding: EdgeInsets.only(
-                  left: isActive ? 16 : knobSize + 14,
-                  right: isActive ? knobSize + 14 : 16,
-                ),
-                child: Text(
-                  AppString.filterUnclaimedOnly,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: isActive ? AppColor.primaryDark : AppColor.white,
-                  ),
-                ),
-              ),
-            ),
-            AnimatedAlign(
-              duration: duration,
-              curve: Curves.easeInOut,
-              alignment: isActive
-                  ? Alignment.centerRight
-                  : Alignment.centerLeft,
-              child: Container(
-                width: knobSize,
-                height: knobSize,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: Dimens.spacingMicro,
-                ),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColor.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColor.textPrimary.withValues(alpha: 0.15),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -985,7 +904,8 @@ Future<DateTime?> _showMonthYearPickerDialog(
       return StatefulBuilder(
         builder: (context, setState) {
           final textTheme = Theme.of(context).textTheme;
-          return AlertDialog(
+          return fluent.ContentDialog(
+            constraints: const BoxConstraints(maxWidth: 460),
             title: const Text('Select Month'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1035,11 +955,11 @@ Future<DateTime?> _showMonthYearPickerDialog(
               ],
             ),
             actions: [
-              TextButton(
+              fluent.Button(
                 onPressed: () => Navigator.of(context).pop(),
                 child: const Text('Cancel'),
               ),
-              ElevatedButton(
+              fluent.FilledButton(
                 onPressed: () =>
                     Navigator.of(context).pop(DateTime(tempYear, tempMonth, 1)),
                 child: const Text('OK'),
@@ -1065,25 +985,27 @@ class _FiltersToolbar extends StatelessWidget {
       final monthLabel = '${_monthNames[selected.month - 1]} ${selected.year}';
       final bool isUnclaimedOnly = controller.showUnclaimedOnly.value;
 
-      Widget buildChips() {
+      Widget buildCommands() {
         return Wrap(
           spacing: Dimens.spacingSM,
           runSpacing: Dimens.spacingXS,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            _CommandChip(
-              icon: Icons.calendar_month,
-              label: monthLabel,
-              onTap: onPickMonth,
-            ),
-            _CommandChip(
-              icon: isUnclaimedOnly
-                  ? Icons.check_box
-                  : Icons.check_box_outline_blank,
-              label: AppString.filterUnclaimedOnly,
-              selected: isUnclaimedOnly,
-              onTap: () => controller.setUnclaimedOnly(
-                !controller.showUnclaimedOnly.value,
+            fluent.Button(
+              onPressed: onPickMonth,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.calendar_month, size: 16),
+                  const SizedBox(width: Dimens.spacingXXS),
+                  Text(monthLabel),
+                ],
               ),
+            ),
+            fluent.ToggleSwitch(
+              checked: isUnclaimedOnly,
+              onChanged: controller.setUnclaimedOnly,
+              content: const Text(AppString.filterUnclaimedOnly),
             ),
           ],
         );
@@ -1101,7 +1023,7 @@ class _FiltersToolbar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(Dimens.radiusMD),
                 ),
                 const SizedBox(height: Dimens.spacingSM),
-                buildChips(),
+                buildCommands(),
               ],
             );
           }
@@ -1116,7 +1038,7 @@ class _FiltersToolbar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: Dimens.spacingMD),
-              Flexible(child: buildChips()),
+              Flexible(child: buildCommands()),
             ],
           );
         },
@@ -1168,11 +1090,10 @@ class _MetaChip extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.child, this.title, this.subtitle});
+  const _SectionCard({required this.child, this.title});
 
   final Widget child;
   final String? title;
-  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -1198,72 +1119,10 @@ class _SectionCard extends StatelessWidget {
         children: [
           if (title != null) ...[
             Text(title!, style: AppTextStyles.subtitle(textTheme)),
-            if (subtitle != null) ...[
-              const SizedBox(height: Dimens.spacingXXS),
-              Text(subtitle!, style: AppTextStyles.body(textTheme)),
-            ],
             const SizedBox(height: Dimens.spacingSM),
           ],
           child,
         ],
-      ),
-    );
-  }
-}
-
-class _CommandChip extends StatelessWidget {
-  const _CommandChip({
-    required this.label,
-    this.icon,
-    this.onTap,
-    this.selected = false,
-  });
-
-  final String label;
-  final IconData? icon;
-  final VoidCallback? onTap;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final Color borderColor = selected ? AppColor.primary : AppColor.border;
-    final Color textColor = selected
-        ? AppColor.primaryDark
-        : AppColor.textSecondary;
-    final Color bgColor = selected
-        ? AppColor.primary.withValues(alpha: 0.12)
-        : AppColor.white;
-    return InkWell(
-      borderRadius: BorderRadius.circular(Dimens.radiusSM),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: Dimens.spacingSM,
-          vertical: Dimens.spacingXXS,
-        ),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(Dimens.radiusSM),
-          border: Border.all(color: borderColor),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 16, color: textColor),
-              const SizedBox(width: Dimens.spacingXXS),
-            ],
-            Text(
-              label,
-              style: AppTextStyles.caption(
-                textTheme,
-                color: textColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

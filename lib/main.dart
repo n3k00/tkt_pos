@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/app/router/app_pages.dart';
 import 'package:tkt_pos/resources/colors.dart';
@@ -94,6 +96,21 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: Routes.home,
       getPages: AppPages.routes,
+      localizationsDelegates: const [
+        fluent.FluentLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      builder: (context, child) {
+        return fluent.FluentTheme(
+          data: fluent.FluentThemeData(
+            accentColor: fluent.Colors.green,
+            brightness: Brightness.light,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

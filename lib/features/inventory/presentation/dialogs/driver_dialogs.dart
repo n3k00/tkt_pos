@@ -1,3 +1,4 @@
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 
 import 'package:tkt_pos/data/local/app_database.dart';
@@ -19,99 +20,120 @@ Future<void> showEditDriverDialog(
     builder: (ctx) {
       return StatefulBuilder(
         builder: (ctx, setState) {
-          return AlertDialog(
+          return fluent.ContentDialog(
+            constraints: const BoxConstraints(maxWidth: 480),
             title: const Text(AppString.dialogEditDriver),
-            content: SizedBox(
-              width: 400,
-              child: Form(
-                key: formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: nameController,
-                      autofocus: true,
-                      textInputAction: TextInputAction.done,
-                      style: const TextStyle(
-                        fontSize: Dimens.fontSizeBodyLarge,
-                        height: 1.35,
-                        color: AppColor.textPrimary,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: AppString.dialogDriverNameHint,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+            content: Material(
+              type: MaterialType.transparency,
+              child: SizedBox(
+                width: 400,
+                child: Form(
+                  key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: nameController,
+                        autofocus: true,
+                        textInputAction: TextInputAction.done,
+                        style: const TextStyle(
+                          fontSize: Dimens.fontSizeBodyLarge,
+                          height: 1.35,
+                          color: AppColor.textPrimary,
                         ),
-                        filled: true,
-                        fillColor: AppColor.surfaceBackground,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
-                          borderSide: const BorderSide(color: AppColor.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
-                          borderSide: const BorderSide(color: AppColor.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
-                          borderSide: const BorderSide(
-                            color: AppColor.primaryDark,
-                            width: 1.5,
+                        decoration: InputDecoration(
+                          hintText: AppString.dialogDriverNameHint,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          filled: true,
+                          fillColor: AppColor.surfaceBackground,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Dimens.radiusJumbo,
+                            ),
+                            borderSide: const BorderSide(
+                              color: AppColor.border,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Dimens.radiusJumbo,
+                            ),
+                            borderSide: const BorderSide(
+                              color: AppColor.border,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Dimens.radiusJumbo,
+                            ),
+                            borderSide: const BorderSide(
+                              color: AppColor.primaryDark,
+                              width: 1.5,
+                            ),
+                          ),
+                          suffixIcon: const Icon(
+                            Icons.person_outline,
+                            size: 18,
+                            color: AppColor.textSecondary,
                           ),
                         ),
-                        suffixIcon: const Icon(
-                          Icons.person_outline,
-                          size: 18,
-                          color: AppColor.textSecondary,
-                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? AppString.dialogDriverNameRequired
+                            : null,
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? AppString.dialogDriverNameRequired
-                          : null,
-                    ),
-                    const SizedBox(height: Dimens.spacingSM),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Builder(
-                            builder: (_) {
-                              final dd = date.day.toString().padLeft(2, '0');
-                              final mm = date.month.toString().padLeft(2, '0');
-                              final yyyy = date.year.toString().padLeft(4, '0');
-                              return Text(
-                                  '${AppString.dialogDateLabel}: $dd/$mm/$yyyy');
+                      const SizedBox(height: Dimens.spacingSM),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Builder(
+                              builder: (_) {
+                                final dd = date.day.toString().padLeft(2, '0');
+                                final mm = date.month.toString().padLeft(
+                                  2,
+                                  '0',
+                                );
+                                final yyyy = date.year.toString().padLeft(
+                                  4,
+                                  '0',
+                                );
+                                return Text(
+                                  '${AppString.dialogDateLabel}: $dd/$mm/$yyyy',
+                                );
+                              },
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              final picked = await showDatePicker(
+                                context: ctx,
+                                initialDate: date,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2100),
+                              );
+                              if (picked != null) {
+                                setState(() => date = picked);
+                              }
                             },
+                            child: const Text(AppString.dialogPickDate),
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final picked = await showDatePicker(
-                              context: ctx,
-                              initialDate: date,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100),
-                            );
-                            if (picked != null) {
-                              setState(() => date = picked);
-                            }
-                          },
-                          child: const Text(AppString.dialogPickDate),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
             actions: [
-              TextButton(
+              fluent.Button(
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: const Text(AppString.dialogCancel),
               ),
-              ElevatedButton(
+              fluent.FilledButton(
                 onPressed: () async {
                   if (!formKey.currentState!.validate()) return;
                   final name = nameController.text.trim();
@@ -132,6 +154,7 @@ Future<void> showEditDriverDialog(
     },
   );
 }
+
 Future<void> showAddDriverDialog(
   BuildContext context,
   InventoryController controller,
@@ -147,107 +170,128 @@ Future<void> showAddDriverDialog(
         canPop: false,
         child: StatefulBuilder(
           builder: (ctx, setState) {
-            return AlertDialog(
+            return fluent.ContentDialog(
+              constraints: const BoxConstraints(maxWidth: 480),
               title: const Text(AppString.dialogAddDriver),
-              content: Form(
-                key: formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: nameController,
-                    autofocus: true,
-                    textInputAction: TextInputAction.done,
-                    style: const TextStyle(
-                      fontSize: Dimens.fontSizeBodyLarge,
-                      height: 1.35,
-                      color: AppColor.textPrimary,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: AppString.dialogDriverNameHint,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      filled: true,
-                      fillColor: AppColor.surfaceBackground,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
-                        borderSide: const BorderSide(color: AppColor.border),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
-                        borderSide: const BorderSide(color: AppColor.border),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Dimens.radiusJumbo),
-                        borderSide: const BorderSide(
-                          color: AppColor.primaryDark,
-                          width: 1.5,
-                        ),
-                      ),
-                      suffixIcon: const Icon(
-                        Icons.person_outline,
-                        size: 18,
-                        color: AppColor.textSecondary,
-                      ),
-                    ),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? AppString.dialogDriverNameRequired
-                        : null,
-                  ),
-                  const SizedBox(height: Dimens.spacingSM),
-                  Row(
+              content: Material(
+                type: MaterialType.transparency,
+                child: Form(
+                  key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: Builder(
-                          builder: (_) {
-                            final dd = date.day.toString().padLeft(2, '0');
-                            final mm = date.month.toString().padLeft(2, '0');
-                            final yyyy = date.year.toString().padLeft(4, '0');
-                            return Text(
-                                '${AppString.dialogDateLabel}: $dd/$mm/$yyyy');
-                          },
+                      TextFormField(
+                        controller: nameController,
+                        autofocus: true,
+                        textInputAction: TextInputAction.done,
+                        style: const TextStyle(
+                          fontSize: Dimens.fontSizeBodyLarge,
+                          height: 1.35,
+                          color: AppColor.textPrimary,
                         ),
+                        decoration: InputDecoration(
+                          hintText: AppString.dialogDriverNameHint,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          filled: true,
+                          fillColor: AppColor.surfaceBackground,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Dimens.radiusJumbo,
+                            ),
+                            borderSide: const BorderSide(
+                              color: AppColor.border,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Dimens.radiusJumbo,
+                            ),
+                            borderSide: const BorderSide(
+                              color: AppColor.border,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Dimens.radiusJumbo,
+                            ),
+                            borderSide: const BorderSide(
+                              color: AppColor.primaryDark,
+                              width: 1.5,
+                            ),
+                          ),
+                          suffixIcon: const Icon(
+                            Icons.person_outline,
+                            size: 18,
+                            color: AppColor.textSecondary,
+                          ),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? AppString.dialogDriverNameRequired
+                            : null,
                       ),
-                      TextButton(
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: ctx,
-                            initialDate: date,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
-                          );
-                          if (picked != null) {
-                            setState(() => date = picked);
-                          }
-                        },
-                        child: const Text(AppString.dialogPickDate),
+                      const SizedBox(height: Dimens.spacingSM),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Builder(
+                              builder: (_) {
+                                final dd = date.day.toString().padLeft(2, '0');
+                                final mm = date.month.toString().padLeft(
+                                  2,
+                                  '0',
+                                );
+                                final yyyy = date.year.toString().padLeft(
+                                  4,
+                                  '0',
+                                );
+                                return Text(
+                                  '${AppString.dialogDateLabel}: $dd/$mm/$yyyy',
+                                );
+                              },
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              final picked = await showDatePicker(
+                                context: ctx,
+                                initialDate: date,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2100),
+                              );
+                              if (picked != null) {
+                                setState(() => date = picked);
+                              }
+                            },
+                            child: const Text(AppString.dialogPickDate),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text(AppString.dialogCancel),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (!formKey.currentState!.validate()) return;
-                  final name = nameController.text.trim();
-                  // Close dialog before awaiting to avoid using context after await
-                  Navigator.of(ctx).pop();
-                  await controller.addDriver(date: date, name: name);
-                },
-                child: const Text(AppString.dialogSave),
-              ),
-            ],
-          );
+              actions: [
+                fluent.Button(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text(AppString.dialogCancel),
+                ),
+                fluent.FilledButton(
+                  onPressed: () async {
+                    if (!formKey.currentState!.validate()) return;
+                    final name = nameController.text.trim();
+                    // Close dialog before awaiting to avoid using context after await
+                    Navigator.of(ctx).pop();
+                    await controller.addDriver(date: date, name: name);
+                  },
+                  child: const Text(AppString.dialogSave),
+                ),
+              ],
+            );
           },
         ),
       );

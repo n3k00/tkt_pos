@@ -1,3 +1,4 @@
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:drift/drift.dart' as drift;
@@ -112,29 +113,33 @@ class _EditTransactionDialogState extends State<_EditTransactionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return fluent.ContentDialog(
+      constraints: const BoxConstraints(maxWidth: 680),
       title: const Text(AppString.dialogEditTransaction),
-      content: _TransactionFormBody(
-        formKey: _formKey,
-        customerCtrl: _customerCtrl,
-        phoneCtrl: _phoneCtrl,
-        parcelCtrl: _parcelCtrl,
-        numberCtrl: _numberCtrl,
-        chargesCtrl: _chargesCtrl,
-        cashAdvanceCtrl: _cashAdvanceCtrl,
-        paymentStatus: _paymentStatus,
-        cashAdvanceLabel: AppString.colCashAdvance,
-        phoneRequiredMessage: AppString.dialogPhoneRequired,
-        onPaymentStatusChanged: (value) => setState(() {
-          _paymentStatus = value ?? _paymentStatus;
-        }),
+      content: Material(
+        type: MaterialType.transparency,
+        child: _TransactionFormBody(
+          formKey: _formKey,
+          customerCtrl: _customerCtrl,
+          phoneCtrl: _phoneCtrl,
+          parcelCtrl: _parcelCtrl,
+          numberCtrl: _numberCtrl,
+          chargesCtrl: _chargesCtrl,
+          cashAdvanceCtrl: _cashAdvanceCtrl,
+          paymentStatus: _paymentStatus,
+          cashAdvanceLabel: AppString.colCashAdvance,
+          phoneRequiredMessage: AppString.dialogPhoneRequired,
+          onPaymentStatusChanged: (value) => setState(() {
+            _paymentStatus = value ?? _paymentStatus;
+          }),
+        ),
       ),
       actions: [
-        TextButton(
+        fluent.Button(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text(AppString.dialogCancel),
         ),
-        ElevatedButton(
+        fluent.FilledButton(
           onPressed: _save,
           child: const Text(AppString.dialogSave),
         ),
@@ -355,110 +360,116 @@ Future<void> showViewTransactionDialog(
   await showDialog(
     context: context,
     builder: (ctx) {
-      return AlertDialog(
+      return fluent.ContentDialog(
+        constraints: const BoxConstraints(maxWidth: 600),
         title: const Text(AppString.dialogTransactionDetails),
-        content: SizedBox(
-          width: 520,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(Dimens.spacingMD),
-                  decoration: BoxDecoration(
-                    color: Theme.of(ctx).colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.35),
-                    borderRadius: Dimens.borderRadiusInput,
-                    border: Border.all(
-                      color: Theme.of(ctx).colorScheme.outlineVariant,
+        content: Material(
+          type: MaterialType.transparency,
+          child: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(Dimens.spacingMD),
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.35),
+                      borderRadius: Dimens.borderRadiusInput,
+                      border: Border.all(
+                        color: Theme.of(ctx).colorScheme.outlineVariant,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        _ClaimInfoRow(
+                          icon: Icons.person_outline,
+                          label: 'Customer',
+                          value: t.customerName?.trim().isEmpty ?? true
+                              ? '-'
+                              : t.customerName!,
+                        ),
+                        const SizedBox(height: Dimens.spacingXSPlus),
+                        _ClaimInfoRow(
+                          icon: Icons.phone_outlined,
+                          label: AppString.colPhone,
+                          value: t.phone,
+                        ),
+                        const SizedBox(height: Dimens.spacingXSPlus),
+                        _ClaimInfoRow(
+                          icon: Icons.inventory_2_outlined,
+                          label: AppString.colParcelType,
+                          value: t.parcelType,
+                        ),
+                        const SizedBox(height: Dimens.spacingXSPlus),
+                        _ClaimInfoRow(
+                          icon: Icons.numbers,
+                          label: AppString.colNumber,
+                          value: t.number,
+                        ),
+                        const SizedBox(height: Dimens.spacingXSPlus),
+                        _ClaimInfoRow(
+                          icon: Icons.attach_money,
+                          label: AppString.colCharges,
+                          value: fmtMoney(t.charges),
+                        ),
+                        const SizedBox(height: Dimens.spacingXSPlus),
+                        _ClaimInfoRow(
+                          icon: Icons.account_balance_wallet_outlined,
+                          label: AppString.colCashAdvance,
+                          value: fmtMoney(t.cashAdvance),
+                        ),
+                        const SizedBox(height: Dimens.spacingXSPlus),
+                        _ClaimInfoRow(
+                          icon: Icons.payments_outlined,
+                          label: AppString.colPaymentStatus,
+                          value: t.paymentStatus,
+                        ),
+                        const SizedBox(height: Dimens.spacingXSPlus),
+                        _ClaimInfoRow(
+                          icon: Icons.check_circle_outline,
+                          label: AppString.dialogPickedUp,
+                          value: t.pickedUp ? 'Yes' : 'No',
+                        ),
+                        const SizedBox(height: Dimens.spacingXSPlus),
+                        _ClaimInfoRow(
+                          icon: Icons.schedule,
+                          label: 'Collect Time',
+                          value: t.pickedUp ? fmtDateTime12(t.updatedAt) : '-',
+                        ),
+                      ],
                     ),
                   ),
-                  child: Column(
-                    children: [
-                      _ClaimInfoRow(
-                        icon: Icons.person_outline,
-                        label: 'Customer',
-                        value: t.customerName?.trim().isEmpty ?? true
-                            ? '-'
-                            : t.customerName!,
-                      ),
-                      const SizedBox(height: Dimens.spacingXSPlus),
-                      _ClaimInfoRow(
-                        icon: Icons.phone_outlined,
-                        label: AppString.colPhone,
-                        value: t.phone,
-                      ),
-                      const SizedBox(height: Dimens.spacingXSPlus),
-                      _ClaimInfoRow(
-                        icon: Icons.inventory_2_outlined,
-                        label: AppString.colParcelType,
-                        value: t.parcelType,
-                      ),
-                      const SizedBox(height: Dimens.spacingXSPlus),
-                      _ClaimInfoRow(
-                        icon: Icons.numbers,
-                        label: AppString.colNumber,
-                        value: t.number,
-                      ),
-                      const SizedBox(height: Dimens.spacingXSPlus),
-                      _ClaimInfoRow(
-                        icon: Icons.attach_money,
-                        label: AppString.colCharges,
-                        value: fmtMoney(t.charges),
-                      ),
-                      const SizedBox(height: Dimens.spacingXSPlus),
-                      _ClaimInfoRow(
-                        icon: Icons.account_balance_wallet_outlined,
-                        label: AppString.colCashAdvance,
-                        value: fmtMoney(t.cashAdvance),
-                      ),
-                      const SizedBox(height: Dimens.spacingXSPlus),
-                      _ClaimInfoRow(
-                        icon: Icons.payments_outlined,
-                        label: AppString.colPaymentStatus,
-                        value: t.paymentStatus,
-                      ),
-                      const SizedBox(height: Dimens.spacingXSPlus),
-                      _ClaimInfoRow(
-                        icon: Icons.check_circle_outline,
-                        label: AppString.dialogPickedUp,
-                        value: t.pickedUp ? 'Yes' : 'No',
-                      ),
-                      const SizedBox(height: Dimens.spacingXSPlus),
-                      _ClaimInfoRow(
-                        icon: Icons.schedule,
-                        label: 'Collect Time',
-                        value: t.pickedUp ? fmtDateTime12(t.updatedAt) : '-',
-                      ),
-                    ],
+                  const SizedBox(height: Dimens.spacingMD),
+                  Text(
+                    AppString.dialogComment,
+                    style: Theme.of(ctx).textTheme.titleSmall,
                   ),
-                ),
-                const SizedBox(height: Dimens.spacingMD),
-                Text(
-                  AppString.dialogComment,
-                  style: Theme.of(ctx).textTheme.titleSmall,
-                ),
-                const SizedBox(height: Dimens.spacingMicro),
-                Container(
-                  padding: const EdgeInsets.all(Dimens.spacingSM),
-                  decoration: BoxDecoration(
-                    borderRadius: Dimens.borderRadiusInput,
-                    border: Border.all(color: Theme.of(ctx).dividerColor),
-                  ),
-                  child: Text(
-                    (t.comment?.trim().isNotEmpty ?? false) ? t.comment! : '-',
-                    style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
-                      color: AppColor.textPrimary,
+                  const SizedBox(height: Dimens.spacingMicro),
+                  Container(
+                    padding: const EdgeInsets.all(Dimens.spacingSM),
+                    decoration: BoxDecoration(
+                      borderRadius: Dimens.borderRadiusInput,
+                      border: Border.all(color: Theme.of(ctx).dividerColor),
+                    ),
+                    child: Text(
+                      (t.comment?.trim().isNotEmpty ?? false)
+                          ? t.comment!
+                          : '-',
+                      style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
+                        color: AppColor.textPrimary,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
         actions: [
-          TextButton(
+          fluent.Button(
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text(AppString.dialogClose),
           ),
@@ -484,120 +495,116 @@ Future<void> showClaimTransactionDialog(
         builder: (ctx, setState) {
           return PopScope(
             canPop: false,
-            child: AlertDialog(
+            child: fluent.ContentDialog(
+              constraints: const BoxConstraints(maxWidth: 520),
               title: const Text(AppString.dialogClaimTransaction),
-              content: SizedBox(
-                width: 440,
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(Dimens.spacingSM),
-                        decoration: BoxDecoration(
-                          color: Theme.of(ctx)
-                              .colorScheme
-                              .surfaceContainerHighest
-                              .withValues(alpha: 0.4),
-                          borderRadius: Dimens.borderRadiusInput,
-                          border: Border.all(
-                            color: Theme.of(ctx).colorScheme.outlineVariant,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _ClaimInfoRow(
-                              icon: Icons.person_outline,
-                              label: 'Customer',
-                              value: t.customerName?.trim().isEmpty ?? true
-                                  ? '-'
-                                  : t.customerName!,
-                            ),
-                            const SizedBox(height: Dimens.spacingMicro),
-                            _ClaimInfoRow(
-                              icon: Icons.phone_outlined,
-                              label: AppString.colPhone,
-                              value: t.phone,
-                            ),
-                            const SizedBox(height: Dimens.spacingMicro),
-                            _ClaimInfoRow(
-                              icon: Icons.inventory_2_outlined,
-                              label: 'Parcel',
-                              value: t.parcelType,
-                            ),
-                            const SizedBox(height: Dimens.spacingMicro),
-                            _ClaimInfoRow(
-                              icon: Icons.numbers,
-                              label: AppString.colNumber,
-                              value: t.number,
-                            ),
-                            const SizedBox(height: Dimens.spacingMicro),
-                            _ClaimInfoRow(
-                              icon: Icons.attach_money,
-                              label: AppString.colCharges,
-                              value: Format.money(t.charges),
-                            ),
-                            const SizedBox(height: Dimens.spacingMicro),
-                            _ClaimInfoRow(
-                              icon: Icons.payments_outlined,
-                              label: AppString.colPaymentStatus,
-                              value: t.paymentStatus,
-                            ),
-                            const SizedBox(height: Dimens.spacingMicro),
-                            _ClaimInfoRow(
-                              icon: Icons.account_balance_wallet_outlined,
-                              label: AppString.colCashAdvance,
-                              value: Format.money(t.cashAdvance),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: Dimens.spacingMD),
-                      TextFormField(
-                        controller: commentCtrl,
-                        maxLines: 3,
-                        textInputAction: TextInputAction.done,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Comment is required';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          labelText: AppString.dialogComment,
-                          helperText: 'Explain who claimed or any note.',
-                          prefixIcon: const Icon(Icons.edit_note_outlined),
-                          border: OutlineInputBorder(
+              content: Material(
+                type: MaterialType.transparency,
+                child: SizedBox(
+                  width: 440,
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(Dimens.spacingSM),
+                          decoration: BoxDecoration(
+                            color: Theme.of(ctx)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.4),
                             borderRadius: Dimens.borderRadiusInput,
+                            border: Border.all(
+                              color: Theme.of(ctx).colorScheme.outlineVariant,
+                            ),
                           ),
-                          isDense: true,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _ClaimInfoRow(
+                                icon: Icons.person_outline,
+                                label: 'Customer',
+                                value: t.customerName?.trim().isEmpty ?? true
+                                    ? '-'
+                                    : t.customerName!,
+                              ),
+                              const SizedBox(height: Dimens.spacingMicro),
+                              _ClaimInfoRow(
+                                icon: Icons.phone_outlined,
+                                label: AppString.colPhone,
+                                value: t.phone,
+                              ),
+                              const SizedBox(height: Dimens.spacingMicro),
+                              _ClaimInfoRow(
+                                icon: Icons.inventory_2_outlined,
+                                label: 'Parcel',
+                                value: t.parcelType,
+                              ),
+                              const SizedBox(height: Dimens.spacingMicro),
+                              _ClaimInfoRow(
+                                icon: Icons.numbers,
+                                label: AppString.colNumber,
+                                value: t.number,
+                              ),
+                              const SizedBox(height: Dimens.spacingMicro),
+                              _ClaimInfoRow(
+                                icon: Icons.attach_money,
+                                label: AppString.colCharges,
+                                value: Format.money(t.charges),
+                              ),
+                              const SizedBox(height: Dimens.spacingMicro),
+                              _ClaimInfoRow(
+                                icon: Icons.payments_outlined,
+                                label: AppString.colPaymentStatus,
+                                value: t.paymentStatus,
+                              ),
+                              const SizedBox(height: Dimens.spacingMicro),
+                              _ClaimInfoRow(
+                                icon: Icons.account_balance_wallet_outlined,
+                                label: AppString.colCashAdvance,
+                                value: Format.money(t.cashAdvance),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: Dimens.spacingMD),
+                        TextFormField(
+                          controller: commentCtrl,
+                          maxLines: 3,
+                          textInputAction: TextInputAction.done,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Comment is required';
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: AppString.dialogComment,
+                            helperText: 'Explain who claimed or any note.',
+                            prefixIcon: const Icon(Icons.edit_note_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: Dimens.borderRadiusInput,
+                            ),
+                            isDense: true,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               actions: [
-                TextButton(
+                fluent.Button(
                   onPressed: isSubmitting
                       ? null
                       : () => Navigator.of(ctx).pop(),
                   child: const Text(AppString.dialogCancel),
                 ),
-                ElevatedButton.icon(
-                  icon: isSubmitting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.check_circle_outline),
-                  label: const Text(AppString.dialogConfirmClaim),
+                fluent.FilledButton(
                   onPressed: isSubmitting
                       ? null
                       : () async {
@@ -618,6 +625,21 @@ Future<void> showClaimTransactionDialog(
                             }
                           }
                         },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isSubmitting)
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else
+                        const Icon(Icons.check_circle_outline, size: 16),
+                      const SizedBox(width: Dimens.spacingXXS),
+                      const Text(AppString.dialogConfirmClaim),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -727,68 +749,68 @@ Future<bool?> confirmDeleteTransaction(
       return StatefulBuilder(
         builder: (ctx, setState) {
           final canDelete = value.trim().toLowerCase() == 'confirm';
-          return AlertDialog(
+          return fluent.ContentDialog(
+            constraints: const BoxConstraints(maxWidth: 500),
             title: const Text(AppString.dialogDeleteTransaction),
-            content: SizedBox(
-              width: 420,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _DialogWarningBanner(
-                    title: AppString.dialogWarning,
-                    message: AppString.dialogDeleteWarning,
-                  ),
-                  const SizedBox(height: Dimens.spacingSM),
-                  Text(
-                    'Transaction: No ${t.number} — Customer: ${t.customerName ?? '-'}',
-                    style: const TextStyle(color: AppColor.textSecondary),
-                  ),
-                  const SizedBox(height: Dimens.spacingSM),
-                  RichText(
-                    text: TextSpan(
-                      style: DefaultTextStyle.of(ctx).style,
-                      children: [
-                        const TextSpan(text: 'Type '),
-                        TextSpan(
-                          text: '"confirm"',
-                          style: TextStyle(
-                            color: Theme.of(ctx).colorScheme.error,
-                          ),
-                        ),
-                        const TextSpan(text: ' to proceed:'),
-                      ],
+            content: Material(
+              type: MaterialType.transparency,
+              child: SizedBox(
+                width: 420,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _DialogWarningBanner(
+                      title: AppString.dialogWarning,
+                      message: AppString.dialogDeleteWarning,
                     ),
-                  ),
-                  const SizedBox(height: Dimens.spacingXS),
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    decoration:
-                        const InputDecoration(
-                          border: OutlineInputBorder(),
-                        ).copyWith(
-                          hintText: 'confirm',
-                          hintStyle: TextStyle(
-                            color: Theme.of(ctx).colorScheme.error,
+                    const SizedBox(height: Dimens.spacingSM),
+                    Text(
+                      'Transaction: No ${t.number} — Customer: ${t.customerName ?? '-'}',
+                      style: const TextStyle(color: AppColor.textSecondary),
+                    ),
+                    const SizedBox(height: Dimens.spacingSM),
+                    RichText(
+                      text: TextSpan(
+                        style: DefaultTextStyle.of(ctx).style,
+                        children: [
+                          const TextSpan(text: 'Type '),
+                          TextSpan(
+                            text: '"confirm"',
+                            style: TextStyle(
+                              color: Theme.of(ctx).colorScheme.error,
+                            ),
                           ),
-                        ),
-                    onChanged: (txt) => setState(() => value = txt),
-                  ),
-                ],
+                          const TextSpan(text: ' to proceed:'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: Dimens.spacingXS),
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      decoration:
+                          const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ).copyWith(
+                            hintText: 'confirm',
+                            hintStyle: TextStyle(
+                              color: Theme.of(ctx).colorScheme.error,
+                            ),
+                          ),
+                      onChanged: (txt) => setState(() => value = txt),
+                    ),
+                  ],
+                ),
               ),
             ),
             actions: [
-              TextButton(
+              fluent.Button(
                 onPressed: () => Navigator.of(ctx).pop(false),
                 child: const Text(AppString.dialogCancel),
               ),
-              ElevatedButton(
+              fluent.FilledButton(
                 onPressed: canDelete ? () => Navigator.of(ctx).pop(true) : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.error,
-                  foregroundColor: AppColor.white,
-                ),
                 child: const Text(AppString.dialogDelete),
               ),
             ],
@@ -886,29 +908,33 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: AlertDialog(
+      child: fluent.ContentDialog(
+        constraints: const BoxConstraints(maxWidth: 680),
         title: const Text(AppString.dialogAddTransaction),
-        content: _TransactionFormBody(
-          formKey: _formKey,
-          customerCtrl: _customerCtrl,
-          phoneCtrl: _phoneCtrl,
-          parcelCtrl: _parcelCtrl,
-          numberCtrl: _numberCtrl,
-          chargesCtrl: _chargesCtrl,
-          cashAdvanceCtrl: _cashAdvanceCtrl,
-          paymentStatus: _paymentStatus,
-          cashAdvanceLabel: AppString.dialogCashAdvanceOptional,
-          phoneRequiredMessage: AppString.dialogPhoneRequiredMm,
-          onPaymentStatusChanged: (value) => setState(() {
-            _paymentStatus = value ?? _paymentStatus;
-          }),
+        content: Material(
+          type: MaterialType.transparency,
+          child: _TransactionFormBody(
+            formKey: _formKey,
+            customerCtrl: _customerCtrl,
+            phoneCtrl: _phoneCtrl,
+            parcelCtrl: _parcelCtrl,
+            numberCtrl: _numberCtrl,
+            chargesCtrl: _chargesCtrl,
+            cashAdvanceCtrl: _cashAdvanceCtrl,
+            paymentStatus: _paymentStatus,
+            cashAdvanceLabel: AppString.dialogCashAdvanceOptional,
+            phoneRequiredMessage: AppString.dialogPhoneRequiredMm,
+            onPaymentStatusChanged: (value) => setState(() {
+              _paymentStatus = value ?? _paymentStatus;
+            }),
+          ),
         ),
         actions: [
-          TextButton(
+          fluent.Button(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text(AppString.dialogCancel),
           ),
-          ElevatedButton(
+          fluent.FilledButton(
             onPressed: _save,
             child: const Text(AppString.dialogSave),
           ),
