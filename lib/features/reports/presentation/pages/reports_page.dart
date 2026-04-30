@@ -43,17 +43,8 @@ class ReportsPage extends GetView<ReportsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _StatCards(controller: controller),
-          const SizedBox(height: Dimens.spacingMD),
-          const Text(
-            AppString.reportTransactionsTitle,
-            style: TextStyle(
-              fontSize: Dimens.fontSizeSubtitle,
-              fontWeight: FontWeight.w700,
-              color: AppColor.textPrimary,
-            ),
-          ),
-          const SizedBox(height: Dimens.spacingXS),
+          _StatStrip(controller: controller),
+          const SizedBox(height: Dimens.spacingSM),
           Expanded(child: _ReportsTable(controller: controller)),
         ],
       ),
@@ -61,8 +52,8 @@ class ReportsPage extends GetView<ReportsController> {
   }
 }
 
-class _StatCards extends StatelessWidget {
-  const _StatCards({required this.controller});
+class _StatStrip extends StatelessWidget {
+  const _StatStrip({required this.controller});
   final ReportsController controller;
 
   @override
@@ -70,27 +61,23 @@ class _StatCards extends StatelessWidget {
     return Obx(() {
       return Row(
         children: [
-          _StatCard(
+          _StatCell(
             title: AppString.totalCount,
             value: controller.totalCount.toString(),
           ),
-          const SizedBox(width: Dimens.spacingSM),
-          _StatCard(
+          _StatCell(
             title: AppString.totalCharges,
             value: Format.money(controller.totalChargesPendingAndAdvance),
           ),
-          const SizedBox(width: Dimens.spacingSM),
-          _StatCard(
+          _StatCell(
             title: AppString.statPaymentPending,
             value: Format.money(controller.totalChargesPending),
           ),
-          const SizedBox(width: Dimens.spacingSM),
-          _StatCard(
+          _StatCell(
             title: AppString.statPaymentPaid,
             value: Format.money(controller.totalChargesPaid),
           ),
-          const SizedBox(width: Dimens.spacingSM),
-          _StatCard(
+          _StatCell(
             title: AppString.statCashAdvance,
             value: Format.money(controller.totalCashAdvance),
           ),
@@ -100,8 +87,8 @@ class _StatCards extends StatelessWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({required this.title, required this.value});
+class _StatCell extends StatelessWidget {
+  const _StatCell({required this.title, required this.value});
   final String title;
   final String value;
 
@@ -109,27 +96,32 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        height: 110,
-        padding: const EdgeInsets.all(Dimens.spacingMD),
+        height: 62,
+        padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingMD),
         decoration: BoxDecoration(
           color: AppColor.card,
-          borderRadius: BorderRadius.circular(Dimens.radiusMD),
           border: Border.all(color: AppColor.border),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(color: AppColor.textSecondary)),
-            const SizedBox(height: Dimens.spacingMicro),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColor.textSecondary,
+                fontSize: Dimens.fontSizeCaption,
+              ),
+            ),
             Text(
               value,
               style: const TextStyle(
-                fontSize: Dimens.fontSizeStat,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColor.textPrimary,
               ),
             ),
-            // Chart removed to avoid overflow
           ],
         ),
       ),
@@ -170,12 +162,11 @@ class _ReportsTableState extends State<_ReportsTable> {
         final dd = d.day.toString().padLeft(2, '0');
         final mm = d.month.toString().padLeft(2, '0');
         final yyyy = d.year.toString();
-        return Card(
-          margin: EdgeInsets.zero,
-          color: AppColor.card,
-          shape: RoundedRectangleBorder(
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColor.card,
             borderRadius: BorderRadius.circular(Dimens.radiusXS),
-            side: const BorderSide(color: AppColor.border),
+            border: Border.all(color: AppColor.border),
           ),
           child: SizedBox(
             height: 160,

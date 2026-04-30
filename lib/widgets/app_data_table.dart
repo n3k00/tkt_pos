@@ -41,16 +41,12 @@ class _AppDataTableState extends State<AppDataTable> {
                 scrollDirection: Axis.horizontal,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                  child: Card(
-                    color: AppColor.white,
+                  child: Container(
                     clipBehavior: Clip.antiAlias,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        color: AppColor.border,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(Dimens.radiusXS),
+                    decoration: BoxDecoration(
+                      color: AppColor.white,
+                      border: Border.all(color: AppColor.border),
+                      borderRadius: BorderRadius.circular(Dimens.radiusXS),
                     ),
                     child: widget.table,
                   ),

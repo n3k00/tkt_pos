@@ -101,14 +101,16 @@ class InventoryPage extends GetView<InventoryController> {
           return const Center(child: Text(AppString.noResults));
         }
 
-        return ListView.separated(
-          padding: const EdgeInsets.only(bottom: Dimens.spacingXL),
-          itemCount: filteredDrivers.length,
-          separatorBuilder: (_, __) => const SizedBox(height: Dimens.spacingMD),
-          itemBuilder: (context, index) {
-            final d = filteredDrivers[index];
-            return _DriverSection(driver: d, controller: controller);
-          },
+        final selectedId = controller.selectedDriverId.value;
+        final selectedDriver = filteredDrivers.firstWhere(
+          (driver) => driver.id == selectedId,
+          orElse: () => filteredDrivers.first,
+        );
+
+        return _InventoryMasterDetail(
+          drivers: filteredDrivers,
+          selectedDriver: selectedDriver,
+          controller: controller,
         );
       }),
     );
@@ -136,291 +138,312 @@ class _DesktopToolbar extends StatelessWidget {
   }
 }
 
-class _DriverSection extends StatelessWidget {
-  const _DriverSection({required this.driver, required this.controller});
-  final Driver driver;
+class _InventoryMasterDetail extends StatelessWidget {
+  const _InventoryMasterDetail({
+    required this.drivers,
+    required this.selectedDriver,
+    required this.controller,
+  });
+
+  final List<Driver> drivers;
+  final Driver selectedDriver;
   final InventoryController controller;
 
   @override
   Widget build(BuildContext context) {
-    return _SectionCard(
-      title: driver.name,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final summary = _DriverSummary(
-            driver: driver,
-            controller: controller,
-          );
-          final transactions = _DriverTransactionsTable(
-            controller: controller,
-            driverId: driver.id,
-          );
-          final bool isWide = constraints.maxWidth > 900;
-
-          if (isWide) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(width: Dimens.spacingMD * 20, child: summary),
-                const SizedBox(width: Dimens.spacingLG),
-                Expanded(child: transactions),
-              ],
-            );
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              summary,
-              const SizedBox(height: Dimens.spacingSM),
-              const Divider(color: AppColor.border),
-              transactions,
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _DriverSummary extends StatelessWidget {
-  const _DriverSummary({required this.driver, required this.controller});
-
-  final Driver driver;
-  final InventoryController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final dateLabel = Format.date(driver.date);
-    final totalCharges = controller.totalChargesForDriver(driver.id) ?? 0;
-    final paidOut = controller.paidOutAmountForDriver(driver.id) ?? 0;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Wrap(
-          spacing: Dimens.spacingXS,
-          runSpacing: Dimens.spacingXS,
-          children: [
-            _MetaChip(
-              icon: Icons.badge_outlined,
-              label: 'ID',
-              value: driver.id.toString(),
-            ),
-            _MetaChip(
-              icon: Icons.event,
-              label: AppString.dialogDateLabel,
-              value: dateLabel,
-            ),
-          ],
+        SizedBox(
+          width: 420,
+          child: _DriversTable(
+            drivers: drivers,
+            selectedDriverId: selectedDriver.id,
+            controller: controller,
+          ),
         ),
-        const SizedBox(height: Dimens.spacingSM),
-        _FeeBreakdownPanel(
-          roomFee: driver.roomFee ?? 0,
-          laborFee: driver.laborFee ?? 0,
-          deliveryFee: driver.deliveryFee ?? 0,
-        ),
-        const SizedBox(height: Dimens.spacingSM),
-        Wrap(
-          spacing: Dimens.spacingSM,
-          runSpacing: Dimens.spacingSM,
-          children: [
-            _FeeStat(
-              label: AppString.driverTotalCharges,
-              amount: totalCharges,
-              highlight: totalCharges > 0,
-            ),
-            _FeeStat(
-              label: AppString.driverPaidOutAmount,
-              amount: paidOut,
-              highlight: paidOut > 0,
-            ),
-            _StatusBadge(isPaidOut: driver.paidOut),
-          ],
-        ),
-        const SizedBox(height: Dimens.spacingSM),
-        Wrap(
-          spacing: Dimens.spacingXS,
-          runSpacing: Dimens.spacingXS,
-          children: [
-            fluent.Button(
-              onPressed: () =>
-                  showAddTransactionDialog(context, controller, driver.id),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, size: 16),
-                  SizedBox(width: Dimens.spacingXXS),
-                  Text(AppString.addTransaction),
-                ],
+        const SizedBox(width: Dimens.spacingMD),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _DetailHeader(driver: selectedDriver, controller: controller),
+              const SizedBox(height: Dimens.spacingSM),
+              Expanded(
+                child: _DriverTransactionsTable(
+                  controller: controller,
+                  driverId: selectedDriver.id,
+                ),
               ),
-            ),
-            DriverActionsMenu(driver: driver, controller: controller),
-          ],
+              const SizedBox(height: Dimens.spacingSM),
+              _DriverSummaryStrip(
+                driver: selectedDriver,
+                controller: controller,
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 }
 
-class _FeeBreakdownPanel extends StatelessWidget {
-  const _FeeBreakdownPanel({
-    required this.roomFee,
-    required this.laborFee,
-    required this.deliveryFee,
+class _DriversTable extends StatelessWidget {
+  const _DriversTable({
+    required this.drivers,
+    required this.selectedDriverId,
+    required this.controller,
   });
 
-  final double roomFee;
-  final double laborFee;
-  final double deliveryFee;
+  final List<Driver> drivers;
+  final int selectedDriverId;
+  final InventoryController controller;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final items = <Widget>[];
-    void addStat(IconData icon, String label, double amount) {
-      if (amount <= 0) return;
-      items.add(
-        Expanded(
-          child: _FeeIconStat(icon: icon, label: label, amount: amount),
-        ),
-      );
-    }
-
-    addStat(Icons.meeting_room_outlined, AppString.driverRoomFee, roomFee);
-    addStat(Icons.handyman_outlined, AppString.driverLaborFee, laborFee);
-    addStat(
-      Icons.local_shipping_outlined,
-      AppString.driverDeliveryFee,
-      deliveryFee,
+    return AppDataTable(
+      table: DataTable(
+        columnSpacing: 12,
+        horizontalMargin: 12,
+        showCheckboxColumn: false,
+        columns: const [
+          DataColumn(label: Text(AppString.colDriver)),
+          DataColumn(label: Text('Txn')),
+          DataColumn(label: Text(AppString.colCharges)),
+          DataColumn(label: Text('Status')),
+        ],
+        rows: [
+          for (final driver in drivers)
+            DataRow(
+              selected: driver.id == selectedDriverId,
+              onSelectChanged: (_) =>
+                  controller.selectedDriverId.value = driver.id,
+              cells: [
+                DataCell(
+                  SizedBox(
+                    width: 150,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          driver.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          Format.date(driver.date),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColor.textSecondary,
+                            fontSize: Dimens.fontSizeCaption,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                DataCell(
+                  Text(
+                    '${controller.filteredTransactionsForDriver(driver.id).length}',
+                  ),
+                ),
+                DataCell(
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      Format.money(
+                        controller.totalChargesForDriver(driver.id) ?? 0,
+                      ),
+                    ),
+                  ),
+                ),
+                DataCell(_CompactStatus(isPaidOut: driver.paidOut)),
+              ],
+            ),
+        ],
+      ),
     );
+  }
+}
 
-    if (items.isEmpty) {
-      return Text(
-        AppString.driverNoFees,
-        style: AppTextStyles.caption(textTheme),
-      );
-    }
+class _DetailHeader extends StatelessWidget {
+  const _DetailHeader({required this.driver, required this.controller});
 
+  final Driver driver;
+  final InventoryController controller;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(Dimens.spacingSM),
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingSM),
       decoration: BoxDecoration(
-        color: AppColor.card,
+        color: AppColor.white,
         borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: AppColor.border),
       ),
       child: Row(
         children: [
-          for (int i = 0; i < items.length; i++) ...[
-            items[i],
-            if (i != items.length - 1) const SizedBox(width: Dimens.spacingSM),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _FeeIconStat extends StatelessWidget {
-  const _FeeIconStat({
-    required this.icon,
-    required this.label,
-    required this.amount,
-  });
-
-  final IconData icon;
-  final String label;
-  final double amount;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: AppColor.textSecondary),
-            const SizedBox(width: Dimens.spacingXXS),
-            Text(label, style: AppTextStyles.caption(textTheme)),
-          ],
-        ),
-        const SizedBox(height: Dimens.spacingXXS),
-        Text(Format.money(amount), style: AppTextStyles.subtitle(textTheme)),
-      ],
-    );
-  }
-}
-
-class _FeeStat extends StatelessWidget {
-  const _FeeStat({
-    required this.label,
-    required this.amount,
-    this.highlight = false,
-  });
-
-  final String label;
-  final double? amount;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final double value = amount ?? 0;
-    if (!highlight && value <= 0) {
-      return Text(
-        '$label: ${Format.money(0)}',
-        style: AppTextStyles.caption(textTheme),
-      );
-    }
-    return Container(
-      padding: const EdgeInsets.all(Dimens.spacingSM),
-      decoration: BoxDecoration(
-        color: highlight
-            ? AppColor.primary.withValues(alpha: 0.08)
-            : AppColor.surfaceBackground,
-        borderRadius: BorderRadius.circular(Dimens.radiusSM),
-        border: Border.all(
-          color: highlight ? AppColor.primary : AppColor.border,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTextStyles.caption(textTheme)),
-          const SizedBox(height: Dimens.spacingXXS),
-          Text(
-            Format.money(value),
-            style: AppTextStyles.subtitle(
-              textTheme,
-              color: highlight ? AppColor.primaryDark : AppColor.textPrimary,
+          Expanded(
+            child: Text(
+              '${driver.name}  •  ${Format.date(driver.date)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: Dimens.fontSizeSubtitle,
+                fontWeight: FontWeight.w700,
+                color: AppColor.textPrimary,
+              ),
             ),
           ),
+          fluent.Button(
+            onPressed: () =>
+                showAddTransactionDialog(context, controller, driver.id),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add, size: 16),
+                SizedBox(width: Dimens.spacingXXS),
+                Text(AppString.addTransaction),
+              ],
+            ),
+          ),
+          const SizedBox(width: Dimens.spacingXS),
+          DriverActionsMenu(driver: driver, controller: controller),
         ],
       ),
     );
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.isPaidOut});
+class _DriverSummaryStrip extends StatelessWidget {
+  const _DriverSummaryStrip({required this.driver, required this.controller});
+
+  final Driver driver;
+  final InventoryController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = controller.filteredTransactionsForDriver(driver.id);
+    final totalCharges = rows.fold<double>(0, (sum, t) => sum + t.charges);
+    final totalAdvance = rows.fold<double>(0, (sum, t) => sum + t.cashAdvance);
+    final roomFee = driver.roomFee ?? 0;
+    final laborFee = driver.laborFee ?? 0;
+    final deliveryFee = driver.deliveryFee ?? 0;
+    final paidOutAmount = totalCharges - roomFee - laborFee - deliveryFee;
+
+    return Container(
+      height: 74,
+      padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingMD),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: AppColor.border),
+      ),
+      child: Row(
+        children: [
+          _SummaryCell(
+            label: AppString.driverTotalCharges,
+            value: Format.money(totalCharges),
+          ),
+          _SummaryCell(
+            label: AppString.colCashAdvance,
+            value: Format.money(totalAdvance),
+          ),
+          _SummaryCell(
+            label: AppString.driverRoomFee,
+            value: Format.money(roomFee),
+          ),
+          _SummaryCell(
+            label: AppString.driverLaborFee,
+            value: Format.money(laborFee),
+          ),
+          _SummaryCell(
+            label: AppString.driverDeliveryFee,
+            value: Format.money(deliveryFee),
+          ),
+          _SummaryCell(
+            label: AppString.driverPaidOutAmount,
+            value: Format.money(paidOutAmount),
+          ),
+          _CompactStatus(isPaidOut: driver.paidOut),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryCell extends StatelessWidget {
+  const _SummaryCell({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(right: Dimens.spacingSM),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColor.textSecondary,
+                fontSize: Dimens.fontSizeCaption,
+              ),
+            ),
+            const SizedBox(height: Dimens.spacingMicro),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColor.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactStatus extends StatelessWidget {
+  const _CompactStatus({required this.isPaidOut});
+
   final bool isPaidOut;
 
   @override
   Widget build(BuildContext context) {
     final color = isPaidOut ? AppColor.success : AppColor.warning;
-    final label = isPaidOut ? 'Paid out' : 'Pending payout';
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: Dimens.spacingSM,
-        vertical: Dimens.spacingXXS,
+        horizontal: Dimens.spacingXS,
+        vertical: Dimens.spacingMicro,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(Dimens.radiusSM),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Text(
-        label,
-        style: TextStyle(color: color, fontWeight: FontWeight.w700),
+        isPaidOut ? 'Paid' : 'Pending',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: color,
+          fontSize: Dimens.fontSizeCaption,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -1044,86 +1067,5 @@ class _FiltersToolbar extends StatelessWidget {
         },
       );
     });
-  }
-}
-
-class _MetaChip extends StatelessWidget {
-  const _MetaChip({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Dimens.spacingSM,
-        vertical: Dimens.spacingXXS,
-      ),
-      decoration: BoxDecoration(
-        color: AppColor.white,
-        borderRadius: BorderRadius.circular(Dimens.radiusXS),
-        border: Border.all(color: AppColor.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: AppColor.textSecondary),
-          const SizedBox(width: Dimens.spacingXXS),
-          Text(
-            '$label: $value',
-            style: AppTextStyles.caption(
-              textTheme,
-              color: AppColor.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.child, this.title});
-
-  final Widget child;
-  final String? title;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: Dimens.spacingMD),
-      decoration: BoxDecoration(
-        color: AppColor.white,
-        borderRadius: BorderRadius.circular(Dimens.radiusMD),
-        border: Border.all(color: AppColor.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColor.textPrimary.withValues(alpha: 0.03),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(Dimens.spacingMD),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (title != null) ...[
-            Text(title!, style: AppTextStyles.subtitle(textTheme)),
-            const SizedBox(height: Dimens.spacingSM),
-          ],
-          child,
-        ],
-      ),
-    );
   }
 }
