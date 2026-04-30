@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'tables/app_settings.dart';
+import 'tables/driver_profiles.dart';
 import 'tables/drivers.dart';
 import 'tables/transactions.dart';
 import 'tables/transaction_edit_history.dart';
@@ -20,6 +21,7 @@ part 'app_database.g.dart';
 @DriftDatabase(
   tables: [
     AppSettings,
+    DriverProfiles,
     Drivers,
     Transactions,
     TransactionEditHistory,
@@ -37,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => _instance;
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   // Migrations: create new tables when upgrading from v1
   @override
@@ -81,6 +83,17 @@ class AppDatabase extends _$AppDatabase {
           addColumn: () => m.addColumn(drivers, drivers.paidOut),
         );
       }
+      if (from < 16) {
+        if (!await _tableExists('driver_profiles')) {
+          await m.createTable(driverProfiles);
+        }
+        await _addColumnIfMissing(
+          tableName: 'drivers',
+          columnName: 'profile_id',
+          addColumn: () => m.addColumn(drivers, drivers.profileId),
+        );
+        await _backfillDriverProfiles();
+      }
     },
   );
 
@@ -98,6 +111,73 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // ------ Drivers CRUD ------
+  Future<int> getOrCreateDriverProfile({
+    required String name,
+    String? phone,
+  }) async {
+    final normalized = name.trim();
+    final existing =
+        await (select(driverProfiles)
+              ..where((p) => p.name.equals(normalized))
+              ..limit(1))
+            .getSingleOrNull();
+    if (existing != null) return existing.id;
+
+    return into(driverProfiles).insert(
+      DriverProfilesCompanion.insert(
+        name: normalized,
+        phone: Value(
+          phone == null || phone.trim().isEmpty ? null : phone.trim(),
+        ),
+      ),
+    );
+  }
+
+  Future<List<DriverProfile>> getDriverProfiles({bool includeInactive = true}) {
+    final query = select(driverProfiles)
+      ..orderBy([
+        (p) => OrderingTerm.desc(p.active),
+        (p) => OrderingTerm.asc(p.name),
+      ]);
+    if (!includeInactive) {
+      query.where((p) => p.active.equals(true));
+    }
+    return query.get();
+  }
+
+  Future<int> insertDriverProfile({required String name, String? phone}) {
+    return into(driverProfiles).insert(
+      DriverProfilesCompanion.insert(
+        name: name.trim(),
+        phone: Value(
+          phone == null || phone.trim().isEmpty ? null : phone.trim(),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> updateDriverProfile({
+    required int id,
+    required String name,
+    String? phone,
+    required bool active,
+  }) {
+    return update(driverProfiles).replace(
+      DriverProfile(
+        id: id,
+        name: name.trim(),
+        phone: phone == null || phone.trim().isEmpty ? null : phone.trim(),
+        active: active,
+      ),
+    );
+  }
+
+  Future<int> setDriverProfileActive({required int id, required bool active}) {
+    return (update(driverProfiles)..where((p) => p.id.equals(id))).write(
+      DriverProfilesCompanion(active: Value(active)),
+    );
+  }
+
   Future<int> insertDriver(DriversCompanion companion) =>
       into(drivers).insert(companion);
 
@@ -456,6 +536,33 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_trip_main_date ON trip_main(date)',
     );
+  }
+
+  Future<void> _backfillDriverProfiles() async {
+    await customStatement('''
+INSERT INTO driver_profiles (name, active)
+SELECT DISTINCT TRIM(name), 1
+FROM drivers
+WHERE TRIM(name) != ''
+  AND NOT EXISTS (
+    SELECT 1
+    FROM driver_profiles
+    WHERE driver_profiles.name = TRIM(drivers.name)
+  );
+''');
+
+    await customStatement('''
+UPDATE drivers
+SET profile_id = (
+  SELECT id
+  FROM driver_profiles
+  WHERE driver_profiles.name = TRIM(drivers.name)
+  ORDER BY id
+  LIMIT 1
+)
+WHERE profile_id IS NULL
+  AND TRIM(name) != '';
+''');
   }
 
   Future<void> _copyTripMainData(String legacyName) async {

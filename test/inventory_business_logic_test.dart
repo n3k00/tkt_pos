@@ -122,6 +122,21 @@ void main() {
       expect(controller.paidOutAmountForDriver(driverId), 1200);
     },
   );
+
+  test('adding a driver creates and links a driver profile', () async {
+    final driverId = await controller.addDriver(
+      date: DateTime(2026, 1, 1),
+      name: 'Driver One',
+    );
+
+    final driver = await db.getDriverById(driverId);
+    final profiles = await db.select(db.driverProfiles).get();
+
+    expect(profiles, hasLength(1));
+    expect(profiles.single.name, 'Driver One');
+    expect(profiles.single.active, isTrue);
+    expect(driver?.profileId, profiles.single.id);
+  });
 }
 
 Future<int> _insertDriver(AppDatabase db, {String name = 'Driver One'}) {

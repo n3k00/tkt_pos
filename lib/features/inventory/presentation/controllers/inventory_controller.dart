@@ -174,9 +174,19 @@ class InventoryController extends GetxController {
         .toList(growable: false);
   }
 
-  Future<int> addDriver({required DateTime date, required String name}) async {
+  Future<int> addDriver({
+    required DateTime date,
+    required String name,
+    int? profileId,
+  }) async {
+    final resolvedProfileId =
+        profileId ?? await db.getOrCreateDriverProfile(name: name);
     final id = await db.insertDriver(
-      DriversCompanion.insert(date: date, name: name),
+      DriversCompanion.insert(
+        profileId: drift.Value(resolvedProfileId),
+        date: date,
+        name: name,
+      ),
     );
     // reload list
     await loadAllDrivers();
@@ -188,11 +198,13 @@ class InventoryController extends GetxController {
     required DateTime date,
     required String name,
   }) async {
+    final profileId = await db.getOrCreateDriverProfile(name: name);
     await db
         .update(db.drivers)
         .replace(
           DriversCompanion(
             id: drift.Value(id),
+            profileId: drift.Value(profileId),
             date: drift.Value(date),
             name: drift.Value(name),
           ),

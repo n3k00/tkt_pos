@@ -220,6 +220,302 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   }
 }
 
+class $DriverProfilesTable extends DriverProfiles
+    with TableInfo<$DriverProfilesTable, DriverProfile> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DriverProfilesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
+  @override
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+    'phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, phone, active];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'driver_profiles';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DriverProfile> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('phone')) {
+      context.handle(
+        _phoneMeta,
+        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DriverProfile map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DriverProfile(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      phone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone'],
+      ),
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+    );
+  }
+
+  @override
+  $DriverProfilesTable createAlias(String alias) {
+    return $DriverProfilesTable(attachedDatabase, alias);
+  }
+}
+
+class DriverProfile extends DataClass implements Insertable<DriverProfile> {
+  final int id;
+  final String name;
+  final String? phone;
+  final bool active;
+  const DriverProfile({
+    required this.id,
+    required this.name,
+    this.phone,
+    required this.active,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || phone != null) {
+      map['phone'] = Variable<String>(phone);
+    }
+    map['active'] = Variable<bool>(active);
+    return map;
+  }
+
+  DriverProfilesCompanion toCompanion(bool nullToAbsent) {
+    return DriverProfilesCompanion(
+      id: Value(id),
+      name: Value(name),
+      phone: phone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(phone),
+      active: Value(active),
+    );
+  }
+
+  factory DriverProfile.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DriverProfile(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      phone: serializer.fromJson<String?>(json['phone']),
+      active: serializer.fromJson<bool>(json['active']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'phone': serializer.toJson<String?>(phone),
+      'active': serializer.toJson<bool>(active),
+    };
+  }
+
+  DriverProfile copyWith({
+    int? id,
+    String? name,
+    Value<String?> phone = const Value.absent(),
+    bool? active,
+  }) => DriverProfile(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    phone: phone.present ? phone.value : this.phone,
+    active: active ?? this.active,
+  );
+  DriverProfile copyWithCompanion(DriverProfilesCompanion data) {
+    return DriverProfile(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      phone: data.phone.present ? data.phone.value : this.phone,
+      active: data.active.present ? data.active.value : this.active,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DriverProfile(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('phone: $phone, ')
+          ..write('active: $active')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, phone, active);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DriverProfile &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.phone == this.phone &&
+          other.active == this.active);
+}
+
+class DriverProfilesCompanion extends UpdateCompanion<DriverProfile> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String?> phone;
+  final Value<bool> active;
+  const DriverProfilesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.active = const Value.absent(),
+  });
+  DriverProfilesCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.phone = const Value.absent(),
+    this.active = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<DriverProfile> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? phone,
+    Expression<bool>? active,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (phone != null) 'phone': phone,
+      if (active != null) 'active': active,
+    });
+  }
+
+  DriverProfilesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String?>? phone,
+    Value<bool>? active,
+  }) {
+    return DriverProfilesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      active: active ?? this.active,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DriverProfilesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('phone: $phone, ')
+          ..write('active: $active')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -236,6 +532,20 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _profileIdMeta = const VerificationMeta(
+    'profileId',
+  );
+  @override
+  late final GeneratedColumn<int> profileId = GeneratedColumn<int>(
+    'profile_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES driver_profiles (id)',
     ),
   );
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
@@ -307,6 +617,7 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    profileId,
     date,
     name,
     roomFee,
@@ -328,6 +639,12 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('profile_id')) {
+      context.handle(
+        _profileIdMeta,
+        profileId.isAcceptableOrUnknown(data['profile_id']!, _profileIdMeta),
+      );
     }
     if (data.containsKey('date')) {
       context.handle(
@@ -385,6 +702,10 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      profileId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}profile_id'],
+      ),
       date: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
@@ -420,6 +741,7 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
 
 class Driver extends DataClass implements Insertable<Driver> {
   final int id;
+  final int? profileId;
   final DateTime date;
   final String name;
   final double? roomFee;
@@ -428,6 +750,7 @@ class Driver extends DataClass implements Insertable<Driver> {
   final bool paidOut;
   const Driver({
     required this.id,
+    this.profileId,
     required this.date,
     required this.name,
     this.roomFee,
@@ -439,6 +762,9 @@ class Driver extends DataClass implements Insertable<Driver> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || profileId != null) {
+      map['profile_id'] = Variable<int>(profileId);
+    }
     map['date'] = Variable<DateTime>(date);
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || roomFee != null) {
@@ -457,6 +783,9 @@ class Driver extends DataClass implements Insertable<Driver> {
   DriversCompanion toCompanion(bool nullToAbsent) {
     return DriversCompanion(
       id: Value(id),
+      profileId: profileId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(profileId),
       date: Value(date),
       name: Value(name),
       roomFee: roomFee == null && nullToAbsent
@@ -479,6 +808,7 @@ class Driver extends DataClass implements Insertable<Driver> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Driver(
       id: serializer.fromJson<int>(json['id']),
+      profileId: serializer.fromJson<int?>(json['profileId']),
       date: serializer.fromJson<DateTime>(json['date']),
       name: serializer.fromJson<String>(json['name']),
       roomFee: serializer.fromJson<double?>(json['roomFee']),
@@ -492,6 +822,7 @@ class Driver extends DataClass implements Insertable<Driver> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'profileId': serializer.toJson<int?>(profileId),
       'date': serializer.toJson<DateTime>(date),
       'name': serializer.toJson<String>(name),
       'roomFee': serializer.toJson<double?>(roomFee),
@@ -503,6 +834,7 @@ class Driver extends DataClass implements Insertable<Driver> {
 
   Driver copyWith({
     int? id,
+    Value<int?> profileId = const Value.absent(),
     DateTime? date,
     String? name,
     Value<double?> roomFee = const Value.absent(),
@@ -511,6 +843,7 @@ class Driver extends DataClass implements Insertable<Driver> {
     bool? paidOut,
   }) => Driver(
     id: id ?? this.id,
+    profileId: profileId.present ? profileId.value : this.profileId,
     date: date ?? this.date,
     name: name ?? this.name,
     roomFee: roomFee.present ? roomFee.value : this.roomFee,
@@ -521,6 +854,7 @@ class Driver extends DataClass implements Insertable<Driver> {
   Driver copyWithCompanion(DriversCompanion data) {
     return Driver(
       id: data.id.present ? data.id.value : this.id,
+      profileId: data.profileId.present ? data.profileId.value : this.profileId,
       date: data.date.present ? data.date.value : this.date,
       name: data.name.present ? data.name.value : this.name,
       roomFee: data.roomFee.present ? data.roomFee.value : this.roomFee,
@@ -536,6 +870,7 @@ class Driver extends DataClass implements Insertable<Driver> {
   String toString() {
     return (StringBuffer('Driver(')
           ..write('id: $id, ')
+          ..write('profileId: $profileId, ')
           ..write('date: $date, ')
           ..write('name: $name, ')
           ..write('roomFee: $roomFee, ')
@@ -547,13 +882,22 @@ class Driver extends DataClass implements Insertable<Driver> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, date, name, roomFee, laborFee, deliveryFee, paidOut);
+  int get hashCode => Object.hash(
+    id,
+    profileId,
+    date,
+    name,
+    roomFee,
+    laborFee,
+    deliveryFee,
+    paidOut,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Driver &&
           other.id == this.id &&
+          other.profileId == this.profileId &&
           other.date == this.date &&
           other.name == this.name &&
           other.roomFee == this.roomFee &&
@@ -564,6 +908,7 @@ class Driver extends DataClass implements Insertable<Driver> {
 
 class DriversCompanion extends UpdateCompanion<Driver> {
   final Value<int> id;
+  final Value<int?> profileId;
   final Value<DateTime> date;
   final Value<String> name;
   final Value<double?> roomFee;
@@ -572,6 +917,7 @@ class DriversCompanion extends UpdateCompanion<Driver> {
   final Value<bool> paidOut;
   const DriversCompanion({
     this.id = const Value.absent(),
+    this.profileId = const Value.absent(),
     this.date = const Value.absent(),
     this.name = const Value.absent(),
     this.roomFee = const Value.absent(),
@@ -581,6 +927,7 @@ class DriversCompanion extends UpdateCompanion<Driver> {
   });
   DriversCompanion.insert({
     this.id = const Value.absent(),
+    this.profileId = const Value.absent(),
     required DateTime date,
     required String name,
     this.roomFee = const Value.absent(),
@@ -591,6 +938,7 @@ class DriversCompanion extends UpdateCompanion<Driver> {
        name = Value(name);
   static Insertable<Driver> custom({
     Expression<int>? id,
+    Expression<int>? profileId,
     Expression<DateTime>? date,
     Expression<String>? name,
     Expression<double>? roomFee,
@@ -600,6 +948,7 @@ class DriversCompanion extends UpdateCompanion<Driver> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (profileId != null) 'profile_id': profileId,
       if (date != null) 'date': date,
       if (name != null) 'name': name,
       if (roomFee != null) 'room_fee': roomFee,
@@ -611,6 +960,7 @@ class DriversCompanion extends UpdateCompanion<Driver> {
 
   DriversCompanion copyWith({
     Value<int>? id,
+    Value<int?>? profileId,
     Value<DateTime>? date,
     Value<String>? name,
     Value<double?>? roomFee,
@@ -620,6 +970,7 @@ class DriversCompanion extends UpdateCompanion<Driver> {
   }) {
     return DriversCompanion(
       id: id ?? this.id,
+      profileId: profileId ?? this.profileId,
       date: date ?? this.date,
       name: name ?? this.name,
       roomFee: roomFee ?? this.roomFee,
@@ -634,6 +985,9 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (profileId.present) {
+      map['profile_id'] = Variable<int>(profileId.value);
     }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
@@ -660,6 +1014,7 @@ class DriversCompanion extends UpdateCompanion<Driver> {
   String toString() {
     return (StringBuffer('DriversCompanion(')
           ..write('id: $id, ')
+          ..write('profileId: $profileId, ')
           ..write('date: $date, ')
           ..write('name: $name, ')
           ..write('roomFee: $roomFee, ')
@@ -4145,6 +4500,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $DriverProfilesTable driverProfiles = $DriverProfilesTable(this);
   late final $DriversTable drivers = $DriversTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $TransactionEditHistoryTable transactionEditHistory =
@@ -4160,6 +4516,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     appSettings,
+    driverProfiles,
     drivers,
     transactions,
     transactionEditHistory,
@@ -4308,9 +4665,293 @@ typedef $$AppSettingsTableProcessedTableManager =
       AppSetting,
       PrefetchHooks Function()
     >;
+typedef $$DriverProfilesTableCreateCompanionBuilder =
+    DriverProfilesCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String?> phone,
+      Value<bool> active,
+    });
+typedef $$DriverProfilesTableUpdateCompanionBuilder =
+    DriverProfilesCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String?> phone,
+      Value<bool> active,
+    });
+
+final class $$DriverProfilesTableReferences
+    extends BaseReferences<_$AppDatabase, $DriverProfilesTable, DriverProfile> {
+  $$DriverProfilesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$DriversTable, List<Driver>> _driversRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.drivers,
+    aliasName: $_aliasNameGenerator(db.driverProfiles.id, db.drivers.profileId),
+  );
+
+  $$DriversTableProcessedTableManager get driversRefs {
+    final manager = $$DriversTableTableManager(
+      $_db,
+      $_db.drivers,
+    ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_driversRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$DriverProfilesTableFilterComposer
+    extends Composer<_$AppDatabase, $DriverProfilesTable> {
+  $$DriverProfilesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> driversRefs(
+    Expression<bool> Function($$DriversTableFilterComposer f) f,
+  ) {
+    final $$DriversTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableFilterComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$DriverProfilesTableOrderingComposer
+    extends Composer<_$AppDatabase, $DriverProfilesTable> {
+  $$DriverProfilesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DriverProfilesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DriverProfilesTable> {
+  $$DriverProfilesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  Expression<T> driversRefs<T extends Object>(
+    Expression<T> Function($$DriversTableAnnotationComposer a) f,
+  ) {
+    final $$DriversTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableAnnotationComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$DriverProfilesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DriverProfilesTable,
+          DriverProfile,
+          $$DriverProfilesTableFilterComposer,
+          $$DriverProfilesTableOrderingComposer,
+          $$DriverProfilesTableAnnotationComposer,
+          $$DriverProfilesTableCreateCompanionBuilder,
+          $$DriverProfilesTableUpdateCompanionBuilder,
+          (DriverProfile, $$DriverProfilesTableReferences),
+          DriverProfile,
+          PrefetchHooks Function({bool driversRefs})
+        > {
+  $$DriverProfilesTableTableManager(
+    _$AppDatabase db,
+    $DriverProfilesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DriverProfilesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DriverProfilesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DriverProfilesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+              }) => DriverProfilesCompanion(
+                id: id,
+                name: name,
+                phone: phone,
+                active: active,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String?> phone = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+              }) => DriverProfilesCompanion.insert(
+                id: id,
+                name: name,
+                phone: phone,
+                active: active,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$DriverProfilesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({driversRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (driversRefs) db.drivers],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (driversRefs)
+                    await $_getPrefetchedData<
+                      DriverProfile,
+                      $DriverProfilesTable,
+                      Driver
+                    >(
+                      currentTable: table,
+                      referencedTable: $$DriverProfilesTableReferences
+                          ._driversRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$DriverProfilesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).driversRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.profileId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$DriverProfilesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DriverProfilesTable,
+      DriverProfile,
+      $$DriverProfilesTableFilterComposer,
+      $$DriverProfilesTableOrderingComposer,
+      $$DriverProfilesTableAnnotationComposer,
+      $$DriverProfilesTableCreateCompanionBuilder,
+      $$DriverProfilesTableUpdateCompanionBuilder,
+      (DriverProfile, $$DriverProfilesTableReferences),
+      DriverProfile,
+      PrefetchHooks Function({bool driversRefs})
+    >;
 typedef $$DriversTableCreateCompanionBuilder =
     DriversCompanion Function({
       Value<int> id,
+      Value<int?> profileId,
       required DateTime date,
       required String name,
       Value<double?> roomFee,
@@ -4321,6 +4962,7 @@ typedef $$DriversTableCreateCompanionBuilder =
 typedef $$DriversTableUpdateCompanionBuilder =
     DriversCompanion Function({
       Value<int> id,
+      Value<int?> profileId,
       Value<DateTime> date,
       Value<String> name,
       Value<double?> roomFee,
@@ -4332,6 +4974,25 @@ typedef $$DriversTableUpdateCompanionBuilder =
 final class $$DriversTableReferences
     extends BaseReferences<_$AppDatabase, $DriversTable, Driver> {
   $$DriversTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $DriverProfilesTable _profileIdTable(_$AppDatabase db) =>
+      db.driverProfiles.createAlias(
+        $_aliasNameGenerator(db.drivers.profileId, db.driverProfiles.id),
+      );
+
+  $$DriverProfilesTableProcessedTableManager? get profileId {
+    final $_column = $_itemColumn<int>('profile_id');
+    if ($_column == null) return null;
+    final manager = $$DriverProfilesTableTableManager(
+      $_db,
+      $_db.driverProfiles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_profileIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static MultiTypedResultKey<$TransactionsTable, List<DbTransaction>>
   _transactionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -4447,6 +5108,29 @@ class $$DriversTableFilterComposer
     column: $table.paidOut,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$DriverProfilesTableFilterComposer get profileId {
+    final $$DriverProfilesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.driverProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriverProfilesTableFilterComposer(
+            $db: $db,
+            $table: $db.driverProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<bool> transactionsRefs(
     Expression<bool> Function($$TransactionsTableFilterComposer f) f,
@@ -4568,6 +5252,29 @@ class $$DriversTableOrderingComposer
     column: $table.paidOut,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$DriverProfilesTableOrderingComposer get profileId {
+    final $$DriverProfilesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.driverProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriverProfilesTableOrderingComposer(
+            $db: $db,
+            $table: $db.driverProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$DriversTableAnnotationComposer
@@ -4601,6 +5308,29 @@ class $$DriversTableAnnotationComposer
 
   GeneratedColumn<bool> get paidOut =>
       $composableBuilder(column: $table.paidOut, builder: (column) => column);
+
+  $$DriverProfilesTableAnnotationComposer get profileId {
+    final $$DriverProfilesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.driverProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriverProfilesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.driverProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<T> transactionsRefs<T extends Object>(
     Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
@@ -4694,6 +5424,7 @@ class $$DriversTableTableManager
           (Driver, $$DriversTableReferences),
           Driver,
           PrefetchHooks Function({
+            bool profileId,
             bool transactionsRefs,
             bool transactionEditHistoryRefs,
             bool reportTransactionsRefs,
@@ -4713,6 +5444,7 @@ class $$DriversTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<int?> profileId = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<double?> roomFee = const Value.absent(),
@@ -4721,6 +5453,7 @@ class $$DriversTableTableManager
                 Value<bool> paidOut = const Value.absent(),
               }) => DriversCompanion(
                 id: id,
+                profileId: profileId,
                 date: date,
                 name: name,
                 roomFee: roomFee,
@@ -4731,6 +5464,7 @@ class $$DriversTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<int?> profileId = const Value.absent(),
                 required DateTime date,
                 required String name,
                 Value<double?> roomFee = const Value.absent(),
@@ -4739,6 +5473,7 @@ class $$DriversTableTableManager
                 Value<bool> paidOut = const Value.absent(),
               }) => DriversCompanion.insert(
                 id: id,
+                profileId: profileId,
                 date: date,
                 name: name,
                 roomFee: roomFee,
@@ -4756,6 +5491,7 @@ class $$DriversTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                profileId = false,
                 transactionsRefs = false,
                 transactionEditHistoryRefs = false,
                 reportTransactionsRefs = false,
@@ -4767,7 +5503,38 @@ class $$DriversTableTableManager
                     if (transactionEditHistoryRefs) db.transactionEditHistory,
                     if (reportTransactionsRefs) db.reportTransactions,
                   ],
-                  addJoins: null,
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (profileId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.profileId,
+                                    referencedTable: $$DriversTableReferences
+                                        ._profileIdTable(db),
+                                    referencedColumn: $$DriversTableReferences
+                                        ._profileIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (transactionsRefs)
@@ -4854,6 +5621,7 @@ typedef $$DriversTableProcessedTableManager =
       (Driver, $$DriversTableReferences),
       Driver,
       PrefetchHooks Function({
+        bool profileId,
         bool transactionsRefs,
         bool transactionEditHistoryRefs,
         bool reportTransactionsRefs,
@@ -7526,6 +8294,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$DriverProfilesTableTableManager get driverProfiles =>
+      $$DriverProfilesTableTableManager(_db, _db.driverProfiles);
   $$DriversTableTableManager get drivers =>
       $$DriversTableTableManager(_db, _db.drivers);
   $$TransactionsTableTableManager get transactions =>

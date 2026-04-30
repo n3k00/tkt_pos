@@ -80,67 +80,92 @@ Future<void> showAddDriverDialog(
   BuildContext context,
   InventoryController controller,
 ) async {
-  final nameController = TextEditingController();
-  DateTime date = DateTime.now();
-  final formKey = GlobalKey<FormState>();
-  try {
+  final profiles = await controller.db.getDriverProfiles(
+    includeInactive: false,
+  );
+  if (!context.mounted) return;
+  if (profiles.isEmpty) {
     await showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setState) {
-            Future<void> save() async {
-              if (!formKey.currentState!.validate()) return;
-              Navigator.of(ctx).pop();
-              await controller.addDriver(
-                date: date,
-                name: nameController.text.trim(),
-              );
-            }
-
-            return DesktopFormDialog(
-              onCancel: () => Navigator.of(ctx).pop(),
-              onSubmit: save,
-              maxWidth: 680,
-              contentWidth: 600,
-              title: const Text(AppString.dialogAddDriver),
-              actions: [
-                fluent.Button(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text(AppString.dialogCancel),
-                ),
-                fluent.FilledButton(
-                  onPressed: save,
-                  child: const Text(AppString.dialogSave),
-                ),
-              ],
-              child: Form(
-                key: formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: _DriverFormFields(
-                  nameController: nameController,
-                  date: date,
-                  onSubmit: save,
-                  onPickDate: () async {
-                    final picked = await showDatePicker(
-                      context: ctx,
-                      initialDate: date,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) setState(() => date = picked);
-                  },
-                ),
-              ),
-            );
-          },
-        );
-      },
+      builder: (ctx) => fluent.ContentDialog(
+        title: const Text('No active drivers'),
+        content: const Text(
+          'Create an active driver profile in Settings > Drivers before adding a daily driver entry.',
+        ),
+        actions: [
+          fluent.FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
-  } finally {
-    nameController.dispose();
+    return;
   }
+
+  DriverProfile selectedProfile = profiles.first;
+  DateTime date = DateTime.now();
+  final formKey = GlobalKey<FormState>();
+  await showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (ctx, setState) {
+          Future<void> save() async {
+            if (!formKey.currentState!.validate()) return;
+            Navigator.of(ctx).pop();
+            await controller.addDriver(
+              date: date,
+              profileId: selectedProfile.id,
+              name: selectedProfile.name,
+            );
+          }
+
+          return DesktopFormDialog(
+            onCancel: () => Navigator.of(ctx).pop(),
+            onSubmit: save,
+            maxWidth: 680,
+            contentWidth: 600,
+            title: const Text(AppString.dialogAddDriver),
+            actions: [
+              fluent.Button(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text(AppString.dialogCancel),
+              ),
+              fluent.FilledButton(
+                onPressed: save,
+                child: const Text(AppString.dialogSave),
+              ),
+            ],
+            child: Form(
+              key: formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: _AddDriverProfileFormFields(
+                profiles: profiles,
+                selectedProfile: selectedProfile,
+                date: date,
+                onProfileChanged: (profile) {
+                  if (profile != null) {
+                    setState(() => selectedProfile = profile);
+                  }
+                },
+                onPickDate: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: date,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) setState(() => date = picked);
+                },
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }
 
 class _DriverFormFields extends StatelessWidget {
@@ -206,4 +231,72 @@ class _DriverFormFields extends StatelessWidget {
     final yyyy = date.year.toString().padLeft(4, '0');
     return '$dd/$mm/$yyyy';
   }
+}
+
+class _AddDriverProfileFormFields extends StatelessWidget {
+  const _AddDriverProfileFormFields({
+    required this.profiles,
+    required this.selectedProfile,
+    required this.date,
+    required this.onProfileChanged,
+    required this.onPickDate,
+  });
+
+  final List<DriverProfile> profiles;
+  final DriverProfile selectedProfile;
+  final DateTime date;
+  final ValueChanged<DriverProfile?> onProfileChanged;
+  final VoidCallback onPickDate;
+
+  @override
+  Widget build(BuildContext context) {
+    return DesktopFormSection(
+      title: 'Daily driver entry',
+      child: Row(
+        children: [
+          Expanded(
+            child: DropdownButtonFormField<DriverProfile>(
+              initialValue: selectedProfile,
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: 'Driver profile',
+                prefixIcon: const Icon(Icons.person_outline),
+                border: OutlineInputBorder(
+                  borderRadius: Dimens.borderRadiusInput,
+                ),
+                isDense: true,
+              ),
+              items: [
+                for (final profile in profiles)
+                  DropdownMenuItem(value: profile, child: Text(profile.name)),
+              ],
+              onChanged: onProfileChanged,
+              validator: (value) => value == null ? 'Required' : null,
+            ),
+          ),
+          const SizedBox(width: Dimens.spacingSM),
+          Expanded(
+            child: ListTile(
+              dense: true,
+              shape: RoundedRectangleBorder(
+                borderRadius: Dimens.borderRadiusInput,
+                side: const BorderSide(color: AppColor.border),
+              ),
+              title: const Text(AppString.dialogDateLabel),
+              subtitle: Text(_formatDriverDate(date)),
+              trailing: const Icon(Icons.calendar_month_outlined),
+              onTap: onPickDate,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatDriverDate(DateTime date) {
+  final dd = date.day.toString().padLeft(2, '0');
+  final mm = date.month.toString().padLeft(2, '0');
+  final yyyy = date.year.toString().padLeft(4, '0');
+  return '$dd/$mm/$yyyy';
 }
