@@ -48,22 +48,10 @@ class InventoryPage extends GetView<InventoryController> {
     return DesktopShell(
       title: AppString.inventory,
       subtitle: 'Drivers, parcels, collection status, and payout tracking',
-      actions: [
-        fluent.FilledButton(
-          onPressed: () => showAddDriverDialog(context, controller),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.add, size: 16),
-              SizedBox(width: Dimens.spacingXXS),
-              Text('Add Driver'),
-            ],
-          ),
-        ),
-      ],
       toolbar: _DesktopToolbar(
         controller: controller,
         onPickMonth: () => _openMonthPicker(context),
+        onAddDriver: () => showAddDriverDialog(context, controller),
       ),
       child: Obx(() {
         if (controller.isLoading.value) {
@@ -118,10 +106,15 @@ class InventoryPage extends GetView<InventoryController> {
 }
 
 class _DesktopToolbar extends StatelessWidget {
-  const _DesktopToolbar({required this.controller, required this.onPickMonth});
+  const _DesktopToolbar({
+    required this.controller,
+    required this.onPickMonth,
+    required this.onAddDriver,
+  });
 
   final InventoryController controller;
   final VoidCallback onPickMonth;
+  final VoidCallback onAddDriver;
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +126,11 @@ class _DesktopToolbar extends StatelessWidget {
         borderRadius: BorderRadius.circular(Dimens.radiusXS),
         border: Border.all(color: AppColor.border),
       ),
-      child: _FiltersToolbar(controller: controller, onPickMonth: onPickMonth),
+      child: _FiltersToolbar(
+        controller: controller,
+        onPickMonth: onPickMonth,
+        onAddDriver: onAddDriver,
+      ),
     );
   }
 }
@@ -999,10 +996,15 @@ Future<DateTime?> _showMonthYearPickerDialog(
 }
 
 class _FiltersToolbar extends StatelessWidget {
-  const _FiltersToolbar({required this.controller, required this.onPickMonth});
+  const _FiltersToolbar({
+    required this.controller,
+    required this.onPickMonth,
+    required this.onAddDriver,
+  });
 
   final InventoryController controller;
   final VoidCallback onPickMonth;
+  final VoidCallback onAddDriver;
 
   @override
   Widget build(BuildContext context) {
@@ -1011,7 +1013,7 @@ class _FiltersToolbar extends StatelessWidget {
       final monthLabel = '${_monthNames[selected.month - 1]} ${selected.year}';
       final bool isUnclaimedOnly = controller.showUnclaimedOnly.value;
 
-      Widget buildCommands() {
+      Widget buildFilters() {
         return Wrap(
           spacing: Dimens.spacingSM,
           runSpacing: Dimens.spacingXS,
@@ -1037,9 +1039,23 @@ class _FiltersToolbar extends StatelessWidget {
         );
       }
 
+      Widget buildPrimaryAction() {
+        return fluent.FilledButton(
+          onPressed: onAddDriver,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, size: 16),
+              SizedBox(width: Dimens.spacingXXS),
+              Text('Add Driver'),
+            ],
+          ),
+        );
+      }
+
       return LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth < 720) {
+          if (constraints.maxWidth < 860) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -1049,14 +1065,20 @@ class _FiltersToolbar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(Dimens.radiusMD),
                 ),
                 const SizedBox(height: Dimens.spacingSM),
-                buildCommands(),
+                Row(
+                  children: [
+                    Expanded(child: buildFilters()),
+                    buildPrimaryAction(),
+                  ],
+                ),
               ],
             );
           }
 
           return Row(
             children: [
-              Expanded(
+              SizedBox(
+                width: 360,
                 child: HeaderSearchField(
                   hint: AppString.searchHint,
                   onChanged: controller.setSearch,
@@ -1064,7 +1086,9 @@ class _FiltersToolbar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: Dimens.spacingMD),
-              Flexible(child: buildCommands()),
+              Expanded(child: buildFilters()),
+              const SizedBox(width: Dimens.spacingMD),
+              buildPrimaryAction(),
             ],
           );
         },

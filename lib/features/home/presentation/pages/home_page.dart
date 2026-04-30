@@ -21,13 +21,6 @@ class HomePage extends GetView<HomeController> {
     return DesktopShell(
       title: 'Home',
       subtitle: 'Trip overview and dispatch records',
-      actions: [
-        FilledButton.icon(
-          onPressed: () => _showAddTripMainDialog(context, controller),
-          icon: const Icon(Icons.add),
-          label: const Text('New Trip'),
-        ),
-      ],
       toolbar: Container(
         height: 64,
         padding: const EdgeInsets.all(Dimens.spacingSM),
@@ -38,12 +31,23 @@ class HomePage extends GetView<HomeController> {
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 360,
+            Expanded(
               child: HeaderSearchField(
                 hint: AppString.searchHint,
                 onChanged: controller.setSearch,
                 borderRadius: BorderRadius.circular(Dimens.radiusXS),
+              ),
+            ),
+            const SizedBox(width: Dimens.spacingMD),
+            fluent.FilledButton(
+              onPressed: () => _showAddTripMainDialog(context, controller),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, size: 16),
+                  SizedBox(width: Dimens.spacingXXS),
+                  Text('New Trip'),
+                ],
               ),
             ),
           ],
