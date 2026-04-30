@@ -31,6 +31,8 @@ part 'app_database.g.dart';
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase._internal() : super(_openConnection());
+  AppDatabase.forTesting(super.executor);
+
   static final AppDatabase _instance = AppDatabase._internal();
   factory AppDatabase() => _instance;
 

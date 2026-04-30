@@ -4,7 +4,9 @@ import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/resources/strings.dart';
 
 class InventoryController extends GetxController {
-  final AppDatabase db = AppDatabase();
+  InventoryController({AppDatabase? database}) : db = database ?? AppDatabase();
+
+  final AppDatabase db;
 
   final Rx<DateTime> selectedDate = Rx<DateTime>(DateTime.now());
   final RxList<Driver> drivers = <Driver>[].obs;

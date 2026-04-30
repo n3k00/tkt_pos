@@ -100,7 +100,7 @@ class AppString {
   // Trip/Home page
   static const String noTripMainRecords = 'No records in Trip Main.';
 
-  // Payment statuses (MM)
-  static const String paymentPending = '????????????';
-  static const String paymentPaid = '????????????'; // adjust if needed in app
+  // Payment statuses
+  static const String paymentPending = 'Pending';
+  static const String paymentPaid = 'Paid';
 }
