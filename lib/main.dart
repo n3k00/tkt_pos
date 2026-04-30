@@ -40,6 +40,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: AppString.title,
       debugShowCheckedModeBanner: false,
+      defaultTransition: Transition.noTransition,
+      transitionDuration: Duration.zero,
       theme: ThemeData(
         useMaterial3: true,
         primaryColor: AppColor.primary,
