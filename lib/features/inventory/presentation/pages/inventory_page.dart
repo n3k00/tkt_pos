@@ -11,11 +11,10 @@ import 'package:tkt_pos/features/inventory/presentation/dialogs/driver_dialogs.d
 import 'package:tkt_pos/features/inventory/presentation/dialogs/transaction_dialogs.dart';
 import 'package:tkt_pos/features/inventory/presentation/widgets/transaction_actions_menu.dart';
 import 'package:tkt_pos/features/inventory/presentation/widgets/driver_actions_menu.dart';
-import 'package:tkt_pos/widgets/app_drawer.dart';
-import 'package:tkt_pos/widgets/edge_drawer_opener.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
+import 'package:tkt_pos/widgets/desktop_shell.dart';
 
 const _monthNames = <String>[
   'Jan',
@@ -45,115 +44,87 @@ class InventoryPage extends GetView<InventoryController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.surfaceBackground,
-      drawer: const AppDrawer(),
-      drawerEnableOpenDragGesture: true,
-      drawerEdgeDragWidth: 80,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showAddDriverDialog(context, controller),
-        icon: const Icon(Icons.add),
-        label: const Text('Driver'),
+    return DesktopShell(
+      title: AppString.inventory,
+      subtitle: 'Drivers, parcels, collection status, and payout tracking',
+      actions: [
+        FilledButton.icon(
+          onPressed: () => showAddDriverDialog(context, controller),
+          icon: const Icon(Icons.add),
+          label: const Text('Add Driver'),
+        ),
+      ],
+      toolbar: _DesktopToolbar(
+        controller: controller,
+        onPickMonth: () => _openMonthPicker(context),
       ),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Dimens.spacingXL,
-                vertical: Dimens.spacingMD,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const PageHeader(
-                    title: AppString.inventory,
-                    crumbs: ['Inventory'],
-                    showBack: false,
-                  ),
-                  const SizedBox(height: Dimens.spacingMD),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(Dimens.spacingMD),
-                    decoration: BoxDecoration(
-                      color: AppColor.white,
-                      borderRadius: BorderRadius.circular(Dimens.radiusMD),
-                      border: Border.all(color: AppColor.border),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColor.textPrimary.withValues(alpha: 0.04),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: _FiltersToolbar(
-                      controller: controller,
-                      onPickMonth: () => _openMonthPicker(context),
-                    ),
-                  ),
-                  const SizedBox(height: Dimens.spacingMD),
-                  Expanded(
-                    child: Obx(() {
-                      if (controller.isLoading.value) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      final all = controller.drivers;
-                      if (all.isEmpty) {
-                        return const Center(child: Text(AppString.noDrivers));
-                      }
-                      final selectedMonth = controller.selectedDate.value;
-                      final monthFiltered = all
-                          .where(
-                            (d) =>
-                                d.date.year == selectedMonth.year &&
-                                d.date.month == selectedMonth.month,
-                          )
-                          .toList(growable: false);
-                      if (monthFiltered.isEmpty) {
-                        return const Center(child: Text(AppString.noResults));
-                      }
-                      final q = controller.searchQuery.value.trim();
-                      final bool filterByRows =
-                          controller.showUnclaimedOnly.value || q.isNotEmpty;
-                      final filteredDrivers = filterByRows
-                          ? monthFiltered
-                                .where(
-                                  (d) => controller
-                                      .filteredTransactionsForDriver(d.id)
-                                      .isNotEmpty,
-                                )
-                                .toList(growable: false)
-                          : monthFiltered;
+      child: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final all = controller.drivers;
+        if (all.isEmpty) {
+          return const Center(child: Text(AppString.noDrivers));
+        }
+        final selectedMonth = controller.selectedDate.value;
+        final monthFiltered = all
+            .where(
+              (d) =>
+                  d.date.year == selectedMonth.year &&
+                  d.date.month == selectedMonth.month,
+            )
+            .toList(growable: false);
+        if (monthFiltered.isEmpty) {
+          return const Center(child: Text(AppString.noResults));
+        }
+        final q = controller.searchQuery.value.trim();
+        final bool filterByRows =
+            controller.showUnclaimedOnly.value || q.isNotEmpty;
+        final filteredDrivers = filterByRows
+            ? monthFiltered
+                  .where(
+                    (d) => controller
+                        .filteredTransactionsForDriver(d.id)
+                        .isNotEmpty,
+                  )
+                  .toList(growable: false)
+            : monthFiltered;
 
-                      if (filteredDrivers.isEmpty) {
-                        return const Center(child: Text(AppString.noResults));
-                      }
+        if (filteredDrivers.isEmpty) {
+          return const Center(child: Text(AppString.noResults));
+        }
 
-                      return ListView.separated(
-                        padding: const EdgeInsets.only(
-                          bottom: Dimens.spacingXL,
-                        ),
-                        itemCount: filteredDrivers.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: Dimens.spacingLG),
-                        itemBuilder: (context, index) {
-                          final d = filteredDrivers[index];
-                          return _DriverSection(
-                            driver: d,
-                            controller: controller,
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          EdgeDrawerOpener(),
-        ],
+        return ListView.separated(
+          padding: const EdgeInsets.only(bottom: Dimens.spacingXL),
+          itemCount: filteredDrivers.length,
+          separatorBuilder: (_, __) => const SizedBox(height: Dimens.spacingMD),
+          itemBuilder: (context, index) {
+            final d = filteredDrivers[index];
+            return _DriverSection(driver: d, controller: controller);
+          },
+        );
+      }),
+    );
+  }
+}
+
+class _DesktopToolbar extends StatelessWidget {
+  const _DesktopToolbar({required this.controller, required this.onPickMonth});
+
+  final InventoryController controller;
+  final VoidCallback onPickMonth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 64,
+      padding: const EdgeInsets.all(Dimens.spacingSM),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: AppColor.border),
       ),
+      child: _FiltersToolbar(controller: controller, onPickMonth: onPickMonth),
     );
   }
 }
