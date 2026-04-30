@@ -73,12 +73,6 @@ class _EditTransactionDialogState extends State<_EditTransactionDialog> {
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) {
-      AppSnackBars.show(
-        context,
-        title: AppString.dialogWarning,
-        message: AppString.dialogPhoneOrNumberRequired,
-        type: AppSnackbarType.warning,
-      );
       return;
     }
 
@@ -111,39 +105,45 @@ class _EditTransactionDialogState extends State<_EditTransactionDialog> {
     }
   }
 
+  void _cancel() => Navigator.of(context).pop();
+
   @override
   Widget build(BuildContext context) {
-    return fluent.ContentDialog(
-      constraints: const BoxConstraints(maxWidth: 680),
-      title: const Text(AppString.dialogEditTransaction),
-      content: Material(
-        type: MaterialType.transparency,
-        child: _TransactionFormBody(
-          formKey: _formKey,
-          customerCtrl: _customerCtrl,
-          phoneCtrl: _phoneCtrl,
-          parcelCtrl: _parcelCtrl,
-          numberCtrl: _numberCtrl,
-          chargesCtrl: _chargesCtrl,
-          cashAdvanceCtrl: _cashAdvanceCtrl,
-          paymentStatus: _paymentStatus,
-          cashAdvanceLabel: AppString.colCashAdvance,
-          phoneRequiredMessage: AppString.dialogPhoneRequired,
-          onPaymentStatusChanged: (value) => setState(() {
-            _paymentStatus = value ?? _paymentStatus;
-          }),
+    return _DesktopDialogShortcuts(
+      onCancel: _cancel,
+      onSubmit: _save,
+      child: fluent.ContentDialog(
+        constraints: const BoxConstraints(maxWidth: 820),
+        title: const Text(AppString.dialogEditTransaction),
+        content: _DesktopDialogContent(
+          child: _TransactionFormBody(
+            formKey: _formKey,
+            customerCtrl: _customerCtrl,
+            phoneCtrl: _phoneCtrl,
+            parcelCtrl: _parcelCtrl,
+            numberCtrl: _numberCtrl,
+            chargesCtrl: _chargesCtrl,
+            cashAdvanceCtrl: _cashAdvanceCtrl,
+            paymentStatus: _paymentStatus,
+            cashAdvanceLabel: AppString.colCashAdvance,
+            phoneRequiredMessage: AppString.dialogPhoneRequired,
+            onSubmit: _save,
+            onPaymentStatusChanged: (value) => setState(() {
+              _paymentStatus = value ?? _paymentStatus;
+            }),
+          ),
         ),
+        actions: [
+          fluent.Button(
+            onPressed: _cancel,
+            child: const Text(AppString.dialogCancel),
+          ),
+          fluent.FilledButton(
+            onPressed: _save,
+            child: const Text(AppString.dialogSave),
+          ),
+        ],
       ),
-      actions: [
-        fluent.Button(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text(AppString.dialogCancel),
-        ),
-        fluent.FilledButton(
-          onPressed: _save,
-          child: const Text(AppString.dialogSave),
-        ),
-      ],
     );
   }
 }
@@ -160,6 +160,7 @@ class _TransactionFormBody extends StatelessWidget {
     required this.paymentStatus,
     required this.cashAdvanceLabel,
     required this.phoneRequiredMessage,
+    required this.onSubmit,
     required this.onPaymentStatusChanged,
   });
 
@@ -173,95 +174,131 @@ class _TransactionFormBody extends StatelessWidget {
   final String paymentStatus;
   final String cashAdvanceLabel;
   final String phoneRequiredMessage;
+  final VoidCallback onSubmit;
   final ValueChanged<String?> onPaymentStatusChanged;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 600,
-      child: SingleChildScrollView(
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _DialogTextField(
-                controller: customerCtrl,
-                labelText: AppString.colCustomerName,
-                prefixIcon: Icons.person_outline,
-              ),
-              const SizedBox(height: Dimens.spacingSM),
-              _DialogTextField(
-                controller: phoneCtrl,
-                labelText: AppString.colPhone,
-                prefixIcon: Icons.phone_outlined,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (v) => _requiredValidator(v, phoneRequiredMessage),
-              ),
-              const SizedBox(height: Dimens.spacingSM),
-              _DialogTextField(
-                controller: parcelCtrl,
-                labelText: AppString.colParcelType,
-                prefixIcon: Icons.local_shipping_outlined,
-              ),
-              const SizedBox(height: Dimens.spacingSM),
-              _DialogTextField(
-                controller: numberCtrl,
-                labelText: AppString.colNumber,
-                prefixIcon: Icons.confirmation_number_outlined,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (v) => _requiredValidator(v, 'Number is required'),
-              ),
-              const SizedBox(height: Dimens.spacingSM),
-              _DialogTextField(
-                controller: chargesCtrl,
-                labelText: AppString.colCharges,
-                prefixIcon: Icons.attach_money,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
-                ],
-              ),
-              const SizedBox(height: Dimens.spacingSM),
-              DropdownButtonFormField<String>(
-                initialValue: paymentStatus,
-                items: const [
-                  DropdownMenuItem(
-                    value: AppString.paymentPaid,
-                    child: Text(AppString.paymentPaid),
+    return Form(
+      key: formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _DialogSection(
+            title: 'Customer',
+            child: Row(
+              children: [
+                Expanded(
+                  child: _DialogTextField(
+                    controller: customerCtrl,
+                    labelText: AppString.colCustomerName,
+                    prefixIcon: Icons.person_outline,
+                    autofocus: true,
                   ),
-                  DropdownMenuItem(
-                    value: AppString.paymentPending,
-                    child: Text(AppString.paymentPending),
+                ),
+                const SizedBox(width: Dimens.spacingSM),
+                Expanded(
+                  child: _DialogTextField(
+                    controller: phoneCtrl,
+                    labelText: AppString.colPhone,
+                    prefixIcon: Icons.phone_outlined,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (v) =>
+                        _requiredValidator(v, phoneRequiredMessage),
                   ),
-                ],
-                onChanged: onPaymentStatusChanged,
-                decoration: _dialogInputDecoration(
-                  context,
-                  labelText: AppString.colPaymentStatus,
-                  prefixIcon: Icons.payments_outlined,
-                  contentPadding: Dimens.inputPadding14,
                 ),
-              ),
-              const SizedBox(height: Dimens.spacingSM),
-              _DialogTextField(
-                controller: cashAdvanceCtrl,
-                labelText: cashAdvanceLabel,
-                prefixIcon: Icons.savings_outlined,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          const SizedBox(height: Dimens.spacingMD),
+          _DialogSection(
+            title: 'Parcel',
+            child: Row(
+              children: [
+                Expanded(
+                  child: _DialogTextField(
+                    controller: parcelCtrl,
+                    labelText: AppString.colParcelType,
+                    prefixIcon: Icons.local_shipping_outlined,
+                  ),
+                ),
+                const SizedBox(width: Dimens.spacingSM),
+                Expanded(
+                  child: _DialogTextField(
+                    controller: numberCtrl,
+                    labelText: AppString.colNumber,
+                    prefixIcon: Icons.confirmation_number_outlined,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (v) =>
+                        _requiredValidator(v, 'Number is required'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: Dimens.spacingMD),
+          _DialogSection(
+            title: 'Payment',
+            child: Row(
+              children: [
+                Expanded(
+                  child: _DialogTextField(
+                    controller: chargesCtrl,
+                    labelText: AppString.colCharges,
+                    prefixIcon: Icons.attach_money,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: Dimens.spacingSM),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: paymentStatus,
+                    items: const [
+                      DropdownMenuItem(
+                        value: AppString.paymentPaid,
+                        child: Text(AppString.paymentPaid),
+                      ),
+                      DropdownMenuItem(
+                        value: AppString.paymentPending,
+                        child: Text(AppString.paymentPending),
+                      ),
+                    ],
+                    onChanged: onPaymentStatusChanged,
+                    decoration: _dialogInputDecoration(
+                      context,
+                      labelText: AppString.colPaymentStatus,
+                      prefixIcon: Icons.payments_outlined,
+                      contentPadding: Dimens.inputPadding14,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: Dimens.spacingSM),
+                Expanded(
+                  child: _DialogTextField(
+                    controller: cashAdvanceCtrl,
+                    labelText: cashAdvanceLabel,
+                    prefixIcon: Icons.savings_outlined,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
+                    ],
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => onSubmit(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -275,6 +312,9 @@ class _DialogTextField extends StatelessWidget {
     this.keyboardType,
     this.inputFormatters,
     this.validator,
+    this.autofocus = false,
+    this.textInputAction = TextInputAction.next,
+    this.onFieldSubmitted,
   });
 
   final TextEditingController controller;
@@ -283,13 +323,19 @@ class _DialogTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final FormFieldValidator<String>? validator;
+  final bool autofocus;
+  final TextInputAction textInputAction;
+  final ValueChanged<String>? onFieldSubmitted;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      autofocus: autofocus,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
       inputFormatters: inputFormatters,
+      onFieldSubmitted: onFieldSubmitted,
       autovalidateMode: validator == null
           ? AutovalidateMode.disabled
           : AutovalidateMode.onUserInteraction,
@@ -306,6 +352,107 @@ class _DialogTextField extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DialogSection extends StatelessWidget {
+  const _DialogSection({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(Dimens.spacingMD),
+      decoration: BoxDecoration(
+        color: AppColor.surfaceBackground,
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: AppColor.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppColor.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: Dimens.spacingSM),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _DesktopDialogContent extends StatelessWidget {
+  const _DesktopDialogContent({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      type: MaterialType.transparency,
+      child: SizedBox(
+        width: 740,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 560),
+          child: SingleChildScrollView(child: child),
+        ),
+      ),
+    );
+  }
+}
+
+class _DesktopDialogShortcuts extends StatelessWidget {
+  const _DesktopDialogShortcuts({
+    required this.child,
+    required this.onCancel,
+    required this.onSubmit,
+  });
+
+  final Widget child;
+  final VoidCallback onCancel;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.escape): _CancelDialogIntent(),
+        SingleActivator(LogicalKeyboardKey.enter): _SubmitDialogIntent(),
+      },
+      child: Actions(
+        actions: {
+          _CancelDialogIntent: CallbackAction<_CancelDialogIntent>(
+            onInvoke: (_) {
+              onCancel();
+              return null;
+            },
+          ),
+          _SubmitDialogIntent: CallbackAction<_SubmitDialogIntent>(
+            onInvoke: (_) {
+              onSubmit();
+              return null;
+            },
+          ),
+        },
+        child: Focus(autofocus: true, child: child),
+      ),
+    );
+  }
+}
+
+class _CancelDialogIntent extends Intent {
+  const _CancelDialogIntent();
+}
+
+class _SubmitDialogIntent extends Intent {
+  const _SubmitDialogIntent();
 }
 
 InputDecoration _dialogInputDecoration(
@@ -870,12 +1017,6 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) {
-      AppSnackBars.show(
-        context,
-        title: AppString.dialogWarning,
-        message: AppString.snackbarClaimValidation,
-        type: AppSnackbarType.warning,
-      );
       return;
     }
 
@@ -906,13 +1047,14 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
+    void cancel() => Navigator.of(context).pop();
+    return _DesktopDialogShortcuts(
+      onCancel: cancel,
+      onSubmit: _save,
       child: fluent.ContentDialog(
-        constraints: const BoxConstraints(maxWidth: 680),
+        constraints: const BoxConstraints(maxWidth: 820),
         title: const Text(AppString.dialogAddTransaction),
-        content: Material(
-          type: MaterialType.transparency,
+        content: _DesktopDialogContent(
           child: _TransactionFormBody(
             formKey: _formKey,
             customerCtrl: _customerCtrl,
@@ -924,6 +1066,7 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
             paymentStatus: _paymentStatus,
             cashAdvanceLabel: AppString.dialogCashAdvanceOptional,
             phoneRequiredMessage: AppString.dialogPhoneRequiredMm,
+            onSubmit: _save,
             onPaymentStatusChanged: (value) => setState(() {
               _paymentStatus = value ?? _paymentStatus;
             }),
@@ -931,7 +1074,7 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
         ),
         actions: [
           fluent.Button(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: cancel,
             child: const Text(AppString.dialogCancel),
           ),
           fluent.FilledButton(
