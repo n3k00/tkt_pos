@@ -1,6 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/home/presentation/controllers/home_controller.dart';
 import 'package:tkt_pos/resources/colors.dart';
@@ -12,6 +11,7 @@ import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/widgets/desktop_shell.dart';
+import 'package:tkt_pos/widgets/desktop_form_dialog.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -168,107 +168,86 @@ Future<void> _showAddTripMainDialog(
               );
             }
 
-            return _HomeDialogShortcuts(
+            return DesktopFormDialog(
               onCancel: () => Navigator.of(ctx).pop(),
               onSubmit: save,
-              child: fluent.ContentDialog(
-                constraints: const BoxConstraints(maxWidth: 720),
-                title: const Text('New Trip'),
-                content: Material(
-                  type: MaterialType.transparency,
-                  child: SizedBox(
-                    width: 640,
-                    child: Form(
-                      key: formKey,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      child: Container(
-                        padding: const EdgeInsets.all(Dimens.spacingMD),
-                        decoration: BoxDecoration(
-                          color: AppColor.surfaceBackground,
-                          borderRadius: BorderRadius.circular(Dimens.radiusXS),
-                          border: Border.all(color: AppColor.border),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: nameCtrl,
-                                autofocus: true,
-                                textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(
-                                  labelText: 'Driver Name',
-                                  border: OutlineInputBorder(),
-                                  isDense: true,
-                                ),
-                                validator: (v) =>
-                                    (v == null || v.trim().isEmpty)
-                                    ? 'Required'
-                                    : null,
-                              ),
-                            ),
-                            const SizedBox(width: Dimens.spacingSM),
-                            Expanded(
-                              child: TextFormField(
-                                controller: carCtrl,
-                                keyboardType: TextInputType.text,
-                                textInputAction: TextInputAction.done,
-                                onFieldSubmitted: (_) => save(),
-                                decoration: const InputDecoration(
-                                  labelText: 'Car ID',
-                                  border: OutlineInputBorder(),
-                                  isDense: true,
-                                ),
-                                validator: (v) =>
-                                    (v == null || v.trim().isEmpty)
-                                    ? 'Required'
-                                    : null,
-                              ),
-                            ),
-                            const SizedBox(width: Dimens.spacingSM),
-                            SizedBox(
-                              width: 180,
-                              child: ListTile(
-                                dense: true,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: Dimens.borderRadiusInput,
-                                  side: const BorderSide(
-                                    color: AppColor.border,
-                                  ),
-                                ),
-                                title: const Text('Date'),
-                                subtitle: Text(Format.date(date)),
-                                trailing: const Icon(
-                                  Icons.calendar_month_outlined,
-                                ),
-                                onTap: () async {
-                                  final picked = await showDatePicker(
-                                    context: ctx,
-                                    initialDate: date,
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime(2100),
-                                  );
-                                  if (picked != null) {
-                                    setState(() => date = picked);
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
+              maxWidth: 720,
+              contentWidth: 640,
+              title: const Text('New Trip'),
+              actions: [
+                fluent.Button(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Cancel'),
+                ),
+                fluent.FilledButton(onPressed: save, child: const Text('Save')),
+              ],
+              child: Form(
+                key: formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: DesktopFormSection(
+                  title: 'Trip',
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: nameCtrl,
+                          autofocus: true,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(
+                            labelText: 'Driver Name',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
                         ),
                       ),
-                    ),
+                      const SizedBox(width: Dimens.spacingSM),
+                      Expanded(
+                        child: TextFormField(
+                          controller: carCtrl,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => save(),
+                          decoration: const InputDecoration(
+                            labelText: 'Car ID',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: Dimens.spacingSM),
+                      SizedBox(
+                        width: 180,
+                        child: ListTile(
+                          dense: true,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: Dimens.borderRadiusInput,
+                            side: const BorderSide(color: AppColor.border),
+                          ),
+                          title: const Text('Date'),
+                          subtitle: Text(Format.date(date)),
+                          trailing: const Icon(Icons.calendar_month_outlined),
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: ctx,
+                              initialDate: date,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) {
+                              setState(() => date = picked);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                actions: [
-                  fluent.Button(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('Cancel'),
-                  ),
-                  fluent.FilledButton(
-                    onPressed: save,
-                    child: const Text('Save'),
-                  ),
-                ],
               ),
             );
           },
@@ -279,53 +258,6 @@ Future<void> _showAddTripMainDialog(
     nameCtrl.dispose();
     carCtrl.dispose();
   }
-}
-
-class _HomeDialogShortcuts extends StatelessWidget {
-  const _HomeDialogShortcuts({
-    required this.child,
-    required this.onCancel,
-    required this.onSubmit,
-  });
-
-  final Widget child;
-  final VoidCallback onCancel;
-  final VoidCallback onSubmit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Shortcuts(
-      shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.escape): _CancelHomeDialogIntent(),
-        SingleActivator(LogicalKeyboardKey.enter): _SubmitHomeDialogIntent(),
-      },
-      child: Actions(
-        actions: {
-          _CancelHomeDialogIntent: CallbackAction<_CancelHomeDialogIntent>(
-            onInvoke: (_) {
-              onCancel();
-              return null;
-            },
-          ),
-          _SubmitHomeDialogIntent: CallbackAction<_SubmitHomeDialogIntent>(
-            onInvoke: (_) {
-              onSubmit();
-              return null;
-            },
-          ),
-        },
-        child: Focus(autofocus: true, child: child),
-      ),
-    );
-  }
-}
-
-class _CancelHomeDialogIntent extends Intent {
-  const _CancelHomeDialogIntent();
-}
-
-class _SubmitHomeDialogIntent extends Intent {
-  const _SubmitHomeDialogIntent();
 }
 
 class _HomeEmptyState extends StatelessWidget {

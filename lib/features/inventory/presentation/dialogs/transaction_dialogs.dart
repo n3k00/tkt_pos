@@ -10,6 +10,7 @@ import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/widgets/app_snackbar.dart';
+import 'package:tkt_pos/widgets/desktop_form_dialog.dart';
 
 Future<void> showEditTransactionDialog(
   BuildContext context,
@@ -109,40 +110,35 @@ class _EditTransactionDialogState extends State<_EditTransactionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return _DesktopDialogShortcuts(
+    return DesktopFormDialog(
       onCancel: _cancel,
       onSubmit: _save,
-      child: fluent.ContentDialog(
-        constraints: const BoxConstraints(maxWidth: 820),
-        title: const Text(AppString.dialogEditTransaction),
-        content: _DesktopDialogContent(
-          child: _TransactionFormBody(
-            formKey: _formKey,
-            customerCtrl: _customerCtrl,
-            phoneCtrl: _phoneCtrl,
-            parcelCtrl: _parcelCtrl,
-            numberCtrl: _numberCtrl,
-            chargesCtrl: _chargesCtrl,
-            cashAdvanceCtrl: _cashAdvanceCtrl,
-            paymentStatus: _paymentStatus,
-            cashAdvanceLabel: AppString.colCashAdvance,
-            phoneRequiredMessage: AppString.dialogPhoneRequired,
-            onSubmit: _save,
-            onPaymentStatusChanged: (value) => setState(() {
-              _paymentStatus = value ?? _paymentStatus;
-            }),
-          ),
+      title: const Text(AppString.dialogEditTransaction),
+      actions: [
+        fluent.Button(
+          onPressed: _cancel,
+          child: const Text(AppString.dialogCancel),
         ),
-        actions: [
-          fluent.Button(
-            onPressed: _cancel,
-            child: const Text(AppString.dialogCancel),
-          ),
-          fluent.FilledButton(
-            onPressed: _save,
-            child: const Text(AppString.dialogSave),
-          ),
-        ],
+        fluent.FilledButton(
+          onPressed: _save,
+          child: const Text(AppString.dialogSave),
+        ),
+      ],
+      child: _TransactionFormBody(
+        formKey: _formKey,
+        customerCtrl: _customerCtrl,
+        phoneCtrl: _phoneCtrl,
+        parcelCtrl: _parcelCtrl,
+        numberCtrl: _numberCtrl,
+        chargesCtrl: _chargesCtrl,
+        cashAdvanceCtrl: _cashAdvanceCtrl,
+        paymentStatus: _paymentStatus,
+        cashAdvanceLabel: AppString.colCashAdvance,
+        phoneRequiredMessage: AppString.dialogPhoneRequired,
+        onSubmit: _save,
+        onPaymentStatusChanged: (value) => setState(() {
+          _paymentStatus = value ?? _paymentStatus;
+        }),
       ),
     );
   }
@@ -184,7 +180,7 @@ class _TransactionFormBody extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _DialogSection(
+          DesktopFormSection(
             title: 'Customer',
             child: Row(
               children: [
@@ -212,7 +208,7 @@ class _TransactionFormBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Dimens.spacingMD),
-          _DialogSection(
+          DesktopFormSection(
             title: 'Parcel',
             child: Row(
               children: [
@@ -239,7 +235,7 @@ class _TransactionFormBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Dimens.spacingMD),
-          _DialogSection(
+          DesktopFormSection(
             title: 'Payment',
             child: Row(
               children: [
@@ -352,107 +348,6 @@ class _DialogTextField extends StatelessWidget {
       ),
     );
   }
-}
-
-class _DialogSection extends StatelessWidget {
-  const _DialogSection({required this.title, required this.child});
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(Dimens.spacingMD),
-      decoration: BoxDecoration(
-        color: AppColor.surfaceBackground,
-        borderRadius: BorderRadius.circular(Dimens.radiusXS),
-        border: Border.all(color: AppColor.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColor.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: Dimens.spacingSM),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _DesktopDialogContent extends StatelessWidget {
-  const _DesktopDialogContent({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: SizedBox(
-        width: 740,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 560),
-          child: SingleChildScrollView(child: child),
-        ),
-      ),
-    );
-  }
-}
-
-class _DesktopDialogShortcuts extends StatelessWidget {
-  const _DesktopDialogShortcuts({
-    required this.child,
-    required this.onCancel,
-    required this.onSubmit,
-  });
-
-  final Widget child;
-  final VoidCallback onCancel;
-  final VoidCallback onSubmit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Shortcuts(
-      shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.escape): _CancelDialogIntent(),
-        SingleActivator(LogicalKeyboardKey.enter): _SubmitDialogIntent(),
-      },
-      child: Actions(
-        actions: {
-          _CancelDialogIntent: CallbackAction<_CancelDialogIntent>(
-            onInvoke: (_) {
-              onCancel();
-              return null;
-            },
-          ),
-          _SubmitDialogIntent: CallbackAction<_SubmitDialogIntent>(
-            onInvoke: (_) {
-              onSubmit();
-              return null;
-            },
-          ),
-        },
-        child: Focus(autofocus: true, child: child),
-      ),
-    );
-  }
-}
-
-class _CancelDialogIntent extends Intent {
-  const _CancelDialogIntent();
-}
-
-class _SubmitDialogIntent extends Intent {
-  const _SubmitDialogIntent();
 }
 
 InputDecoration _dialogInputDecoration(
@@ -1048,40 +943,35 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
   @override
   Widget build(BuildContext context) {
     void cancel() => Navigator.of(context).pop();
-    return _DesktopDialogShortcuts(
+    return DesktopFormDialog(
       onCancel: cancel,
       onSubmit: _save,
-      child: fluent.ContentDialog(
-        constraints: const BoxConstraints(maxWidth: 820),
-        title: const Text(AppString.dialogAddTransaction),
-        content: _DesktopDialogContent(
-          child: _TransactionFormBody(
-            formKey: _formKey,
-            customerCtrl: _customerCtrl,
-            phoneCtrl: _phoneCtrl,
-            parcelCtrl: _parcelCtrl,
-            numberCtrl: _numberCtrl,
-            chargesCtrl: _chargesCtrl,
-            cashAdvanceCtrl: _cashAdvanceCtrl,
-            paymentStatus: _paymentStatus,
-            cashAdvanceLabel: AppString.dialogCashAdvanceOptional,
-            phoneRequiredMessage: AppString.dialogPhoneRequiredMm,
-            onSubmit: _save,
-            onPaymentStatusChanged: (value) => setState(() {
-              _paymentStatus = value ?? _paymentStatus;
-            }),
-          ),
+      title: const Text(AppString.dialogAddTransaction),
+      actions: [
+        fluent.Button(
+          onPressed: cancel,
+          child: const Text(AppString.dialogCancel),
         ),
-        actions: [
-          fluent.Button(
-            onPressed: cancel,
-            child: const Text(AppString.dialogCancel),
-          ),
-          fluent.FilledButton(
-            onPressed: _save,
-            child: const Text(AppString.dialogSave),
-          ),
-        ],
+        fluent.FilledButton(
+          onPressed: _save,
+          child: const Text(AppString.dialogSave),
+        ),
+      ],
+      child: _TransactionFormBody(
+        formKey: _formKey,
+        customerCtrl: _customerCtrl,
+        phoneCtrl: _phoneCtrl,
+        parcelCtrl: _parcelCtrl,
+        numberCtrl: _numberCtrl,
+        chargesCtrl: _chargesCtrl,
+        cashAdvanceCtrl: _cashAdvanceCtrl,
+        paymentStatus: _paymentStatus,
+        cashAdvanceLabel: AppString.dialogCashAdvanceOptional,
+        phoneRequiredMessage: AppString.dialogPhoneRequiredMm,
+        onSubmit: _save,
+        onPaymentStatusChanged: (value) => setState(() {
+          _paymentStatus = value ?? _paymentStatus;
+        }),
       ),
     );
   }

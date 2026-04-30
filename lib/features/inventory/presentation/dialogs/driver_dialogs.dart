@@ -1,12 +1,12 @@
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/resources/strings.dart';
+import 'package:tkt_pos/widgets/desktop_form_dialog.dart';
 
 Future<void> showEditDriverDialog(
   BuildContext context,
@@ -32,42 +32,39 @@ Future<void> showEditDriverDialog(
               if (ctx.mounted) Navigator.of(ctx).pop();
             }
 
-            return _DriverDialogShortcuts(
+            return DesktopFormDialog(
               onCancel: () => Navigator.of(ctx).pop(),
               onSubmit: save,
-              child: fluent.ContentDialog(
-                constraints: const BoxConstraints(maxWidth: 680),
-                title: const Text(AppString.dialogEditDriver),
-                content: _DriverDialogContent(
-                  child: Form(
-                    key: formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    child: _DriverFormFields(
-                      nameController: nameController,
-                      date: date,
-                      onSubmit: save,
-                      onPickDate: () async {
-                        final picked = await showDatePicker(
-                          context: ctx,
-                          initialDate: date,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                        );
-                        if (picked != null) setState(() => date = picked);
-                      },
-                    ),
-                  ),
+              maxWidth: 680,
+              contentWidth: 600,
+              title: const Text(AppString.dialogEditDriver),
+              actions: [
+                fluent.Button(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text(AppString.dialogCancel),
                 ),
-                actions: [
-                  fluent.Button(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text(AppString.dialogCancel),
-                  ),
-                  fluent.FilledButton(
-                    onPressed: save,
-                    child: const Text(AppString.dialogSave),
-                  ),
-                ],
+                fluent.FilledButton(
+                  onPressed: save,
+                  child: const Text(AppString.dialogSave),
+                ),
+              ],
+              child: Form(
+                key: formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: _DriverFormFields(
+                  nameController: nameController,
+                  date: date,
+                  onSubmit: save,
+                  onPickDate: () async {
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: date,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) setState(() => date = picked);
+                  },
+                ),
               ),
             );
           },
@@ -102,42 +99,39 @@ Future<void> showAddDriverDialog(
               );
             }
 
-            return _DriverDialogShortcuts(
+            return DesktopFormDialog(
               onCancel: () => Navigator.of(ctx).pop(),
               onSubmit: save,
-              child: fluent.ContentDialog(
-                constraints: const BoxConstraints(maxWidth: 680),
-                title: const Text(AppString.dialogAddDriver),
-                content: _DriverDialogContent(
-                  child: Form(
-                    key: formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    child: _DriverFormFields(
-                      nameController: nameController,
-                      date: date,
-                      onSubmit: save,
-                      onPickDate: () async {
-                        final picked = await showDatePicker(
-                          context: ctx,
-                          initialDate: date,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                        );
-                        if (picked != null) setState(() => date = picked);
-                      },
-                    ),
-                  ),
+              maxWidth: 680,
+              contentWidth: 600,
+              title: const Text(AppString.dialogAddDriver),
+              actions: [
+                fluent.Button(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text(AppString.dialogCancel),
                 ),
-                actions: [
-                  fluent.Button(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text(AppString.dialogCancel),
-                  ),
-                  fluent.FilledButton(
-                    onPressed: save,
-                    child: const Text(AppString.dialogSave),
-                  ),
-                ],
+                fluent.FilledButton(
+                  onPressed: save,
+                  child: const Text(AppString.dialogSave),
+                ),
+              ],
+              child: Form(
+                key: formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: _DriverFormFields(
+                  nameController: nameController,
+                  date: date,
+                  onSubmit: save,
+                  onPickDate: () async {
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: date,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) setState(() => date = picked);
+                  },
+                ),
               ),
             );
           },
@@ -164,14 +158,8 @@ class _DriverFormFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(Dimens.spacingMD),
-      decoration: BoxDecoration(
-        color: AppColor.surfaceBackground,
-        borderRadius: BorderRadius.circular(Dimens.radiusXS),
-        border: Border.all(color: AppColor.border),
-      ),
+    return DesktopFormSection(
+      title: 'Driver',
       child: Row(
         children: [
           Expanded(
@@ -218,65 +206,4 @@ class _DriverFormFields extends StatelessWidget {
     final yyyy = date.year.toString().padLeft(4, '0');
     return '$dd/$mm/$yyyy';
   }
-}
-
-class _DriverDialogContent extends StatelessWidget {
-  const _DriverDialogContent({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: SizedBox(width: 600, child: child),
-    );
-  }
-}
-
-class _DriverDialogShortcuts extends StatelessWidget {
-  const _DriverDialogShortcuts({
-    required this.child,
-    required this.onCancel,
-    required this.onSubmit,
-  });
-
-  final Widget child;
-  final VoidCallback onCancel;
-  final VoidCallback onSubmit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Shortcuts(
-      shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.escape): _CancelDriverDialogIntent(),
-        SingleActivator(LogicalKeyboardKey.enter): _SubmitDriverDialogIntent(),
-      },
-      child: Actions(
-        actions: {
-          _CancelDriverDialogIntent: CallbackAction<_CancelDriverDialogIntent>(
-            onInvoke: (_) {
-              onCancel();
-              return null;
-            },
-          ),
-          _SubmitDriverDialogIntent: CallbackAction<_SubmitDriverDialogIntent>(
-            onInvoke: (_) {
-              onSubmit();
-              return null;
-            },
-          ),
-        },
-        child: Focus(autofocus: true, child: child),
-      ),
-    );
-  }
-}
-
-class _CancelDriverDialogIntent extends Intent {
-  const _CancelDriverDialogIntent();
-}
-
-class _SubmitDriverDialogIntent extends Intent {
-  const _SubmitDriverDialogIntent();
 }
