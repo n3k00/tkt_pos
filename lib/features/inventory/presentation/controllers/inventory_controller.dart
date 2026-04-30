@@ -11,6 +11,7 @@ class InventoryController extends GetxController {
   final Rx<DateTime> selectedDate = Rx<DateTime>(DateTime.now());
   final RxList<Driver> drivers = <Driver>[].obs;
   final Rx<int?> selectedDriverId = Rx<int?>(null);
+  final Rx<int?> selectedTransactionId = Rx<int?>(null);
   final RxList<DbTransaction> transactions =
       <DbTransaction>[].obs; // legacy single-driver view
   final RxMap<int, List<DbTransaction>> transactionsByDriver =
@@ -66,11 +67,19 @@ class InventoryController extends GetxController {
               ]))
               .get();
       drivers.assignAll(list);
+      if (selectedDriverId.value == null ||
+          !list.any((driver) => driver.id == selectedDriverId.value)) {
+        selectedDriverId.value = list.isEmpty ? null : list.first.id;
+      }
     } finally {
       isLoading.value = false;
     }
     // Populate transactions map without blocking the loader
     await Future.wait(list.map((d) => loadTransactionsByDriverToMap(d.id)));
+    final driverId = selectedDriverId.value;
+    if (driverId != null) {
+      _selectFirstTransactionForDriver(driverId);
+    }
   }
 
   Future<void> setDate(DateTime date) async {
@@ -82,9 +91,20 @@ class InventoryController extends GetxController {
     selectedDriverId.value = driverId;
     if (driverId != null) {
       await loadTransactionsByDriver(driverId);
+      _selectFirstTransactionForDriver(driverId);
     } else {
       transactions.clear();
+      selectedTransactionId.value = null;
     }
+  }
+
+  void selectDriver(int driverId) {
+    selectedDriverId.value = driverId;
+    _selectFirstTransactionForDriver(driverId);
+  }
+
+  void selectTransaction(int? transactionId) {
+    selectedTransactionId.value = transactionId;
   }
 
   Future<void> loadTransactionsByDriver(int driverId) async {
@@ -100,6 +120,12 @@ class InventoryController extends GetxController {
   Future<void> loadTransactionsByDriverToMap(int driverId) async {
     final list = await db.getTransactionsByDriver(driverId);
     transactionsByDriver[driverId] = list;
+    if (selectedDriverId.value == driverId) {
+      final selectedId = selectedTransactionId.value;
+      if (selectedId == null || !list.any((tx) => tx.id == selectedId)) {
+        selectedTransactionId.value = list.isEmpty ? null : list.first.id;
+      }
+    }
     // trigger RxMap update
     transactionsByDriver.refresh();
   }
@@ -212,7 +238,7 @@ class InventoryController extends GetxController {
     required bool pickedUp,
     String? comment,
   }) async {
-    await db.insertTransaction(
+    final id = await db.insertTransaction(
       TransactionsCompanion.insert(
         customerName: drift.Value(customerName),
         phone: phone,
@@ -229,6 +255,7 @@ class InventoryController extends GetxController {
       ),
     );
     await loadTransactionsByDriverToMap(driverId);
+    selectedTransactionId.value = id;
   }
 
   Future<void> updateTransaction(TransactionsCompanion companion) async {
@@ -268,6 +295,12 @@ class InventoryController extends GetxController {
       );
     });
     await loadTransactionsByDriverToMap(tx.driverId);
+    selectedTransactionId.value = tx.id;
+  }
+
+  void _selectFirstTransactionForDriver(int driverId) {
+    final list = transactionsByDriver[driverId] ?? const <DbTransaction>[];
+    selectedTransactionId.value = list.isEmpty ? null : list.first.id;
   }
 
   double? totalChargesForDriver(int driverId) {

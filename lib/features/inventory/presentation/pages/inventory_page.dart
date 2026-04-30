@@ -106,10 +106,25 @@ class InventoryPage extends GetView<InventoryController> {
           (driver) => driver.id == selectedId,
           orElse: () => filteredDrivers.first,
         );
+        final transactions = controller.filteredTransactionsForDriver(
+          selectedDriver.id,
+        );
+        final selectedTransactionId = controller.selectedTransactionId.value;
+        DbTransaction? selectedTransaction;
+        for (final tx in transactions) {
+          if (tx.id == selectedTransactionId) {
+            selectedTransaction = tx;
+            break;
+          }
+        }
+        selectedTransaction ??= transactions.isEmpty
+            ? null
+            : transactions.first;
 
         return _InventoryMasterDetail(
           drivers: filteredDrivers,
           selectedDriver: selectedDriver,
+          selectedTransaction: selectedTransaction,
           controller: controller,
         );
       }),
@@ -142,11 +157,13 @@ class _InventoryMasterDetail extends StatelessWidget {
   const _InventoryMasterDetail({
     required this.drivers,
     required this.selectedDriver,
+    required this.selectedTransaction,
     required this.controller,
   });
 
   final List<Driver> drivers;
   final Driver selectedDriver;
+  final DbTransaction? selectedTransaction;
   final InventoryController controller;
 
   @override
@@ -169,10 +186,16 @@ class _InventoryMasterDetail extends StatelessWidget {
             children: [
               _DetailHeader(driver: selectedDriver, controller: controller),
               const SizedBox(height: Dimens.spacingSM),
+              _TransactionSelectionPanel(
+                transaction: selectedTransaction,
+                controller: controller,
+              ),
+              const SizedBox(height: Dimens.spacingSM),
               Expanded(
                 child: _DriverTransactionsTable(
                   controller: controller,
                   driverId: selectedDriver.id,
+                  selectedTransactionId: selectedTransaction?.id,
                 ),
               ),
               const SizedBox(height: Dimens.spacingSM),
@@ -216,8 +239,7 @@ class _DriversTable extends StatelessWidget {
           for (final driver in drivers)
             DataRow(
               selected: driver.id == selectedDriverId,
-              onSelectChanged: (_) =>
-                  controller.selectedDriverId.value = driver.id,
+              onSelectChanged: (_) => controller.selectDriver(driver.id),
               cells: [
                 DataCell(
                   SizedBox(
@@ -313,6 +335,111 @@ class _DetailHeader extends StatelessWidget {
           ),
           const SizedBox(width: Dimens.spacingXS),
           DriverActionsMenu(driver: driver, controller: controller),
+        ],
+      ),
+    );
+  }
+}
+
+class _TransactionSelectionPanel extends StatelessWidget {
+  const _TransactionSelectionPanel({
+    required this.transaction,
+    required this.controller,
+  });
+
+  final DbTransaction? transaction;
+  final InventoryController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final tx = transaction;
+    final bool hasSelection = tx != null;
+    return Container(
+      height: 58,
+      padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingSM),
+      decoration: BoxDecoration(
+        color: hasSelection
+            ? AppColor.drawerItemSelectedBackground
+            : AppColor.surfaceBackground,
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(
+          color: hasSelection ? AppColor.primaryLight : AppColor.border,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: hasSelection
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${tx.customerName ?? '-'}  |  ${AppString.colNumber}: ${tx.number}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColor.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: Dimens.spacingMicro),
+                      Text(
+                        '${tx.phone}  |  ${tx.parcelType}  |  ${Format.money(tx.charges)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColor.textSecondary,
+                          fontSize: Dimens.fontSizeCaption,
+                        ),
+                      ),
+                    ],
+                  )
+                : const Text(
+                    'Select a transaction to enable actions',
+                    style: TextStyle(color: AppColor.textSecondary),
+                  ),
+          ),
+          fluent.Button(
+            onPressed: hasSelection
+                ? () => showViewTransactionDialog(context, tx)
+                : null,
+            child: const Text('View'),
+          ),
+          const SizedBox(width: Dimens.spacingXS),
+          fluent.Button(
+            onPressed: hasSelection
+                ? () => showEditTransactionDialog(
+                    context,
+                    controller,
+                    tx.driverId,
+                    tx,
+                  )
+                : null,
+            child: const Text('Edit'),
+          ),
+          const SizedBox(width: Dimens.spacingXS),
+          fluent.Button(
+            onPressed: hasSelection && !tx.pickedUp
+                ? () => showClaimTransactionDialog(context, controller, tx)
+                : null,
+            child: const Text('Claim'),
+          ),
+          const SizedBox(width: Dimens.spacingXS),
+          fluent.Button(
+            onPressed: hasSelection
+                ? () async {
+                    final ok = await confirmDeleteTransaction(context, tx);
+                    if (ok == true) {
+                      await controller.db.deleteTransactionById(tx.id);
+                      await controller.loadTransactionsByDriverToMap(
+                        tx.driverId,
+                      );
+                    }
+                  }
+                : null,
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
@@ -453,9 +580,11 @@ class _DriverTransactionsTable extends StatefulWidget {
   const _DriverTransactionsTable({
     required this.controller,
     required this.driverId,
+    required this.selectedTransactionId,
   });
   final InventoryController controller;
   final int driverId;
+  final int? selectedTransactionId;
 
   @override
   State<_DriverTransactionsTable> createState() =>
@@ -469,6 +598,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
       final rows = widget.controller.filteredTransactionsForDriver(
         widget.driverId,
       );
+      final selectedTransactionId = widget.selectedTransactionId;
       Driver? driverInfo;
       for (final d in widget.controller.drivers) {
         if (d.id == widget.driverId) {
@@ -629,19 +759,22 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
             ...rows.asMap().entries.map((e) {
               final idx = e.key + 1;
               final t = e.value;
-              void openDetails() => showViewTransactionDialog(context, t);
+              void selectTransaction() =>
+                  widget.controller.selectTransaction(t.id);
               return DataRow(
+                selected: t.id == selectedTransactionId,
+                onSelectChanged: (_) => selectTransaction(),
                 cells: [
                   DataCell(
                     Padding(
                       padding: const EdgeInsets.only(left: Dimens.spacingMD),
                       child: Text(idx.toString(), style: cellStyle),
                     ),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     Text(t.customerName ?? '-', style: cellStyle),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     SizedBox(
@@ -654,7 +787,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     SizedBox(
@@ -667,7 +800,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     SizedBox(
@@ -680,7 +813,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     SizedBox(
@@ -694,7 +827,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     SizedBox(
@@ -707,7 +840,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     SizedBox(
@@ -721,7 +854,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     SizedBox(
@@ -757,7 +890,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         ),
                       ),
                     ),
-                    onTap: openDetails,
+                    onTap: selectTransaction,
                   ),
                   DataCell(
                     Align(
