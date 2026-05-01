@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:file_selector/file_selector.dart' as fs;
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -23,6 +24,11 @@ class ReportsController extends GetxController {
   final Rx<ReportGroupMode> groupMode = ReportGroupMode.driver.obs;
   final RxList<DbTransaction> all = <DbTransaction>[].obs;
   final RxMap<int, Driver> driverMap = <int, Driver>{}.obs;
+  final RxList<Driver> payoutDrivers = <Driver>[].obs;
+  final RxMap<int, List<DbTransaction>> payoutTransactionsByDriver =
+      <int, List<DbTransaction>>{}.obs;
+  final RxList<PayoutHistoryReportItem> payoutHistory =
+      <PayoutHistoryReportItem>[].obs;
 
   @override
   void onInit() {
@@ -33,6 +39,8 @@ class ReportsController extends GetxController {
   Future<void> load() async {
     final start = _dayStart(startDate.value);
     final end = _dayStart(endDate.value).add(const Duration(days: 1));
+    await _loadPayoutDrivers(start, end);
+    await _loadPayoutHistory(start, end);
     var list = await db.getReportedTransactions(start, end);
     if (list.isEmpty) {
       // Backfill once for this day from picked-up transactions, then reload
@@ -139,6 +147,81 @@ class ReportsController extends GetxController {
   int get totalCount => filtered.length;
 
   String driverNameFor(int driverId) => driverMap[driverId]?.name ?? '-';
+
+  double get payoutCurrentPayableTotal =>
+      payoutSummaries.fold(0.0, (sum, item) => sum + item.currentPayable);
+
+  double get payoutPaidOutTotal =>
+      payoutSummaries.fold(0.0, (sum, item) => sum + item.paidOutAmount);
+
+  double get payoutPendingTotal =>
+      payoutSummaries.fold(0.0, (sum, item) => sum + item.pendingAmount);
+
+  double get payoutDifferenceTotal =>
+      payoutSummaries.fold(0.0, (sum, item) => sum + item.difference);
+
+  double get payoutRoomFeeTotal =>
+      payoutDrivers.fold(0, (sum, driver) => sum + (driver.roomFee ?? 0));
+
+  double get payoutLaborFeeTotal =>
+      payoutDrivers.fold(0, (sum, driver) => sum + (driver.laborFee ?? 0));
+
+  double get payoutDeliveryFeeTotal =>
+      payoutDrivers.fold(0, (sum, driver) => sum + (driver.deliveryFee ?? 0));
+
+  int get payoutPaidDriverCount =>
+      payoutDrivers.where((driver) => driver.paidOut).length;
+
+  int get payoutPendingDriverCount =>
+      payoutDrivers.where((driver) => !driver.paidOut).length;
+
+  int get payoutHistoryMarkCount =>
+      payoutHistory.where((item) => item.row.action == 'mark_paid_out').length;
+
+  int get payoutHistoryReopenCount =>
+      payoutHistory.where((item) => item.row.action == 'reopen_payout').length;
+
+  double get payoutHistoryMarkedTotal => payoutHistory
+      .where((item) => item.row.action == 'mark_paid_out')
+      .fold(0.0, (sum, item) => sum + (item.row.newPaidOutAmount ?? 0));
+
+  List<PayoutDriverSummary> get payoutDifferenceSummaries {
+    return payoutSummaries
+        .where((summary) => summary.driver.paidOut && summary.difference != 0)
+        .toList(growable: false);
+  }
+
+  List<PayoutDriverSummary> get payoutSummaries {
+    final q = search.value.trim().toLowerCase();
+    final drivers = q.isEmpty
+        ? payoutDrivers
+        : payoutDrivers
+              .where((driver) => driver.name.toLowerCase().contains(q))
+              .toList(growable: false);
+    final summaries = [
+      for (final driver in drivers)
+        PayoutDriverSummary.from(
+          driver,
+          payoutTransactionsByDriver[driver.id] ?? const <DbTransaction>[],
+        ),
+    ];
+    summaries.sort((a, b) {
+      final status = a.driver.paidOut == b.driver.paidOut
+          ? 0
+          : a.driver.paidOut
+          ? 1
+          : -1;
+      if (status != 0) return status;
+      return a.driver.date.compareTo(b.driver.date);
+    });
+    return summaries;
+  }
+
+  List<PayoutDriverSummary> get feeMissingSummaries {
+    return payoutSummaries
+        .where((summary) => summary.hasMissingFee)
+        .toList(growable: false);
+  }
 
   List<ReportGroupSummary> get groupedSummaries {
     final totals = <String, ReportGroupSummary>{};
@@ -299,6 +382,51 @@ class ReportsController extends GetxController {
     }
   }
 
+  Future<void> _loadPayoutDrivers(DateTime start, DateTime exclusiveEnd) async {
+    final drivers =
+        await (db.select(db.drivers)..where(
+              (d) =>
+                  d.date.isBiggerOrEqualValue(start) &
+                  d.date.isSmallerThanValue(exclusiveEnd),
+            ))
+            .get();
+    payoutDrivers.assignAll(drivers);
+
+    final transactionEntries = await Future.wait(
+      drivers.map((driver) async {
+        final transactions = await db.getTransactionsByDriver(driver.id);
+        return MapEntry(driver.id, transactions);
+      }),
+    );
+    payoutTransactionsByDriver.assignAll(Map.fromEntries(transactionEntries));
+  }
+
+  Future<void> _loadPayoutHistory(DateTime start, DateTime exclusiveEnd) async {
+    final rows =
+        await (db.select(db.driverPayoutHistory)
+              ..where(
+                (h) =>
+                    h.changedAt.isBiggerOrEqualValue(start) &
+                    h.changedAt.isSmallerThanValue(exclusiveEnd),
+              )
+              ..orderBy([(h) => OrderingTerm.desc(h.changedAt)]))
+            .get();
+    if (rows.isEmpty) {
+      payoutHistory.clear();
+      return;
+    }
+
+    final driverIds = rows.map((row) => row.driverId).toSet().toList();
+    final drivers = await (db.select(
+      db.drivers,
+    )..where((d) => d.id.isIn(driverIds))).get();
+    final driverById = {for (final driver in drivers) driver.id: driver};
+    payoutHistory.assignAll([
+      for (final row in rows)
+        PayoutHistoryReportItem(row: row, driver: driverById[row.driverId]),
+    ]);
+  }
+
   bool _isPending(String status) {
     final s = status.trim();
     // Support multiple encodings / fallbacks
@@ -322,6 +450,72 @@ class ReportsController extends GetxController {
     final start = _fileDate(startDate.value);
     final end = _fileDate(endDate.value);
     return start == end ? start : '$start-$end';
+  }
+}
+
+class PayoutHistoryReportItem {
+  const PayoutHistoryReportItem({required this.row, required this.driver});
+
+  final DriverPayoutHistoryData row;
+  final Driver? driver;
+}
+
+class PayoutDriverSummary {
+  const PayoutDriverSummary({
+    required this.driver,
+    required this.transactionCount,
+    required this.totalCharges,
+    required this.cashAdvance,
+    required this.currentPayable,
+    required this.paidOutAmount,
+    required this.difference,
+  });
+
+  final Driver driver;
+  final int transactionCount;
+  final double totalCharges;
+  final double cashAdvance;
+  final double currentPayable;
+  final double paidOutAmount;
+  final double difference;
+
+  bool get hasRoomFee => (driver.roomFee ?? 0) > 0;
+  bool get hasLaborFee => (driver.laborFee ?? 0) > 0;
+  bool get hasDeliveryFee => (driver.deliveryFee ?? 0) > 0;
+  bool get hasMissingFee => !hasRoomFee || !hasLaborFee || !hasDeliveryFee;
+  double get pendingAmount => driver.paidOut ? 0 : currentPayable;
+
+  factory PayoutDriverSummary.from(
+    Driver driver,
+    List<DbTransaction> transactions,
+  ) {
+    final totalCharges = transactions.fold<double>(
+      0,
+      (sum, transaction) => sum + transaction.charges,
+    );
+    final cashAdvance = transactions.fold<double>(
+      0,
+      (sum, transaction) => sum + transaction.cashAdvance,
+    );
+    final deductions =
+        (driver.roomFee ?? 0) +
+        (driver.laborFee ?? 0) +
+        (driver.deliveryFee ?? 0);
+    final currentPayable = totalCharges - deductions;
+    final paidOutAmount = driver.paidOut
+        ? driver.paidOutAmount ?? currentPayable
+        : 0.0;
+    final difference = driver.paidOut ? currentPayable - paidOutAmount : 0.0;
+
+    return PayoutDriverSummary(
+      driver: driver,
+      transactionCount: transactions.length,
+      totalCharges: totalCharges,
+      cashAdvance: cashAdvance,
+      currentPayable: currentPayable,
+      paidOutAmount: paidOutAmount,
+      difference: difference,
+    );
   }
 }
 

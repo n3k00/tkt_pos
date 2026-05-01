@@ -12,15 +12,26 @@ class TransactionActionsMenu extends StatelessWidget {
     super.key,
     required this.transaction,
     required this.driverId,
+    required this.driver,
     required this.controller,
   });
 
   final DbTransaction transaction;
   final int driverId;
+  final Driver? driver;
   final InventoryController controller;
 
   @override
   Widget build(BuildContext context) {
+    final canEdit = controller.canEditTransaction(
+      transaction: transaction,
+      driver: driver,
+    );
+    final canDelete = controller.canDeleteTransaction(
+      transaction: transaction,
+      driver: driver,
+    );
+
     return GlassPopupMenuButton<String>(
       tooltip: 'Transaction actions',
       itemBuilder: (context) => [
@@ -28,17 +39,22 @@ class TransactionActionsMenu extends StatelessWidget {
           value: 'view',
           child: _MenuRow(icon: Icons.visibility_outlined, label: 'View'),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
+          enabled: canEdit,
           value: 'edit',
-          child: _MenuRow(icon: Icons.edit_outlined, label: 'Edit'),
+          child: const _MenuRow(icon: Icons.edit_outlined, label: 'Edit'),
         ),
         PopupMenuItem(
+          enabled: canDelete,
           value: 'delete',
           child: Row(
             children: [
               const Icon(Icons.delete_outline, size: 18, color: AppColor.error),
               const SizedBox(width: Dimens.spacingXS),
-              Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text(
+                'Delete',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ],
           ),
         ),
@@ -59,8 +75,10 @@ class TransactionActionsMenu extends StatelessWidget {
           case 'delete':
             final ok = await confirmDeleteTransaction(context, transaction);
             if (ok == true) {
-              await controller.db.deleteTransactionById(transaction.id);
-              await controller.loadTransactionsByDriverToMap(driverId);
+              await controller.deleteTransaction(
+                transaction: transaction,
+                driver: driver,
+              );
             }
             break;
         }

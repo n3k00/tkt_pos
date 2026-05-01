@@ -297,14 +297,29 @@ class _DetailHeader extends StatelessWidget {
             ),
           ),
           fluent.Button(
-            onPressed: () =>
-                showAddTransactionDialog(context, controller, driver.id),
+            onPressed: controller.canAddTransaction(driver)
+                ? () => showAddTransactionDialog(context, controller, driver.id)
+                : null,
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.add, size: 16),
                 SizedBox(width: Dimens.spacingXXS),
                 Text(AppString.addTransaction),
+              ],
+            ),
+          ),
+          const SizedBox(width: Dimens.spacingXS),
+          fluent.Button(
+            onPressed: controller.canEditDriverFees(driver)
+                ? () => showEditDriverFeesDialog(context, controller, driver)
+                : null,
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.price_change_outlined, size: 16),
+                SizedBox(width: Dimens.spacingXXS),
+                Text('Edit fees'),
               ],
             ),
           ),
@@ -330,7 +345,13 @@ class _DriverSummaryStrip extends StatelessWidget {
     final roomFee = driver.roomFee ?? 0;
     final laborFee = driver.laborFee ?? 0;
     final deliveryFee = driver.deliveryFee ?? 0;
-    final paidOutAmount = totalCharges - roomFee - laborFee - deliveryFee;
+    final currentPayoutAmount = totalCharges - roomFee - laborFee - deliveryFee;
+    final displayPaidOutAmount = driver.paidOut
+        ? (driver.paidOutAmount ?? currentPayoutAmount)
+        : currentPayoutAmount;
+    final paidOutDifference = driver.paidOut
+        ? currentPayoutAmount - (driver.paidOutAmount ?? currentPayoutAmount)
+        : 0.0;
 
     return Container(
       height: 74,
@@ -364,8 +385,23 @@ class _DriverSummaryStrip extends StatelessWidget {
           ),
           _SummaryCell(
             label: AppString.driverPaidOutAmount,
-            value: Format.money(paidOutAmount),
+            value: Format.money(displayPaidOutAmount),
+            subValue: driver.paidOutAt == null
+                ? (driver.paidOut ? 'Snapshot saved' : 'Current')
+                : Format.dateTime12(driver.paidOutAt!),
           ),
+          if (driver.paidOut)
+            _SummaryCell(
+              label: 'Difference',
+              value: Format.money(paidOutDifference),
+              valueColor: paidOutDifference == 0
+                  ? AppColor.textPrimary
+                  : paidOutDifference > 0
+                  ? AppColor.error
+                  : AppColor.success,
+            )
+          else
+            const SizedBox.shrink(),
           _CompactStatus(isPaidOut: driver.paidOut),
         ],
       ),
@@ -374,10 +410,17 @@ class _DriverSummaryStrip extends StatelessWidget {
 }
 
 class _SummaryCell extends StatelessWidget {
-  const _SummaryCell({required this.label, required this.value});
+  const _SummaryCell({
+    required this.label,
+    required this.value,
+    this.subValue,
+    this.valueColor,
+  });
 
   final String label;
   final String value;
+  final String? subValue;
+  final Color? valueColor;
 
   @override
   Widget build(BuildContext context) {
@@ -402,11 +445,21 @@ class _SummaryCell extends StatelessWidget {
               value,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColor.textPrimary,
+              style: TextStyle(
+                color: valueColor ?? AppColor.textPrimary,
                 fontWeight: FontWeight.w700,
               ),
             ),
+            if (subValue != null)
+              Text(
+                subValue!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColor.textMuted,
+                  fontSize: Dimens.fontSizeCaption,
+                ),
+              ),
           ],
         ),
       ),
@@ -473,7 +526,6 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
           break;
         }
       }
-      final bool isPaidOut = driverInfo?.paidOut ?? false;
       final bool showSummaryRow =
           !widget.controller.showUnclaimedOnly.value &&
           widget.controller.searchQuery.value.trim().isEmpty;
@@ -485,7 +537,14 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
       final totalCharges = rows.fold<double>(0, (s, t) => s + t.charges);
       final totalAdvance = rows.fold<double>(0, (s, t) => s + t.cashAdvance);
       final double totalDeductions = roomFee + laborFee + deliveryFee;
-      final double paidOutAmount = totalCharges - totalDeductions;
+      final double currentPayoutAmount = totalCharges - totalDeductions;
+      final double displayedPaidOutAmount = (driverInfo?.paidOut ?? false)
+          ? (driverInfo?.paidOutAmount ?? currentPayoutAmount)
+          : currentPayoutAmount;
+      final double paidOutDifference = (driverInfo?.paidOut ?? false)
+          ? currentPayoutAmount -
+                (driverInfo?.paidOutAmount ?? currentPayoutAmount)
+          : 0;
       List<DataRow> buildFeeRows(Driver? info) {
         final feeRows = <DataRow>[];
         void addFee(String label, double? amount) {
@@ -724,7 +783,11 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                     SizedBox(
                       width: AppTableWidths.pickedUp,
                       child: Center(
-                        child: t.pickedUp
+                        child:
+                            !widget.controller.canClaimTransaction(
+                              transaction: t,
+                              driver: driverInfo,
+                            )
                             ? const Icon(Icons.check, color: AppColor.success)
                             : OutlinedButton(
                                 onPressed: () => showClaimTransactionDialog(
@@ -762,6 +825,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                       child: TransactionActionsMenu(
                         transaction: t,
                         driverId: widget.driverId,
+                        driver: driverInfo,
                         controller: widget.controller,
                       ),
                     ),
@@ -850,7 +914,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            Format.money(paidOutAmount),
+                            Format.money(displayedPaidOutAmount),
                             style: headerStyle.copyWith(
                               fontWeight: FontWeight.w700,
                               color: AppColor.textPrimary,
@@ -864,6 +928,75 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                     const DataCell(SizedBox()), // Picked up
                     const DataCell(SizedBox()), // Collect time
                     const DataCell(SizedBox()), // Actions
+                  ],
+                ),
+              if ((driverInfo?.paidOut ?? false) &&
+                  driverInfo?.paidOutAt != null)
+                DataRow(
+                  cells: [
+                    const DataCell(SizedBox()),
+                    DataCell(
+                      Padding(
+                        padding: const EdgeInsets.only(left: Dimens.spacingMD),
+                        child: Text(
+                          'Paid out at',
+                          style: headerStyle.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    DataCell(Text(Format.dateTime12(driverInfo!.paidOutAt!))),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                  ],
+                ),
+              if ((driverInfo?.paidOut ?? false) && paidOutDifference != 0)
+                DataRow(
+                  cells: [
+                    const DataCell(SizedBox()),
+                    DataCell(
+                      Padding(
+                        padding: const EdgeInsets.only(left: Dimens.spacingMD),
+                        child: Text(
+                          'Difference after edits',
+                          style: headerStyle.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    DataCell(
+                      SizedBox(
+                        width: AppTableWidths.charges,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            Format.money(paidOutDifference),
+                            style: headerStyle.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: paidOutDifference > 0
+                                  ? AppColor.error
+                                  : AppColor.success,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
+                    const DataCell(SizedBox()),
                   ],
                 ),
               DataRow(
@@ -881,11 +1014,13 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                   DataCell(
                     Text(
-                      isPaidOut
+                      (driverInfo?.paidOut ?? false)
                           ? AppString.paidOutStatusPaidMm
                           : AppString.paidOutStatusPendingMm,
                       style: cellStyle.copyWith(
-                        color: isPaidOut ? AppColor.success : AppColor.error,
+                        color: (driverInfo?.paidOut ?? false)
+                            ? AppColor.success
+                            : AppColor.error,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

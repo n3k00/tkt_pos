@@ -121,27 +121,36 @@ class DriverPrintController extends GetxController {
   Future<void> saveAdjustments() async {
     final currentDriver = driver.value;
     if (currentDriver == null) return;
+    final paidOutAmount = paidOut.value
+        ? (currentDriver.paidOut
+              ? currentDriver.paidOutAmount ?? netAmount
+              : netAmount)
+        : null;
+    final paidOutAt = paidOut.value
+        ? (currentDriver.paidOut
+              ? currentDriver.paidOutAt ?? DateTime.now()
+              : DateTime.now())
+        : null;
 
     final updatedDriver = currentDriver.copyWith(
       roomFee: drift.Value(roomFeeValue),
       laborFee: drift.Value(laborFeeValue),
       deliveryFee: drift.Value(deliveryFeeValue),
       paidOut: paidOut.value,
+      paidOutAmount: drift.Value(paidOutAmount),
+      paidOutAt: drift.Value(paidOutAt),
     );
 
-    await _db
-        .update(_db.drivers)
-        .replace(
-          DriversCompanion(
-            id: drift.Value(driverId),
-            date: drift.Value(updatedDriver.date),
-            name: drift.Value(updatedDriver.name),
-            roomFee: drift.Value(roomFeeValue),
-            laborFee: drift.Value(laborFeeValue),
-            deliveryFee: drift.Value(deliveryFeeValue),
-            paidOut: drift.Value(paidOut.value),
-          ),
-        );
+    await (_db.update(_db.drivers)..where((d) => d.id.equals(driverId))).write(
+      DriversCompanion(
+        roomFee: drift.Value(roomFeeValue),
+        laborFee: drift.Value(laborFeeValue),
+        deliveryFee: drift.Value(deliveryFeeValue),
+        paidOut: drift.Value(paidOut.value),
+        paidOutAmount: drift.Value(paidOutAmount),
+        paidOutAt: drift.Value(paidOutAt),
+      ),
+    );
     driver.value = updatedDriver;
     if (Get.isRegistered<InventoryController>()) {
       final inventoryController = Get.find<InventoryController>();

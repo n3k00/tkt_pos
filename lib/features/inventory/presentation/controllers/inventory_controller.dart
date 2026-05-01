@@ -174,6 +174,45 @@ class InventoryController extends GetxController {
         .toList(growable: false);
   }
 
+  bool canAddTransaction(Driver driver) {
+    return !driver.paidOut;
+  }
+
+  bool canEditDriver(Driver driver) {
+    return !driver.paidOut;
+  }
+
+  bool canEditDriverFees(Driver driver) {
+    return !driver.paidOut;
+  }
+
+  bool canEditTransaction({
+    required DbTransaction transaction,
+    required Driver? driver,
+  }) {
+    if (driver == null) return false;
+    return !driver.paidOut;
+  }
+
+  bool canDeleteTransaction({
+    required DbTransaction transaction,
+    required Driver? driver,
+  }) {
+    if (driver == null) return false;
+    return !driver.paidOut;
+  }
+
+  bool canClaimTransaction({
+    required DbTransaction transaction,
+    required Driver? driver,
+  }) {
+    return !transaction.pickedUp;
+  }
+
+  Future<List<DriverProfile>> activeDriverProfiles() {
+    return db.getDriverProfiles(includeInactive: false);
+  }
+
   Future<int> addDriver({
     required DateTime date,
     required String name,
@@ -199,17 +238,33 @@ class InventoryController extends GetxController {
     required String name,
   }) async {
     final profileId = await db.getOrCreateDriverProfile(name: name);
-    await db
-        .update(db.drivers)
-        .replace(
-          DriversCompanion(
-            id: drift.Value(id),
-            profileId: drift.Value(profileId),
-            date: drift.Value(date),
-            name: drift.Value(name),
-          ),
-        );
-    await loadAllDrivers();
+    await (db.update(db.drivers)..where((d) => d.id.equals(id))).write(
+      DriversCompanion(
+        profileId: drift.Value(profileId),
+        date: drift.Value(date),
+        name: drift.Value(name),
+      ),
+    );
+    await refreshDriverById(id);
+  }
+
+  Future<void> updateDriverFees({
+    required Driver driver,
+    required double roomFee,
+    required double laborFee,
+    required double deliveryFee,
+  }) async {
+    if (!canEditDriverFees(driver)) {
+      throw StateError('Reopen payout before editing fees.');
+    }
+    await (db.update(db.drivers)..where((d) => d.id.equals(driver.id))).write(
+      DriversCompanion(
+        roomFee: drift.Value(roomFee),
+        laborFee: drift.Value(laborFee),
+        deliveryFee: drift.Value(deliveryFee),
+      ),
+    );
+    await refreshDriverById(driver.id);
   }
 
   Future<void> addTransaction({
@@ -224,6 +279,12 @@ class InventoryController extends GetxController {
     required bool pickedUp,
     String? comment,
   }) async {
+    final driver = await (db.select(
+      db.drivers,
+    )..where((d) => d.id.equals(driverId))).getSingleOrNull();
+    if (driver == null || !canAddTransaction(driver)) {
+      throw StateError('Reopen payout before adding transactions.');
+    }
     await db.insertTransaction(
       TransactionsCompanion.insert(
         customerName: drift.Value(customerName),
@@ -260,6 +321,9 @@ class InventoryController extends GetxController {
     required DbTransaction tx,
     String? comment,
   }) async {
+    if (!canClaimTransaction(transaction: tx, driver: null)) {
+      return;
+    }
     await db.transaction(() async {
       // Partial update: only set pickedUp/comment/updatedAt
       await (db.update(
@@ -282,6 +346,17 @@ class InventoryController extends GetxController {
     await loadTransactionsByDriverToMap(tx.driverId);
   }
 
+  Future<void> deleteTransaction({
+    required DbTransaction transaction,
+    required Driver? driver,
+  }) async {
+    if (!canDeleteTransaction(transaction: transaction, driver: driver)) {
+      throw StateError('Reopen payout before deleting transactions.');
+    }
+    await db.deleteTransactionById(transaction.id);
+    await loadTransactionsByDriverToMap(transaction.driverId);
+  }
+
   double? totalChargesForDriver(int driverId) {
     final list = transactionsByDriver[driverId];
     if (list == null) return 0;
@@ -296,5 +371,76 @@ class InventoryController extends GetxController {
       (sum, t) =>
           sum + (t.paymentStatus == AppString.paymentPaid ? t.charges : 0),
     );
+  }
+
+  double currentPayoutAmountForDriver(Driver driver) {
+    final list = transactionsByDriver[driver.id] ?? const <DbTransaction>[];
+    final totalCharges = list.fold<double>(0, (sum, t) => sum + t.charges);
+    final totalDeductions =
+        (driver.roomFee ?? 0) +
+        (driver.laborFee ?? 0) +
+        (driver.deliveryFee ?? 0);
+    return totalCharges - totalDeductions;
+  }
+
+  double paidOutDifferenceForDriver(Driver driver) {
+    if (!driver.paidOut || driver.paidOutAmount == null) return 0;
+    return currentPayoutAmountForDriver(driver) - driver.paidOutAmount!;
+  }
+
+  Future<void> markDriverPaidOut(Driver driver) async {
+    final amount = currentPayoutAmountForDriver(driver);
+    final paidOutAt = DateTime.now();
+    await db.transaction(() async {
+      await (db.update(db.drivers)..where((d) => d.id.equals(driver.id))).write(
+        DriversCompanion(
+          paidOut: const drift.Value(true),
+          paidOutAmount: drift.Value(amount),
+          paidOutAt: drift.Value(paidOutAt),
+        ),
+      );
+      await db
+          .into(db.driverPayoutHistory)
+          .insert(
+            DriverPayoutHistoryCompanion.insert(
+              driverId: driver.id,
+              action: 'mark_paid_out',
+              previousPaidOut: driver.paidOut,
+              newPaidOut: true,
+              previousPaidOutAmount: drift.Value(driver.paidOutAmount),
+              newPaidOutAmount: drift.Value(amount),
+              previousPaidOutAt: drift.Value(driver.paidOutAt),
+              newPaidOutAt: drift.Value(paidOutAt),
+            ),
+          );
+    });
+    await refreshDriverById(driver.id);
+  }
+
+  Future<void> reopenDriverPayout(Driver driver) async {
+    await db.transaction(() async {
+      await (db.update(db.drivers)..where((d) => d.id.equals(driver.id))).write(
+        const DriversCompanion(
+          paidOut: drift.Value(false),
+          paidOutAmount: drift.Value(null),
+          paidOutAt: drift.Value(null),
+        ),
+      );
+      await db
+          .into(db.driverPayoutHistory)
+          .insert(
+            DriverPayoutHistoryCompanion.insert(
+              driverId: driver.id,
+              action: 'reopen_payout',
+              previousPaidOut: driver.paidOut,
+              newPaidOut: false,
+              previousPaidOutAmount: drift.Value(driver.paidOutAmount),
+              newPaidOutAmount: const drift.Value(null),
+              previousPaidOutAt: drift.Value(driver.paidOutAt),
+              newPaidOutAt: const drift.Value(null),
+            ),
+          );
+    });
+    await refreshDriverById(driver.id);
   }
 }

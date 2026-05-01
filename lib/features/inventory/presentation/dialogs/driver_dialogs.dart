@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
@@ -7,6 +8,99 @@ import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/widgets/desktop_form_dialog.dart';
+
+Future<void> showEditDriverFeesDialog(
+  BuildContext context,
+  InventoryController controller,
+  Driver driver,
+) async {
+  final roomFeeController = TextEditingController(
+    text: (driver.roomFee ?? 0).toStringAsFixed(0),
+  );
+  final laborFeeController = TextEditingController(
+    text: (driver.laborFee ?? 0).toStringAsFixed(0),
+  );
+  final deliveryFeeController = TextEditingController(
+    text: (driver.deliveryFee ?? 0).toStringAsFixed(0),
+  );
+  final formKey = GlobalKey<FormState>();
+
+  double parseAmount(TextEditingController controller) {
+    return double.tryParse(controller.text.trim()) ?? 0;
+  }
+
+  try {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        Future<void> save() async {
+          if (!formKey.currentState!.validate()) return;
+          await controller.updateDriverFees(
+            driver: driver,
+            roomFee: parseAmount(roomFeeController),
+            laborFee: parseAmount(laborFeeController),
+            deliveryFee: parseAmount(deliveryFeeController),
+          );
+          if (ctx.mounted) Navigator.of(ctx).pop();
+        }
+
+        return DesktopFormDialog(
+          onCancel: () => Navigator.of(ctx).pop(),
+          onSubmit: save,
+          maxWidth: 680,
+          contentWidth: 600,
+          title: const Text('Edit fees'),
+          actions: [
+            fluent.Button(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text(AppString.dialogCancel),
+            ),
+            fluent.FilledButton(
+              onPressed: save,
+              child: const Text(AppString.dialogSave),
+            ),
+          ],
+          child: Form(
+            key: formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            child: DesktopFormSection(
+              title: 'Driver fees',
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _FeeTextField(
+                      controller: roomFeeController,
+                      labelText: AppString.driverRoomFee,
+                    ),
+                  ),
+                  const SizedBox(width: Dimens.spacingSM),
+                  Expanded(
+                    child: _FeeTextField(
+                      controller: laborFeeController,
+                      labelText: AppString.driverLaborFee,
+                    ),
+                  ),
+                  const SizedBox(width: Dimens.spacingSM),
+                  Expanded(
+                    child: _FeeTextField(
+                      controller: deliveryFeeController,
+                      labelText: AppString.driverDeliveryFee,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  } finally {
+    roomFeeController.dispose();
+    laborFeeController.dispose();
+    deliveryFeeController.dispose();
+  }
+}
 
 Future<void> showEditDriverDialog(
   BuildContext context,
@@ -80,9 +174,7 @@ Future<void> showAddDriverDialog(
   BuildContext context,
   InventoryController controller,
 ) async {
-  final profiles = await controller.db.getDriverProfiles(
-    includeInactive: false,
-  );
+  final profiles = await controller.activeDriverProfiles();
   if (!context.mounted) return;
   if (profiles.isEmpty) {
     await showDialog(
@@ -230,6 +322,32 @@ class _DriverFormFields extends StatelessWidget {
     final mm = date.month.toString().padLeft(2, '0');
     final yyyy = date.year.toString().padLeft(4, '0');
     return '$dd/$mm/$yyyy';
+  }
+}
+
+class _FeeTextField extends StatelessWidget {
+  const _FeeTextField({required this.controller, required this.labelText});
+
+  final TextEditingController controller;
+  final String labelText;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: OutlineInputBorder(borderRadius: Dimens.borderRadiusInput),
+        isDense: true,
+      ),
+      validator: (value) {
+        final text = value?.trim() ?? '';
+        if (text.isEmpty) return null;
+        return double.tryParse(text) == null ? 'Invalid amount' : null;
+      },
+    );
   }
 }
 

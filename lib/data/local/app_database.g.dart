@@ -614,6 +614,28 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _paidOutAmountMeta = const VerificationMeta(
+    'paidOutAmount',
+  );
+  @override
+  late final GeneratedColumn<double> paidOutAmount = GeneratedColumn<double>(
+    'paid_out_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paidOutAtMeta = const VerificationMeta(
+    'paidOutAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> paidOutAt = GeneratedColumn<DateTime>(
+    'paid_out_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -624,6 +646,8 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
     laborFee,
     deliveryFee,
     paidOut,
+    paidOutAmount,
+    paidOutAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -689,6 +713,21 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
         paidOut.isAcceptableOrUnknown(data['paid_out']!, _paidOutMeta),
       );
     }
+    if (data.containsKey('paid_out_amount')) {
+      context.handle(
+        _paidOutAmountMeta,
+        paidOutAmount.isAcceptableOrUnknown(
+          data['paid_out_amount']!,
+          _paidOutAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paid_out_at')) {
+      context.handle(
+        _paidOutAtMeta,
+        paidOutAt.isAcceptableOrUnknown(data['paid_out_at']!, _paidOutAtMeta),
+      );
+    }
     return context;
   }
 
@@ -730,6 +769,14 @@ class $DriversTable extends Drivers with TableInfo<$DriversTable, Driver> {
         DriftSqlType.bool,
         data['${effectivePrefix}paid_out'],
       )!,
+      paidOutAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}paid_out_amount'],
+      ),
+      paidOutAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}paid_out_at'],
+      ),
     );
   }
 
@@ -748,6 +795,8 @@ class Driver extends DataClass implements Insertable<Driver> {
   final double? laborFee;
   final double? deliveryFee;
   final bool paidOut;
+  final double? paidOutAmount;
+  final DateTime? paidOutAt;
   const Driver({
     required this.id,
     this.profileId,
@@ -757,6 +806,8 @@ class Driver extends DataClass implements Insertable<Driver> {
     this.laborFee,
     this.deliveryFee,
     required this.paidOut,
+    this.paidOutAmount,
+    this.paidOutAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -777,6 +828,12 @@ class Driver extends DataClass implements Insertable<Driver> {
       map['delivery_fee'] = Variable<double>(deliveryFee);
     }
     map['paid_out'] = Variable<bool>(paidOut);
+    if (!nullToAbsent || paidOutAmount != null) {
+      map['paid_out_amount'] = Variable<double>(paidOutAmount);
+    }
+    if (!nullToAbsent || paidOutAt != null) {
+      map['paid_out_at'] = Variable<DateTime>(paidOutAt);
+    }
     return map;
   }
 
@@ -798,6 +855,12 @@ class Driver extends DataClass implements Insertable<Driver> {
           ? const Value.absent()
           : Value(deliveryFee),
       paidOut: Value(paidOut),
+      paidOutAmount: paidOutAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paidOutAmount),
+      paidOutAt: paidOutAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paidOutAt),
     );
   }
 
@@ -815,6 +878,8 @@ class Driver extends DataClass implements Insertable<Driver> {
       laborFee: serializer.fromJson<double?>(json['laborFee']),
       deliveryFee: serializer.fromJson<double?>(json['deliveryFee']),
       paidOut: serializer.fromJson<bool>(json['paidOut']),
+      paidOutAmount: serializer.fromJson<double?>(json['paidOutAmount']),
+      paidOutAt: serializer.fromJson<DateTime?>(json['paidOutAt']),
     );
   }
   @override
@@ -829,6 +894,8 @@ class Driver extends DataClass implements Insertable<Driver> {
       'laborFee': serializer.toJson<double?>(laborFee),
       'deliveryFee': serializer.toJson<double?>(deliveryFee),
       'paidOut': serializer.toJson<bool>(paidOut),
+      'paidOutAmount': serializer.toJson<double?>(paidOutAmount),
+      'paidOutAt': serializer.toJson<DateTime?>(paidOutAt),
     };
   }
 
@@ -841,6 +908,8 @@ class Driver extends DataClass implements Insertable<Driver> {
     Value<double?> laborFee = const Value.absent(),
     Value<double?> deliveryFee = const Value.absent(),
     bool? paidOut,
+    Value<double?> paidOutAmount = const Value.absent(),
+    Value<DateTime?> paidOutAt = const Value.absent(),
   }) => Driver(
     id: id ?? this.id,
     profileId: profileId.present ? profileId.value : this.profileId,
@@ -850,6 +919,10 @@ class Driver extends DataClass implements Insertable<Driver> {
     laborFee: laborFee.present ? laborFee.value : this.laborFee,
     deliveryFee: deliveryFee.present ? deliveryFee.value : this.deliveryFee,
     paidOut: paidOut ?? this.paidOut,
+    paidOutAmount: paidOutAmount.present
+        ? paidOutAmount.value
+        : this.paidOutAmount,
+    paidOutAt: paidOutAt.present ? paidOutAt.value : this.paidOutAt,
   );
   Driver copyWithCompanion(DriversCompanion data) {
     return Driver(
@@ -863,6 +936,10 @@ class Driver extends DataClass implements Insertable<Driver> {
           ? data.deliveryFee.value
           : this.deliveryFee,
       paidOut: data.paidOut.present ? data.paidOut.value : this.paidOut,
+      paidOutAmount: data.paidOutAmount.present
+          ? data.paidOutAmount.value
+          : this.paidOutAmount,
+      paidOutAt: data.paidOutAt.present ? data.paidOutAt.value : this.paidOutAt,
     );
   }
 
@@ -876,7 +953,9 @@ class Driver extends DataClass implements Insertable<Driver> {
           ..write('roomFee: $roomFee, ')
           ..write('laborFee: $laborFee, ')
           ..write('deliveryFee: $deliveryFee, ')
-          ..write('paidOut: $paidOut')
+          ..write('paidOut: $paidOut, ')
+          ..write('paidOutAmount: $paidOutAmount, ')
+          ..write('paidOutAt: $paidOutAt')
           ..write(')'))
         .toString();
   }
@@ -891,6 +970,8 @@ class Driver extends DataClass implements Insertable<Driver> {
     laborFee,
     deliveryFee,
     paidOut,
+    paidOutAmount,
+    paidOutAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -903,7 +984,9 @@ class Driver extends DataClass implements Insertable<Driver> {
           other.roomFee == this.roomFee &&
           other.laborFee == this.laborFee &&
           other.deliveryFee == this.deliveryFee &&
-          other.paidOut == this.paidOut);
+          other.paidOut == this.paidOut &&
+          other.paidOutAmount == this.paidOutAmount &&
+          other.paidOutAt == this.paidOutAt);
 }
 
 class DriversCompanion extends UpdateCompanion<Driver> {
@@ -915,6 +998,8 @@ class DriversCompanion extends UpdateCompanion<Driver> {
   final Value<double?> laborFee;
   final Value<double?> deliveryFee;
   final Value<bool> paidOut;
+  final Value<double?> paidOutAmount;
+  final Value<DateTime?> paidOutAt;
   const DriversCompanion({
     this.id = const Value.absent(),
     this.profileId = const Value.absent(),
@@ -924,6 +1009,8 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     this.laborFee = const Value.absent(),
     this.deliveryFee = const Value.absent(),
     this.paidOut = const Value.absent(),
+    this.paidOutAmount = const Value.absent(),
+    this.paidOutAt = const Value.absent(),
   });
   DriversCompanion.insert({
     this.id = const Value.absent(),
@@ -934,6 +1021,8 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     this.laborFee = const Value.absent(),
     this.deliveryFee = const Value.absent(),
     this.paidOut = const Value.absent(),
+    this.paidOutAmount = const Value.absent(),
+    this.paidOutAt = const Value.absent(),
   }) : date = Value(date),
        name = Value(name);
   static Insertable<Driver> custom({
@@ -945,6 +1034,8 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     Expression<double>? laborFee,
     Expression<double>? deliveryFee,
     Expression<bool>? paidOut,
+    Expression<double>? paidOutAmount,
+    Expression<DateTime>? paidOutAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -955,6 +1046,8 @@ class DriversCompanion extends UpdateCompanion<Driver> {
       if (laborFee != null) 'labor_fee': laborFee,
       if (deliveryFee != null) 'delivery_fee': deliveryFee,
       if (paidOut != null) 'paid_out': paidOut,
+      if (paidOutAmount != null) 'paid_out_amount': paidOutAmount,
+      if (paidOutAt != null) 'paid_out_at': paidOutAt,
     });
   }
 
@@ -967,6 +1060,8 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     Value<double?>? laborFee,
     Value<double?>? deliveryFee,
     Value<bool>? paidOut,
+    Value<double?>? paidOutAmount,
+    Value<DateTime?>? paidOutAt,
   }) {
     return DriversCompanion(
       id: id ?? this.id,
@@ -977,6 +1072,8 @@ class DriversCompanion extends UpdateCompanion<Driver> {
       laborFee: laborFee ?? this.laborFee,
       deliveryFee: deliveryFee ?? this.deliveryFee,
       paidOut: paidOut ?? this.paidOut,
+      paidOutAmount: paidOutAmount ?? this.paidOutAmount,
+      paidOutAt: paidOutAt ?? this.paidOutAt,
     );
   }
 
@@ -1007,6 +1104,12 @@ class DriversCompanion extends UpdateCompanion<Driver> {
     if (paidOut.present) {
       map['paid_out'] = Variable<bool>(paidOut.value);
     }
+    if (paidOutAmount.present) {
+      map['paid_out_amount'] = Variable<double>(paidOutAmount.value);
+    }
+    if (paidOutAt.present) {
+      map['paid_out_at'] = Variable<DateTime>(paidOutAt.value);
+    }
     return map;
   }
 
@@ -1020,7 +1123,668 @@ class DriversCompanion extends UpdateCompanion<Driver> {
           ..write('roomFee: $roomFee, ')
           ..write('laborFee: $laborFee, ')
           ..write('deliveryFee: $deliveryFee, ')
-          ..write('paidOut: $paidOut')
+          ..write('paidOut: $paidOut, ')
+          ..write('paidOutAmount: $paidOutAmount, ')
+          ..write('paidOutAt: $paidOutAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DriverPayoutHistoryTable extends DriverPayoutHistory
+    with TableInfo<$DriverPayoutHistoryTable, DriverPayoutHistoryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DriverPayoutHistoryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _driverIdMeta = const VerificationMeta(
+    'driverId',
+  );
+  @override
+  late final GeneratedColumn<int> driverId = GeneratedColumn<int>(
+    'driver_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES drivers (id)',
+    ),
+  );
+  static const VerificationMeta _actionMeta = const VerificationMeta('action');
+  @override
+  late final GeneratedColumn<String> action = GeneratedColumn<String>(
+    'action',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _previousPaidOutMeta = const VerificationMeta(
+    'previousPaidOut',
+  );
+  @override
+  late final GeneratedColumn<bool> previousPaidOut = GeneratedColumn<bool>(
+    'previous_paid_out',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("previous_paid_out" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _newPaidOutMeta = const VerificationMeta(
+    'newPaidOut',
+  );
+  @override
+  late final GeneratedColumn<bool> newPaidOut = GeneratedColumn<bool>(
+    'new_paid_out',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("new_paid_out" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _previousPaidOutAmountMeta =
+      const VerificationMeta('previousPaidOutAmount');
+  @override
+  late final GeneratedColumn<double> previousPaidOutAmount =
+      GeneratedColumn<double>(
+        'previous_paid_out_amount',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _newPaidOutAmountMeta = const VerificationMeta(
+    'newPaidOutAmount',
+  );
+  @override
+  late final GeneratedColumn<double> newPaidOutAmount = GeneratedColumn<double>(
+    'new_paid_out_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _previousPaidOutAtMeta = const VerificationMeta(
+    'previousPaidOutAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> previousPaidOutAt =
+      GeneratedColumn<DateTime>(
+        'previous_paid_out_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _newPaidOutAtMeta = const VerificationMeta(
+    'newPaidOutAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> newPaidOutAt = GeneratedColumn<DateTime>(
+    'new_paid_out_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _changedAtMeta = const VerificationMeta(
+    'changedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> changedAt = GeneratedColumn<DateTime>(
+    'changed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    driverId,
+    action,
+    previousPaidOut,
+    newPaidOut,
+    previousPaidOutAmount,
+    newPaidOutAmount,
+    previousPaidOutAt,
+    newPaidOutAt,
+    changedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'driver_payout_history';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DriverPayoutHistoryData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('driver_id')) {
+      context.handle(
+        _driverIdMeta,
+        driverId.isAcceptableOrUnknown(data['driver_id']!, _driverIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_driverIdMeta);
+    }
+    if (data.containsKey('action')) {
+      context.handle(
+        _actionMeta,
+        action.isAcceptableOrUnknown(data['action']!, _actionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actionMeta);
+    }
+    if (data.containsKey('previous_paid_out')) {
+      context.handle(
+        _previousPaidOutMeta,
+        previousPaidOut.isAcceptableOrUnknown(
+          data['previous_paid_out']!,
+          _previousPaidOutMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_previousPaidOutMeta);
+    }
+    if (data.containsKey('new_paid_out')) {
+      context.handle(
+        _newPaidOutMeta,
+        newPaidOut.isAcceptableOrUnknown(
+          data['new_paid_out']!,
+          _newPaidOutMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_newPaidOutMeta);
+    }
+    if (data.containsKey('previous_paid_out_amount')) {
+      context.handle(
+        _previousPaidOutAmountMeta,
+        previousPaidOutAmount.isAcceptableOrUnknown(
+          data['previous_paid_out_amount']!,
+          _previousPaidOutAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('new_paid_out_amount')) {
+      context.handle(
+        _newPaidOutAmountMeta,
+        newPaidOutAmount.isAcceptableOrUnknown(
+          data['new_paid_out_amount']!,
+          _newPaidOutAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('previous_paid_out_at')) {
+      context.handle(
+        _previousPaidOutAtMeta,
+        previousPaidOutAt.isAcceptableOrUnknown(
+          data['previous_paid_out_at']!,
+          _previousPaidOutAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('new_paid_out_at')) {
+      context.handle(
+        _newPaidOutAtMeta,
+        newPaidOutAt.isAcceptableOrUnknown(
+          data['new_paid_out_at']!,
+          _newPaidOutAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('changed_at')) {
+      context.handle(
+        _changedAtMeta,
+        changedAt.isAcceptableOrUnknown(data['changed_at']!, _changedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DriverPayoutHistoryData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DriverPayoutHistoryData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      driverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}driver_id'],
+      )!,
+      action: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}action'],
+      )!,
+      previousPaidOut: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}previous_paid_out'],
+      )!,
+      newPaidOut: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}new_paid_out'],
+      )!,
+      previousPaidOutAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}previous_paid_out_amount'],
+      ),
+      newPaidOutAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}new_paid_out_amount'],
+      ),
+      previousPaidOutAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}previous_paid_out_at'],
+      ),
+      newPaidOutAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}new_paid_out_at'],
+      ),
+      changedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}changed_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DriverPayoutHistoryTable createAlias(String alias) {
+    return $DriverPayoutHistoryTable(attachedDatabase, alias);
+  }
+}
+
+class DriverPayoutHistoryData extends DataClass
+    implements Insertable<DriverPayoutHistoryData> {
+  final int id;
+  final int driverId;
+  final String action;
+  final bool previousPaidOut;
+  final bool newPaidOut;
+  final double? previousPaidOutAmount;
+  final double? newPaidOutAmount;
+  final DateTime? previousPaidOutAt;
+  final DateTime? newPaidOutAt;
+  final DateTime changedAt;
+  const DriverPayoutHistoryData({
+    required this.id,
+    required this.driverId,
+    required this.action,
+    required this.previousPaidOut,
+    required this.newPaidOut,
+    this.previousPaidOutAmount,
+    this.newPaidOutAmount,
+    this.previousPaidOutAt,
+    this.newPaidOutAt,
+    required this.changedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['driver_id'] = Variable<int>(driverId);
+    map['action'] = Variable<String>(action);
+    map['previous_paid_out'] = Variable<bool>(previousPaidOut);
+    map['new_paid_out'] = Variable<bool>(newPaidOut);
+    if (!nullToAbsent || previousPaidOutAmount != null) {
+      map['previous_paid_out_amount'] = Variable<double>(previousPaidOutAmount);
+    }
+    if (!nullToAbsent || newPaidOutAmount != null) {
+      map['new_paid_out_amount'] = Variable<double>(newPaidOutAmount);
+    }
+    if (!nullToAbsent || previousPaidOutAt != null) {
+      map['previous_paid_out_at'] = Variable<DateTime>(previousPaidOutAt);
+    }
+    if (!nullToAbsent || newPaidOutAt != null) {
+      map['new_paid_out_at'] = Variable<DateTime>(newPaidOutAt);
+    }
+    map['changed_at'] = Variable<DateTime>(changedAt);
+    return map;
+  }
+
+  DriverPayoutHistoryCompanion toCompanion(bool nullToAbsent) {
+    return DriverPayoutHistoryCompanion(
+      id: Value(id),
+      driverId: Value(driverId),
+      action: Value(action),
+      previousPaidOut: Value(previousPaidOut),
+      newPaidOut: Value(newPaidOut),
+      previousPaidOutAmount: previousPaidOutAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(previousPaidOutAmount),
+      newPaidOutAmount: newPaidOutAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(newPaidOutAmount),
+      previousPaidOutAt: previousPaidOutAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(previousPaidOutAt),
+      newPaidOutAt: newPaidOutAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(newPaidOutAt),
+      changedAt: Value(changedAt),
+    );
+  }
+
+  factory DriverPayoutHistoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DriverPayoutHistoryData(
+      id: serializer.fromJson<int>(json['id']),
+      driverId: serializer.fromJson<int>(json['driverId']),
+      action: serializer.fromJson<String>(json['action']),
+      previousPaidOut: serializer.fromJson<bool>(json['previousPaidOut']),
+      newPaidOut: serializer.fromJson<bool>(json['newPaidOut']),
+      previousPaidOutAmount: serializer.fromJson<double?>(
+        json['previousPaidOutAmount'],
+      ),
+      newPaidOutAmount: serializer.fromJson<double?>(json['newPaidOutAmount']),
+      previousPaidOutAt: serializer.fromJson<DateTime?>(
+        json['previousPaidOutAt'],
+      ),
+      newPaidOutAt: serializer.fromJson<DateTime?>(json['newPaidOutAt']),
+      changedAt: serializer.fromJson<DateTime>(json['changedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'driverId': serializer.toJson<int>(driverId),
+      'action': serializer.toJson<String>(action),
+      'previousPaidOut': serializer.toJson<bool>(previousPaidOut),
+      'newPaidOut': serializer.toJson<bool>(newPaidOut),
+      'previousPaidOutAmount': serializer.toJson<double?>(
+        previousPaidOutAmount,
+      ),
+      'newPaidOutAmount': serializer.toJson<double?>(newPaidOutAmount),
+      'previousPaidOutAt': serializer.toJson<DateTime?>(previousPaidOutAt),
+      'newPaidOutAt': serializer.toJson<DateTime?>(newPaidOutAt),
+      'changedAt': serializer.toJson<DateTime>(changedAt),
+    };
+  }
+
+  DriverPayoutHistoryData copyWith({
+    int? id,
+    int? driverId,
+    String? action,
+    bool? previousPaidOut,
+    bool? newPaidOut,
+    Value<double?> previousPaidOutAmount = const Value.absent(),
+    Value<double?> newPaidOutAmount = const Value.absent(),
+    Value<DateTime?> previousPaidOutAt = const Value.absent(),
+    Value<DateTime?> newPaidOutAt = const Value.absent(),
+    DateTime? changedAt,
+  }) => DriverPayoutHistoryData(
+    id: id ?? this.id,
+    driverId: driverId ?? this.driverId,
+    action: action ?? this.action,
+    previousPaidOut: previousPaidOut ?? this.previousPaidOut,
+    newPaidOut: newPaidOut ?? this.newPaidOut,
+    previousPaidOutAmount: previousPaidOutAmount.present
+        ? previousPaidOutAmount.value
+        : this.previousPaidOutAmount,
+    newPaidOutAmount: newPaidOutAmount.present
+        ? newPaidOutAmount.value
+        : this.newPaidOutAmount,
+    previousPaidOutAt: previousPaidOutAt.present
+        ? previousPaidOutAt.value
+        : this.previousPaidOutAt,
+    newPaidOutAt: newPaidOutAt.present ? newPaidOutAt.value : this.newPaidOutAt,
+    changedAt: changedAt ?? this.changedAt,
+  );
+  DriverPayoutHistoryData copyWithCompanion(DriverPayoutHistoryCompanion data) {
+    return DriverPayoutHistoryData(
+      id: data.id.present ? data.id.value : this.id,
+      driverId: data.driverId.present ? data.driverId.value : this.driverId,
+      action: data.action.present ? data.action.value : this.action,
+      previousPaidOut: data.previousPaidOut.present
+          ? data.previousPaidOut.value
+          : this.previousPaidOut,
+      newPaidOut: data.newPaidOut.present
+          ? data.newPaidOut.value
+          : this.newPaidOut,
+      previousPaidOutAmount: data.previousPaidOutAmount.present
+          ? data.previousPaidOutAmount.value
+          : this.previousPaidOutAmount,
+      newPaidOutAmount: data.newPaidOutAmount.present
+          ? data.newPaidOutAmount.value
+          : this.newPaidOutAmount,
+      previousPaidOutAt: data.previousPaidOutAt.present
+          ? data.previousPaidOutAt.value
+          : this.previousPaidOutAt,
+      newPaidOutAt: data.newPaidOutAt.present
+          ? data.newPaidOutAt.value
+          : this.newPaidOutAt,
+      changedAt: data.changedAt.present ? data.changedAt.value : this.changedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DriverPayoutHistoryData(')
+          ..write('id: $id, ')
+          ..write('driverId: $driverId, ')
+          ..write('action: $action, ')
+          ..write('previousPaidOut: $previousPaidOut, ')
+          ..write('newPaidOut: $newPaidOut, ')
+          ..write('previousPaidOutAmount: $previousPaidOutAmount, ')
+          ..write('newPaidOutAmount: $newPaidOutAmount, ')
+          ..write('previousPaidOutAt: $previousPaidOutAt, ')
+          ..write('newPaidOutAt: $newPaidOutAt, ')
+          ..write('changedAt: $changedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    driverId,
+    action,
+    previousPaidOut,
+    newPaidOut,
+    previousPaidOutAmount,
+    newPaidOutAmount,
+    previousPaidOutAt,
+    newPaidOutAt,
+    changedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DriverPayoutHistoryData &&
+          other.id == this.id &&
+          other.driverId == this.driverId &&
+          other.action == this.action &&
+          other.previousPaidOut == this.previousPaidOut &&
+          other.newPaidOut == this.newPaidOut &&
+          other.previousPaidOutAmount == this.previousPaidOutAmount &&
+          other.newPaidOutAmount == this.newPaidOutAmount &&
+          other.previousPaidOutAt == this.previousPaidOutAt &&
+          other.newPaidOutAt == this.newPaidOutAt &&
+          other.changedAt == this.changedAt);
+}
+
+class DriverPayoutHistoryCompanion
+    extends UpdateCompanion<DriverPayoutHistoryData> {
+  final Value<int> id;
+  final Value<int> driverId;
+  final Value<String> action;
+  final Value<bool> previousPaidOut;
+  final Value<bool> newPaidOut;
+  final Value<double?> previousPaidOutAmount;
+  final Value<double?> newPaidOutAmount;
+  final Value<DateTime?> previousPaidOutAt;
+  final Value<DateTime?> newPaidOutAt;
+  final Value<DateTime> changedAt;
+  const DriverPayoutHistoryCompanion({
+    this.id = const Value.absent(),
+    this.driverId = const Value.absent(),
+    this.action = const Value.absent(),
+    this.previousPaidOut = const Value.absent(),
+    this.newPaidOut = const Value.absent(),
+    this.previousPaidOutAmount = const Value.absent(),
+    this.newPaidOutAmount = const Value.absent(),
+    this.previousPaidOutAt = const Value.absent(),
+    this.newPaidOutAt = const Value.absent(),
+    this.changedAt = const Value.absent(),
+  });
+  DriverPayoutHistoryCompanion.insert({
+    this.id = const Value.absent(),
+    required int driverId,
+    required String action,
+    required bool previousPaidOut,
+    required bool newPaidOut,
+    this.previousPaidOutAmount = const Value.absent(),
+    this.newPaidOutAmount = const Value.absent(),
+    this.previousPaidOutAt = const Value.absent(),
+    this.newPaidOutAt = const Value.absent(),
+    this.changedAt = const Value.absent(),
+  }) : driverId = Value(driverId),
+       action = Value(action),
+       previousPaidOut = Value(previousPaidOut),
+       newPaidOut = Value(newPaidOut);
+  static Insertable<DriverPayoutHistoryData> custom({
+    Expression<int>? id,
+    Expression<int>? driverId,
+    Expression<String>? action,
+    Expression<bool>? previousPaidOut,
+    Expression<bool>? newPaidOut,
+    Expression<double>? previousPaidOutAmount,
+    Expression<double>? newPaidOutAmount,
+    Expression<DateTime>? previousPaidOutAt,
+    Expression<DateTime>? newPaidOutAt,
+    Expression<DateTime>? changedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (driverId != null) 'driver_id': driverId,
+      if (action != null) 'action': action,
+      if (previousPaidOut != null) 'previous_paid_out': previousPaidOut,
+      if (newPaidOut != null) 'new_paid_out': newPaidOut,
+      if (previousPaidOutAmount != null)
+        'previous_paid_out_amount': previousPaidOutAmount,
+      if (newPaidOutAmount != null) 'new_paid_out_amount': newPaidOutAmount,
+      if (previousPaidOutAt != null) 'previous_paid_out_at': previousPaidOutAt,
+      if (newPaidOutAt != null) 'new_paid_out_at': newPaidOutAt,
+      if (changedAt != null) 'changed_at': changedAt,
+    });
+  }
+
+  DriverPayoutHistoryCompanion copyWith({
+    Value<int>? id,
+    Value<int>? driverId,
+    Value<String>? action,
+    Value<bool>? previousPaidOut,
+    Value<bool>? newPaidOut,
+    Value<double?>? previousPaidOutAmount,
+    Value<double?>? newPaidOutAmount,
+    Value<DateTime?>? previousPaidOutAt,
+    Value<DateTime?>? newPaidOutAt,
+    Value<DateTime>? changedAt,
+  }) {
+    return DriverPayoutHistoryCompanion(
+      id: id ?? this.id,
+      driverId: driverId ?? this.driverId,
+      action: action ?? this.action,
+      previousPaidOut: previousPaidOut ?? this.previousPaidOut,
+      newPaidOut: newPaidOut ?? this.newPaidOut,
+      previousPaidOutAmount:
+          previousPaidOutAmount ?? this.previousPaidOutAmount,
+      newPaidOutAmount: newPaidOutAmount ?? this.newPaidOutAmount,
+      previousPaidOutAt: previousPaidOutAt ?? this.previousPaidOutAt,
+      newPaidOutAt: newPaidOutAt ?? this.newPaidOutAt,
+      changedAt: changedAt ?? this.changedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (driverId.present) {
+      map['driver_id'] = Variable<int>(driverId.value);
+    }
+    if (action.present) {
+      map['action'] = Variable<String>(action.value);
+    }
+    if (previousPaidOut.present) {
+      map['previous_paid_out'] = Variable<bool>(previousPaidOut.value);
+    }
+    if (newPaidOut.present) {
+      map['new_paid_out'] = Variable<bool>(newPaidOut.value);
+    }
+    if (previousPaidOutAmount.present) {
+      map['previous_paid_out_amount'] = Variable<double>(
+        previousPaidOutAmount.value,
+      );
+    }
+    if (newPaidOutAmount.present) {
+      map['new_paid_out_amount'] = Variable<double>(newPaidOutAmount.value);
+    }
+    if (previousPaidOutAt.present) {
+      map['previous_paid_out_at'] = Variable<DateTime>(previousPaidOutAt.value);
+    }
+    if (newPaidOutAt.present) {
+      map['new_paid_out_at'] = Variable<DateTime>(newPaidOutAt.value);
+    }
+    if (changedAt.present) {
+      map['changed_at'] = Variable<DateTime>(changedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DriverPayoutHistoryCompanion(')
+          ..write('id: $id, ')
+          ..write('driverId: $driverId, ')
+          ..write('action: $action, ')
+          ..write('previousPaidOut: $previousPaidOut, ')
+          ..write('newPaidOut: $newPaidOut, ')
+          ..write('previousPaidOutAmount: $previousPaidOutAmount, ')
+          ..write('newPaidOutAmount: $newPaidOutAmount, ')
+          ..write('previousPaidOutAt: $previousPaidOutAt, ')
+          ..write('newPaidOutAt: $newPaidOutAt, ')
+          ..write('changedAt: $changedAt')
           ..write(')'))
         .toString();
   }
@@ -4502,6 +5266,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   late final $DriverProfilesTable driverProfiles = $DriverProfilesTable(this);
   late final $DriversTable drivers = $DriversTable(this);
+  late final $DriverPayoutHistoryTable driverPayoutHistory =
+      $DriverPayoutHistoryTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $TransactionEditHistoryTable transactionEditHistory =
       $TransactionEditHistoryTable(this);
@@ -4518,6 +5284,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appSettings,
     driverProfiles,
     drivers,
+    driverPayoutHistory,
     transactions,
     transactionEditHistory,
     reportTransactions,
@@ -4958,6 +5725,8 @@ typedef $$DriversTableCreateCompanionBuilder =
       Value<double?> laborFee,
       Value<double?> deliveryFee,
       Value<bool> paidOut,
+      Value<double?> paidOutAmount,
+      Value<DateTime?> paidOutAt,
     });
 typedef $$DriversTableUpdateCompanionBuilder =
     DriversCompanion Function({
@@ -4969,6 +5738,8 @@ typedef $$DriversTableUpdateCompanionBuilder =
       Value<double?> laborFee,
       Value<double?> deliveryFee,
       Value<bool> paidOut,
+      Value<double?> paidOutAmount,
+      Value<DateTime?> paidOutAt,
     });
 
 final class $$DriversTableReferences
@@ -4991,6 +5762,33 @@ final class $$DriversTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $DriverPayoutHistoryTable,
+    List<DriverPayoutHistoryData>
+  >
+  _driverPayoutHistoryRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.driverPayoutHistory,
+        aliasName: $_aliasNameGenerator(
+          db.drivers.id,
+          db.driverPayoutHistory.driverId,
+        ),
+      );
+
+  $$DriverPayoutHistoryTableProcessedTableManager get driverPayoutHistoryRefs {
+    final manager = $$DriverPayoutHistoryTableTableManager(
+      $_db,
+      $_db.driverPayoutHistory,
+    ).filter((f) => f.driverId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _driverPayoutHistoryRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
@@ -5109,6 +5907,16 @@ class $$DriversTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<double> get paidOutAmount => $composableBuilder(
+    column: $table.paidOutAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get paidOutAt => $composableBuilder(
+    column: $table.paidOutAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$DriverProfilesTableFilterComposer get profileId {
     final $$DriverProfilesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -5130,6 +5938,31 @@ class $$DriversTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> driverPayoutHistoryRefs(
+    Expression<bool> Function($$DriverPayoutHistoryTableFilterComposer f) f,
+  ) {
+    final $$DriverPayoutHistoryTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.driverPayoutHistory,
+      getReferencedColumn: (t) => t.driverId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriverPayoutHistoryTableFilterComposer(
+            $db: $db,
+            $table: $db.driverPayoutHistory,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> transactionsRefs(
@@ -5253,6 +6086,16 @@ class $$DriversTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get paidOutAmount => $composableBuilder(
+    column: $table.paidOutAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get paidOutAt => $composableBuilder(
+    column: $table.paidOutAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$DriverProfilesTableOrderingComposer get profileId {
     final $$DriverProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5309,6 +6152,14 @@ class $$DriversTableAnnotationComposer
   GeneratedColumn<bool> get paidOut =>
       $composableBuilder(column: $table.paidOut, builder: (column) => column);
 
+  GeneratedColumn<double> get paidOutAmount => $composableBuilder(
+    column: $table.paidOutAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get paidOutAt =>
+      $composableBuilder(column: $table.paidOutAt, builder: (column) => column);
+
   $$DriverProfilesTableAnnotationComposer get profileId {
     final $$DriverProfilesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -5330,6 +6181,32 @@ class $$DriversTableAnnotationComposer
           ),
     );
     return composer;
+  }
+
+  Expression<T> driverPayoutHistoryRefs<T extends Object>(
+    Expression<T> Function($$DriverPayoutHistoryTableAnnotationComposer a) f,
+  ) {
+    final $$DriverPayoutHistoryTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.driverPayoutHistory,
+          getReferencedColumn: (t) => t.driverId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$DriverPayoutHistoryTableAnnotationComposer(
+                $db: $db,
+                $table: $db.driverPayoutHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
   }
 
   Expression<T> transactionsRefs<T extends Object>(
@@ -5425,6 +6302,7 @@ class $$DriversTableTableManager
           Driver,
           PrefetchHooks Function({
             bool profileId,
+            bool driverPayoutHistoryRefs,
             bool transactionsRefs,
             bool transactionEditHistoryRefs,
             bool reportTransactionsRefs,
@@ -5451,6 +6329,8 @@ class $$DriversTableTableManager
                 Value<double?> laborFee = const Value.absent(),
                 Value<double?> deliveryFee = const Value.absent(),
                 Value<bool> paidOut = const Value.absent(),
+                Value<double?> paidOutAmount = const Value.absent(),
+                Value<DateTime?> paidOutAt = const Value.absent(),
               }) => DriversCompanion(
                 id: id,
                 profileId: profileId,
@@ -5460,6 +6340,8 @@ class $$DriversTableTableManager
                 laborFee: laborFee,
                 deliveryFee: deliveryFee,
                 paidOut: paidOut,
+                paidOutAmount: paidOutAmount,
+                paidOutAt: paidOutAt,
               ),
           createCompanionCallback:
               ({
@@ -5471,6 +6353,8 @@ class $$DriversTableTableManager
                 Value<double?> laborFee = const Value.absent(),
                 Value<double?> deliveryFee = const Value.absent(),
                 Value<bool> paidOut = const Value.absent(),
+                Value<double?> paidOutAmount = const Value.absent(),
+                Value<DateTime?> paidOutAt = const Value.absent(),
               }) => DriversCompanion.insert(
                 id: id,
                 profileId: profileId,
@@ -5480,6 +6364,8 @@ class $$DriversTableTableManager
                 laborFee: laborFee,
                 deliveryFee: deliveryFee,
                 paidOut: paidOut,
+                paidOutAmount: paidOutAmount,
+                paidOutAt: paidOutAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -5492,6 +6378,7 @@ class $$DriversTableTableManager
           prefetchHooksCallback:
               ({
                 profileId = false,
+                driverPayoutHistoryRefs = false,
                 transactionsRefs = false,
                 transactionEditHistoryRefs = false,
                 reportTransactionsRefs = false,
@@ -5499,6 +6386,7 @@ class $$DriversTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (driverPayoutHistoryRefs) db.driverPayoutHistory,
                     if (transactionsRefs) db.transactions,
                     if (transactionEditHistoryRefs) db.transactionEditHistory,
                     if (reportTransactionsRefs) db.reportTransactions,
@@ -5537,6 +6425,27 @@ class $$DriversTableTableManager
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (driverPayoutHistoryRefs)
+                        await $_getPrefetchedData<
+                          Driver,
+                          $DriversTable,
+                          DriverPayoutHistoryData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DriversTableReferences
+                              ._driverPayoutHistoryRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DriversTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).driverPayoutHistoryRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.driverId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (transactionsRefs)
                         await $_getPrefetchedData<
                           Driver,
@@ -5622,10 +6531,450 @@ typedef $$DriversTableProcessedTableManager =
       Driver,
       PrefetchHooks Function({
         bool profileId,
+        bool driverPayoutHistoryRefs,
         bool transactionsRefs,
         bool transactionEditHistoryRefs,
         bool reportTransactionsRefs,
       })
+    >;
+typedef $$DriverPayoutHistoryTableCreateCompanionBuilder =
+    DriverPayoutHistoryCompanion Function({
+      Value<int> id,
+      required int driverId,
+      required String action,
+      required bool previousPaidOut,
+      required bool newPaidOut,
+      Value<double?> previousPaidOutAmount,
+      Value<double?> newPaidOutAmount,
+      Value<DateTime?> previousPaidOutAt,
+      Value<DateTime?> newPaidOutAt,
+      Value<DateTime> changedAt,
+    });
+typedef $$DriverPayoutHistoryTableUpdateCompanionBuilder =
+    DriverPayoutHistoryCompanion Function({
+      Value<int> id,
+      Value<int> driverId,
+      Value<String> action,
+      Value<bool> previousPaidOut,
+      Value<bool> newPaidOut,
+      Value<double?> previousPaidOutAmount,
+      Value<double?> newPaidOutAmount,
+      Value<DateTime?> previousPaidOutAt,
+      Value<DateTime?> newPaidOutAt,
+      Value<DateTime> changedAt,
+    });
+
+final class $$DriverPayoutHistoryTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $DriverPayoutHistoryTable,
+          DriverPayoutHistoryData
+        > {
+  $$DriverPayoutHistoryTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $DriversTable _driverIdTable(_$AppDatabase db) =>
+      db.drivers.createAlias(
+        $_aliasNameGenerator(db.driverPayoutHistory.driverId, db.drivers.id),
+      );
+
+  $$DriversTableProcessedTableManager get driverId {
+    final $_column = $_itemColumn<int>('driver_id')!;
+
+    final manager = $$DriversTableTableManager(
+      $_db,
+      $_db.drivers,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_driverIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$DriverPayoutHistoryTableFilterComposer
+    extends Composer<_$AppDatabase, $DriverPayoutHistoryTable> {
+  $$DriverPayoutHistoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get action => $composableBuilder(
+    column: $table.action,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get previousPaidOut => $composableBuilder(
+    column: $table.previousPaidOut,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get newPaidOut => $composableBuilder(
+    column: $table.newPaidOut,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get previousPaidOutAmount => $composableBuilder(
+    column: $table.previousPaidOutAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get newPaidOutAmount => $composableBuilder(
+    column: $table.newPaidOutAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get previousPaidOutAt => $composableBuilder(
+    column: $table.previousPaidOutAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get newPaidOutAt => $composableBuilder(
+    column: $table.newPaidOutAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get changedAt => $composableBuilder(
+    column: $table.changedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$DriversTableFilterComposer get driverId {
+    final $$DriversTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableFilterComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DriverPayoutHistoryTableOrderingComposer
+    extends Composer<_$AppDatabase, $DriverPayoutHistoryTable> {
+  $$DriverPayoutHistoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get action => $composableBuilder(
+    column: $table.action,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get previousPaidOut => $composableBuilder(
+    column: $table.previousPaidOut,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get newPaidOut => $composableBuilder(
+    column: $table.newPaidOut,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get previousPaidOutAmount => $composableBuilder(
+    column: $table.previousPaidOutAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get newPaidOutAmount => $composableBuilder(
+    column: $table.newPaidOutAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get previousPaidOutAt => $composableBuilder(
+    column: $table.previousPaidOutAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get newPaidOutAt => $composableBuilder(
+    column: $table.newPaidOutAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get changedAt => $composableBuilder(
+    column: $table.changedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$DriversTableOrderingComposer get driverId {
+    final $$DriversTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableOrderingComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DriverPayoutHistoryTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DriverPayoutHistoryTable> {
+  $$DriverPayoutHistoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get action =>
+      $composableBuilder(column: $table.action, builder: (column) => column);
+
+  GeneratedColumn<bool> get previousPaidOut => $composableBuilder(
+    column: $table.previousPaidOut,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get newPaidOut => $composableBuilder(
+    column: $table.newPaidOut,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get previousPaidOutAmount => $composableBuilder(
+    column: $table.previousPaidOutAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get newPaidOutAmount => $composableBuilder(
+    column: $table.newPaidOutAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get previousPaidOutAt => $composableBuilder(
+    column: $table.previousPaidOutAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get newPaidOutAt => $composableBuilder(
+    column: $table.newPaidOutAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get changedAt =>
+      $composableBuilder(column: $table.changedAt, builder: (column) => column);
+
+  $$DriversTableAnnotationComposer get driverId {
+    final $$DriversTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.driverId,
+      referencedTable: $db.drivers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DriversTableAnnotationComposer(
+            $db: $db,
+            $table: $db.drivers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DriverPayoutHistoryTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DriverPayoutHistoryTable,
+          DriverPayoutHistoryData,
+          $$DriverPayoutHistoryTableFilterComposer,
+          $$DriverPayoutHistoryTableOrderingComposer,
+          $$DriverPayoutHistoryTableAnnotationComposer,
+          $$DriverPayoutHistoryTableCreateCompanionBuilder,
+          $$DriverPayoutHistoryTableUpdateCompanionBuilder,
+          (DriverPayoutHistoryData, $$DriverPayoutHistoryTableReferences),
+          DriverPayoutHistoryData,
+          PrefetchHooks Function({bool driverId})
+        > {
+  $$DriverPayoutHistoryTableTableManager(
+    _$AppDatabase db,
+    $DriverPayoutHistoryTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DriverPayoutHistoryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DriverPayoutHistoryTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$DriverPayoutHistoryTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> driverId = const Value.absent(),
+                Value<String> action = const Value.absent(),
+                Value<bool> previousPaidOut = const Value.absent(),
+                Value<bool> newPaidOut = const Value.absent(),
+                Value<double?> previousPaidOutAmount = const Value.absent(),
+                Value<double?> newPaidOutAmount = const Value.absent(),
+                Value<DateTime?> previousPaidOutAt = const Value.absent(),
+                Value<DateTime?> newPaidOutAt = const Value.absent(),
+                Value<DateTime> changedAt = const Value.absent(),
+              }) => DriverPayoutHistoryCompanion(
+                id: id,
+                driverId: driverId,
+                action: action,
+                previousPaidOut: previousPaidOut,
+                newPaidOut: newPaidOut,
+                previousPaidOutAmount: previousPaidOutAmount,
+                newPaidOutAmount: newPaidOutAmount,
+                previousPaidOutAt: previousPaidOutAt,
+                newPaidOutAt: newPaidOutAt,
+                changedAt: changedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int driverId,
+                required String action,
+                required bool previousPaidOut,
+                required bool newPaidOut,
+                Value<double?> previousPaidOutAmount = const Value.absent(),
+                Value<double?> newPaidOutAmount = const Value.absent(),
+                Value<DateTime?> previousPaidOutAt = const Value.absent(),
+                Value<DateTime?> newPaidOutAt = const Value.absent(),
+                Value<DateTime> changedAt = const Value.absent(),
+              }) => DriverPayoutHistoryCompanion.insert(
+                id: id,
+                driverId: driverId,
+                action: action,
+                previousPaidOut: previousPaidOut,
+                newPaidOut: newPaidOut,
+                previousPaidOutAmount: previousPaidOutAmount,
+                newPaidOutAmount: newPaidOutAmount,
+                previousPaidOutAt: previousPaidOutAt,
+                newPaidOutAt: newPaidOutAt,
+                changedAt: changedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$DriverPayoutHistoryTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({driverId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (driverId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.driverId,
+                                referencedTable:
+                                    $$DriverPayoutHistoryTableReferences
+                                        ._driverIdTable(db),
+                                referencedColumn:
+                                    $$DriverPayoutHistoryTableReferences
+                                        ._driverIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$DriverPayoutHistoryTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DriverPayoutHistoryTable,
+      DriverPayoutHistoryData,
+      $$DriverPayoutHistoryTableFilterComposer,
+      $$DriverPayoutHistoryTableOrderingComposer,
+      $$DriverPayoutHistoryTableAnnotationComposer,
+      $$DriverPayoutHistoryTableCreateCompanionBuilder,
+      $$DriverPayoutHistoryTableUpdateCompanionBuilder,
+      (DriverPayoutHistoryData, $$DriverPayoutHistoryTableReferences),
+      DriverPayoutHistoryData,
+      PrefetchHooks Function({bool driverId})
     >;
 typedef $$TransactionsTableCreateCompanionBuilder =
     TransactionsCompanion Function({
@@ -8298,6 +9647,8 @@ class $AppDatabaseManager {
       $$DriverProfilesTableTableManager(_db, _db.driverProfiles);
   $$DriversTableTableManager get drivers =>
       $$DriversTableTableManager(_db, _db.drivers);
+  $$DriverPayoutHistoryTableTableManager get driverPayoutHistory =>
+      $$DriverPayoutHistoryTableTableManager(_db, _db.driverPayoutHistory);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
   $$TransactionEditHistoryTableTableManager get transactionEditHistory =>

@@ -15,4 +15,6 @@ class Drivers extends Table {
   RealColumn get deliveryFee => real().named('delivery_fee').nullable()();
   BoolColumn get paidOut =>
       boolean().named('paid_out').withDefault(const Constant(false))();
+  RealColumn get paidOutAmount => real().named('paid_out_amount').nullable()();
+  DateTimeColumn get paidOutAt => dateTime().named('paid_out_at').nullable()();
 }

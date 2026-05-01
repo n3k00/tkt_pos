@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'tables/app_settings.dart';
+import 'tables/driver_payout_history.dart';
 import 'tables/driver_profiles.dart';
 import 'tables/drivers.dart';
 import 'tables/transactions.dart';
@@ -21,6 +22,7 @@ part 'app_database.g.dart';
 @DriftDatabase(
   tables: [
     AppSettings,
+    DriverPayoutHistory,
     DriverProfiles,
     Drivers,
     Transactions,
@@ -39,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => _instance;
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 18;
 
   // Migrations: create new tables when upgrading from v1
   @override
@@ -93,6 +95,23 @@ class AppDatabase extends _$AppDatabase {
           addColumn: () => m.addColumn(drivers, drivers.profileId),
         );
         await _backfillDriverProfiles();
+      }
+      if (from < 17) {
+        await _addColumnIfMissing(
+          tableName: 'drivers',
+          columnName: 'paid_out_amount',
+          addColumn: () => m.addColumn(drivers, drivers.paidOutAmount),
+        );
+        await _addColumnIfMissing(
+          tableName: 'drivers',
+          columnName: 'paid_out_at',
+          addColumn: () => m.addColumn(drivers, drivers.paidOutAt),
+        );
+      }
+      if (from < 18) {
+        if (!await _tableExists('driver_payout_history')) {
+          await m.createTable(driverPayoutHistory);
+        }
       }
     },
   );
