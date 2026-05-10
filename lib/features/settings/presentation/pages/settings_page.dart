@@ -173,9 +173,6 @@ class _SettingsDetailPane extends StatelessWidget {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(Dimens.spacingLG),
             child: switch (category.id) {
-              _SettingsCategoryId.general => _GeneralSettings(
-                controller: controller,
-              ),
               _SettingsCategoryId.database => _DatabaseSettings(
                 controller: controller,
                 onBackup: onBackup,
@@ -192,30 +189,6 @@ class _SettingsDetailPane extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _GeneralSettings extends StatelessWidget {
-  const _GeneralSettings({required this.controller});
-
-  final SettingsController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return _SettingsSection(
-      title: 'Table display',
-      child: Obx(
-        () => _CommandRow(
-          icon: Icons.table_rows_outlined,
-          title: 'Compact transactions table',
-          description: 'Reduce row padding to show more transactions at once.',
-          trailing: Switch(
-            value: controller.compactTable.value,
-            onChanged: controller.setCompactTable,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -923,7 +896,7 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-enum _SettingsCategoryId { general, database, drivers, activity, about }
+enum _SettingsCategoryId { database, drivers, activity, about }
 
 class _SettingsCategory {
   const _SettingsCategory({
@@ -940,12 +913,6 @@ class _SettingsCategory {
 }
 
 const _settingsCategories = <_SettingsCategory>[
-  _SettingsCategory(
-    id: _SettingsCategoryId.general,
-    icon: Icons.tune_outlined,
-    title: 'General',
-    description: 'Display preferences used across the app.',
-  ),
   _SettingsCategory(
     id: _SettingsCategoryId.database,
     icon: Icons.storage_outlined,

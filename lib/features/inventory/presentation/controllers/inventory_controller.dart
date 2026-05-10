@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:tkt_pos/data/local/app_database.dart';
-import 'package:tkt_pos/resources/strings.dart';
+import 'package:tkt_pos/utils/payout_calculator.dart';
 
 class InventoryController extends GetxController {
   InventoryController({AppDatabase? database}) : db = database ?? AppDatabase();
@@ -368,24 +368,27 @@ class InventoryController extends GetxController {
     if (list == null) return 0;
     return list.fold<double>(
       0,
-      (sum, t) =>
-          sum + (t.paymentStatus == AppString.paymentPaid ? t.charges : 0),
+      (sum, t) => sum + (_isPaymentPaid(t) ? t.charges : 0),
+    );
+  }
+
+  double pendingPaymentAmountForDriver(int driverId) {
+    final list = transactionsByDriver[driverId];
+    if (list == null) return 0;
+    return list.fold<double>(
+      0,
+      (sum, t) => sum + (_isPaymentPaid(t) ? 0 : t.charges),
     );
   }
 
   double currentPayoutAmountForDriver(Driver driver) {
     final list = transactionsByDriver[driver.id] ?? const <DbTransaction>[];
-    final totalCharges = list.fold<double>(0, (sum, t) => sum + t.charges);
-    final totalDeductions =
-        (driver.roomFee ?? 0) +
-        (driver.laborFee ?? 0) +
-        (driver.deliveryFee ?? 0);
-    return totalCharges - totalDeductions;
+    return PayoutCalculator.forDriver(driver, list).currentPayable;
   }
 
   double paidOutDifferenceForDriver(Driver driver) {
-    if (!driver.paidOut || driver.paidOutAmount == null) return 0;
-    return currentPayoutAmountForDriver(driver) - driver.paidOutAmount!;
+    final list = transactionsByDriver[driver.id] ?? const <DbTransaction>[];
+    return PayoutCalculator.forDriver(driver, list).difference;
   }
 
   Future<void> markDriverPaidOut(Driver driver) async {
@@ -442,5 +445,9 @@ class InventoryController extends GetxController {
           );
     });
     await refreshDriverById(driver.id);
+  }
+
+  bool _isPaymentPaid(DbTransaction transaction) {
+    return PayoutCalculator.isPaymentPaid(transaction.paymentStatus);
   }
 }

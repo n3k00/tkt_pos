@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/reports/presentation/controllers/reports_controller.dart';
 import 'package:tkt_pos/resources/colors.dart';
-import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 import 'package:tkt_pos/resources/dimens.dart';
-import 'package:tkt_pos/widgets/app_snackbar.dart';
 import 'package:tkt_pos/widgets/desktop_shell.dart';
 
 class ReportsPage extends GetView<ReportsController> {
@@ -20,28 +18,54 @@ class ReportsPage extends GetView<ReportsController> {
       title: AppString.reports,
       subtitle: 'Daily collections, payment status, and cash advance totals',
       toolbar: _ReportCommandBar(controller: controller),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final sideWidth = constraints.maxWidth < 1100 ? 320.0 : 360.0;
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _ReportsMainPane(controller: controller)),
-              const SizedBox(width: Dimens.spacingSM),
-              SizedBox(
-                width: sideWidth,
-                child: _ReportsSidePane(controller: controller),
-              ),
-            ],
-          );
-        },
-      ),
+      child: _ReportsMainPane(controller: controller),
     );
   }
 }
 
 class _ReportsMainPane extends StatelessWidget {
   const _ReportsMainPane({required this.controller});
+
+  final ReportsController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          Container(
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColor.white,
+              border: Border.all(color: AppColor.border),
+              borderRadius: BorderRadius.circular(Dimens.radiusXS),
+            ),
+            child: const TabBar(
+              isScrollable: true,
+              tabs: [
+                Tab(text: 'Daily Claimed'),
+                Tab(text: 'Payout Summary'),
+              ],
+            ),
+          ),
+          const SizedBox(height: Dimens.spacingSM),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _DailyClaimedTab(controller: controller),
+                _PayoutSummaryTab(controller: controller),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DailyClaimedTab extends StatelessWidget {
+  const _DailyClaimedTab({required this.controller});
 
   final ReportsController controller;
 
@@ -59,8 +83,8 @@ class _ReportsMainPane extends StatelessWidget {
   }
 }
 
-class _ReportsSidePane extends StatelessWidget {
-  const _ReportsSidePane({required this.controller});
+class _PayoutSummaryTab extends StatelessWidget {
+  const _PayoutSummaryTab({required this.controller});
 
   final ReportsController controller;
 
@@ -68,11 +92,28 @@ class _ReportsSidePane extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(flex: 2, child: _PayoutSummaryPane(controller: controller)),
+        _PayoutStatStrip(controller: controller),
         const SizedBox(height: Dimens.spacingSM),
-        Expanded(child: _PayoutHistoryPane(controller: controller)),
-        const SizedBox(height: Dimens.spacingSM),
-        Expanded(child: _GroupSummaryPane(controller: controller)),
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 5,
+                child: _PayoutDriversTable(controller: controller),
+              ),
+              const SizedBox(width: Dimens.spacingSM),
+              SizedBox(
+                width: 360,
+                child: Column(
+                  children: [
+                    Expanded(child: _PayoutSummaryPane(controller: controller)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -93,106 +134,34 @@ class _ReportCommandBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(Dimens.radiusXS),
         border: Border.all(color: AppColor.border),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 980),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 260,
-                child: HeaderSearchField(
-                  hint: AppString.searchReportsHint,
-                  onChanged: controller.setSearch,
-                  borderRadius: BorderRadius.circular(Dimens.radiusXS),
-                ),
-              ),
-              const SizedBox(width: Dimens.spacingMD),
-              _PresetButton(
-                label: 'Today',
-                onPressed: controller.setPresetToday,
-              ),
-              const SizedBox(width: Dimens.spacingXS),
-              _PresetButton(
-                label: 'Yesterday',
-                onPressed: controller.setPresetYesterday,
-              ),
-              const SizedBox(width: Dimens.spacingXS),
-              _PresetButton(
-                label: 'This month',
-                onPressed: controller.setPresetThisMonth,
-              ),
-              const SizedBox(width: Dimens.spacingMD),
-              _DateRangeButton(controller: controller),
-              const SizedBox(width: Dimens.spacingMD),
-              _GroupModeSelector(controller: controller),
-              const SizedBox(width: Dimens.spacingLG),
-              fluent.Button(
-                onPressed: () => _exportCsv(context),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.file_download_outlined, size: 18),
-                    SizedBox(width: Dimens.spacingXS),
-                    Text('Export'),
-                  ],
-                ),
-              ),
-              const SizedBox(width: Dimens.spacingXS),
-              fluent.FilledButton(
-                onPressed: () => _printReport(context),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.print_outlined, size: 18),
-                    SizedBox(width: Dimens.spacingXS),
-                    Text('Print'),
-                  ],
-                ),
-              ),
-            ],
+      child: Row(
+        children: [
+          _PresetButton(label: 'Today', onPressed: controller.setPresetToday),
+          const SizedBox(width: Dimens.spacingXS),
+          _PresetButton(
+            label: 'Yesterday',
+            onPressed: controller.setPresetYesterday,
           ),
-        ),
+          const SizedBox(width: Dimens.spacingXS),
+          _PresetButton(
+            label: 'This month',
+            onPressed: controller.setPresetThisMonth,
+          ),
+          const SizedBox(width: Dimens.spacingMD),
+          _DateRangeButton(controller: controller),
+          const Spacer(),
+          Obx(
+            () => Text(
+              'Period: ${controller.rangeLabel()}',
+              style: const TextStyle(
+                color: AppColor.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  Future<void> _exportCsv(BuildContext context) async {
-    try {
-      final path = await controller.exportCsv();
-      if (!context.mounted) return;
-      AppSnackBars.show(
-        context,
-        message: path == null ? 'Export cancelled.' : 'CSV exported: $path',
-        type: path == null ? AppSnackbarType.info : AppSnackbarType.success,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      AppSnackBars.show(
-        context,
-        message: 'Export failed: $e',
-        type: AppSnackbarType.error,
-      );
-    }
-  }
-
-  Future<void> _printReport(BuildContext context) async {
-    try {
-      await controller.printReport();
-      if (!context.mounted) return;
-      AppSnackBars.show(
-        context,
-        message: AppString.snackbarPrintSent,
-        type: AppSnackbarType.success,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      AppSnackBars.show(
-        context,
-        message: 'Print failed: $e',
-        type: AppSnackbarType.error,
-      );
-    }
   }
 }
 
@@ -205,43 +174,6 @@ class _PresetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return fluent.Button(onPressed: onPressed, child: Text(label));
-  }
-}
-
-class _GroupModeSelector extends StatelessWidget {
-  const _GroupModeSelector({required this.controller});
-
-  final ReportsController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      return SegmentedButton<ReportGroupMode>(
-        segments: const [
-          ButtonSegment(
-            value: ReportGroupMode.driver,
-            label: Text('Driver'),
-            icon: Icon(Icons.person_outline),
-          ),
-          ButtonSegment(
-            value: ReportGroupMode.paymentStatus,
-            label: Text('Status'),
-            icon: Icon(Icons.payments_outlined),
-          ),
-        ],
-        selected: {controller.groupMode.value},
-        showSelectedIcon: false,
-        onSelectionChanged: (value) => controller.setGroupMode(value.first),
-        style: ButtonStyle(
-          visualDensity: VisualDensity.compact,
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(Dimens.radiusXS),
-            ),
-          ),
-        ),
-      );
-    });
   }
 }
 
@@ -332,6 +264,50 @@ class _StatCell extends StatelessWidget {
   }
 }
 
+class _PayoutStatStrip extends StatelessWidget {
+  const _PayoutStatStrip({required this.controller});
+
+  final ReportsController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => Row(
+        children: [
+          _StatCell(
+            title: 'Current payable',
+            value: Format.money(controller.payoutCurrentPayableTotal),
+          ),
+          _StatCell(
+            title: 'Pending payout',
+            value: Format.money(controller.payoutPendingTotal),
+          ),
+          _StatCell(
+            title: 'Paid out',
+            value: Format.money(controller.payoutPaidOutTotal),
+          ),
+          _StatCell(
+            title: 'Difference',
+            value: Format.money(controller.payoutDifferenceTotal),
+          ),
+          _StatCell(
+            title: 'Room Fee',
+            value: Format.money(controller.payoutRoomFeeTotal),
+          ),
+          _StatCell(
+            title: 'Labor Fee',
+            value: Format.money(controller.payoutLaborFeeTotal),
+          ),
+          _StatCell(
+            title: 'Delivery Fee',
+            value: Format.money(controller.payoutDeliveryFeeTotal),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ReportsTable extends StatelessWidget {
   const _ReportsTable({required this.controller});
   final ReportsController controller;
@@ -413,6 +389,128 @@ class _ReportsTable extends StatelessWidget {
         ),
       );
     });
+  }
+}
+
+class _PayoutDriversTable extends StatelessWidget {
+  const _PayoutDriversTable({required this.controller});
+
+  final ReportsController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final rows = controller.payoutSummaries;
+      if (rows.isEmpty) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColor.card,
+            borderRadius: BorderRadius.circular(Dimens.radiusXS),
+            border: Border.all(color: AppColor.border),
+          ),
+          child: Center(
+            child: Text(
+              'No payout rows for ${controller.rangeLabel()}',
+              style: const TextStyle(color: AppColor.textSecondary),
+            ),
+          ),
+        );
+      }
+
+      return AppDataTable(
+        table: DataTable(
+          columnSpacing: 16,
+          horizontalMargin: 12,
+          dataRowMinHeight: 40,
+          dataRowMaxHeight: 40,
+          showCheckboxColumn: false,
+          columns: const [
+            DataColumn(label: Text(AppString.colNo)),
+            DataColumn(label: Text(AppString.colDriver)),
+            DataColumn(label: Text('Date')),
+            DataColumn(label: Text('Status')),
+            DataColumn(label: Center(child: Text('Current payable'))),
+            DataColumn(label: Center(child: Text('Paid out'))),
+            DataColumn(label: Center(child: Text('Pending'))),
+            DataColumn(label: Center(child: Text('Difference'))),
+            DataColumn(label: Center(child: Text('Fees'))),
+          ],
+          rows: [
+            for (final entry in rows.asMap().entries)
+              _payoutDriverDataRow(entry.key + 1, entry.value),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+DataRow _payoutDriverDataRow(int index, PayoutDriverSummary summary) {
+  final driver = summary.driver;
+  final differenceColor = summary.difference == 0
+      ? AppColor.textPrimary
+      : summary.difference > 0
+      ? AppColor.error
+      : AppColor.success;
+
+  DataCell moneyCell(double value, {Color? color}) {
+    return DataCell(
+      Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          Format.money(value),
+          textAlign: TextAlign.right,
+          style: TextStyle(color: color ?? AppColor.textPrimary),
+        ),
+      ),
+    );
+  }
+
+  return DataRow(
+    cells: [
+      DataCell(Text('$index')),
+      DataCell(Text(driver.name)),
+      DataCell(Text(Format.date(driver.date))),
+      DataCell(_PayoutStatusBadge(isPaidOut: driver.paidOut)),
+      moneyCell(summary.currentPayable),
+      moneyCell(summary.paidOutAmount),
+      moneyCell(summary.pendingAmount),
+      moneyCell(summary.difference, color: differenceColor),
+      moneyCell(summary.totalFees),
+    ],
+  );
+}
+
+class _PayoutStatusBadge extends StatelessWidget {
+  const _PayoutStatusBadge({required this.isPaidOut});
+
+  final bool isPaidOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isPaidOut ? AppColor.success : AppColor.error;
+    final background = color.withValues(alpha: 0.1);
+    final border = color.withValues(alpha: 0.45);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimens.spacingSM,
+        vertical: Dimens.spacingXXS,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        isPaidOut ? 'Paid out' : 'Pending',
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: Dimens.fontSizeCaption,
+        ),
+      ),
+    );
   }
 }
 
@@ -498,123 +596,6 @@ class _FooterTotal extends StatelessWidget {
   }
 }
 
-class _GroupSummaryPane extends StatelessWidget {
-  const _GroupSummaryPane({required this.controller});
-
-  final ReportsController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final summaries = controller.groupedSummaries;
-      final title = controller.groupMode.value == ReportGroupMode.driver
-          ? 'Grouped by driver'
-          : 'Grouped by payment status';
-
-      return Container(
-        decoration: BoxDecoration(
-          color: AppColor.white,
-          border: Border.all(color: AppColor.border),
-          borderRadius: BorderRadius.circular(Dimens.radiusXS),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(Dimens.spacingMD),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColor.textPrimary,
-                ),
-              ),
-            ),
-            const Divider(height: 1, color: AppColor.border),
-            Expanded(
-              child: summaries.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No summary',
-                        style: TextStyle(color: AppColor.textSecondary),
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(Dimens.spacingSM),
-                      itemCount: summaries.length,
-                      separatorBuilder: (_, _) =>
-                          const Divider(height: 1, color: AppColor.border),
-                      itemBuilder: (context, index) {
-                        final item = summaries[index];
-                        return _GroupSummaryRow(summary: item);
-                      },
-                    ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-}
-
-class _GroupSummaryRow extends StatelessWidget {
-  const _GroupSummaryRow({required this.summary});
-
-  final ReportGroupSummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Dimens.spacingSM),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  summary.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColor.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Text(
-                '${summary.count}',
-                style: const TextStyle(color: AppColor.textSecondary),
-              ),
-            ],
-          ),
-          const SizedBox(height: Dimens.spacingXXS),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Charges ${Format.money(summary.charges)}',
-                  style: const TextStyle(
-                    color: AppColor.textSecondary,
-                    fontSize: Dimens.fontSizeCaption,
-                  ),
-                ),
-              ),
-              Text(
-                Format.money(summary.total),
-                style: const TextStyle(
-                  color: AppColor.textPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _PayoutSummaryPane extends StatelessWidget {
   const _PayoutSummaryPane({required this.controller});
 
@@ -624,7 +605,7 @@ class _PayoutSummaryPane extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final summaries = controller.payoutSummaries;
-      final missing = controller.feeMissingSummaries;
+      final pending = controller.payoutPendingSummaries;
       return Container(
         decoration: BoxDecoration(
           color: AppColor.white,
@@ -697,7 +678,7 @@ class _PayoutSummaryPane extends StatelessWidget {
                 Dimens.spacingXS,
               ),
               child: Text(
-                'Missing fees (${missing.length})',
+                'Pending payout (${pending.length})',
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   color: AppColor.textPrimary,
@@ -712,11 +693,11 @@ class _PayoutSummaryPane extends StatelessWidget {
                         style: TextStyle(color: AppColor.textSecondary),
                       ),
                     )
-                  : missing.isEmpty
+                  : pending.isEmpty
                   ? const Center(
                       child: Text(
-                        'All drivers have fee values',
-                        style: TextStyle(color: AppColor.textSecondary),
+                        'All drivers are paid out',
+                        style: TextStyle(color: AppColor.success),
                       ),
                     )
                   : ListView.separated(
@@ -726,11 +707,11 @@ class _PayoutSummaryPane extends StatelessWidget {
                         Dimens.spacingMD,
                         Dimens.spacingMD,
                       ),
-                      itemCount: missing.length,
+                      itemCount: pending.length,
                       separatorBuilder: (_, _) =>
                           const Divider(height: 1, color: AppColor.border),
                       itemBuilder: (context, index) {
-                        return _MissingFeeRow(summary: missing[index]);
+                        return _PendingPayoutRow(summary: pending[index]);
                       },
                     ),
             ),
@@ -738,213 +719,6 @@ class _PayoutSummaryPane extends StatelessWidget {
         ),
       );
     });
-  }
-}
-
-class _PayoutHistoryPane extends StatelessWidget {
-  const _PayoutHistoryPane({required this.controller});
-
-  final ReportsController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final history = controller.payoutHistory;
-      final differences = controller.payoutDifferenceSummaries;
-      return Container(
-        decoration: BoxDecoration(
-          color: AppColor.white,
-          border: Border.all(color: AppColor.border),
-          borderRadius: BorderRadius.circular(Dimens.radiusXS),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(Dimens.spacingMD),
-              child: Text(
-                'Payout history',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColor.textPrimary,
-                ),
-              ),
-            ),
-            const Divider(height: 1, color: AppColor.border),
-            Padding(
-              padding: const EdgeInsets.all(Dimens.spacingMD),
-              child: Column(
-                children: [
-                  _PayoutMetricRow(
-                    label: 'Marked total',
-                    value: Format.money(controller.payoutHistoryMarkedTotal),
-                  ),
-                  _PayoutMetricRow(
-                    label: 'Mark / Reopen',
-                    value:
-                        '${controller.payoutHistoryMarkCount} / ${controller.payoutHistoryReopenCount}',
-                  ),
-                  _PayoutMetricRow(
-                    label: 'Difference drivers',
-                    value: '${differences.length}',
-                    valueColor: differences.isEmpty
-                        ? AppColor.textPrimary
-                        : AppColor.error,
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1, color: AppColor.border),
-            Expanded(
-              child: history.isEmpty && differences.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No payout history',
-                        style: TextStyle(color: AppColor.textSecondary),
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(Dimens.spacingSM),
-                      itemCount:
-                          history.take(5).length + differences.take(3).length,
-                      separatorBuilder: (_, _) =>
-                          const Divider(height: 1, color: AppColor.border),
-                      itemBuilder: (context, index) {
-                        final recentHistory = history.take(5).toList();
-                        if (index < recentHistory.length) {
-                          return _PayoutHistoryRow(item: recentHistory[index]);
-                        }
-                        final diffIndex = index - recentHistory.length;
-                        return _PayoutDifferenceRow(
-                          summary: differences.take(3).toList()[diffIndex],
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-}
-
-class _PayoutHistoryRow extends StatelessWidget {
-  const _PayoutHistoryRow({required this.item});
-
-  final PayoutHistoryReportItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final isReopen = item.row.action == 'reopen_payout';
-    final color = isReopen ? AppColor.warning : AppColor.success;
-    final driver = item.driver;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Dimens.spacingXS),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  driver?.name ?? 'Unknown',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColor.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Flexible(
-                child: Text(
-                  Format.dateTime12(item.row.changedAt),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    color: AppColor.textSecondary,
-                    fontSize: Dimens.fontSizeCaption,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: Dimens.spacingXXS),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  isReopen ? 'Reopen payout' : 'Mark paid out',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: Dimens.fontSizeCaption,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Flexible(
-                child: Text(
-                  item.row.newPaidOutAmount == null
-                      ? '-'
-                      : Format.money(item.row.newPaidOutAmount!),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    color: AppColor.textPrimary,
-                    fontSize: Dimens.fontSizeCaption,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PayoutDifferenceRow extends StatelessWidget {
-  const _PayoutDifferenceRow({required this.summary});
-
-  final PayoutDriverSummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final difference = summary.difference;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Dimens.spacingXS),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '${summary.driver.name} difference',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColor.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Flexible(
-            child: Text(
-              Format.money(difference),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                color: difference > 0 ? AppColor.error : AppColor.success,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -989,18 +763,13 @@ class _PayoutMetricRow extends StatelessWidget {
   }
 }
 
-class _MissingFeeRow extends StatelessWidget {
-  const _MissingFeeRow({required this.summary});
+class _PendingPayoutRow extends StatelessWidget {
+  const _PendingPayoutRow({required this.summary});
 
   final PayoutDriverSummary summary;
 
   @override
   Widget build(BuildContext context) {
-    final missing = <String>[
-      if (!summary.hasRoomFee) 'Room',
-      if (!summary.hasLaborFee) 'Labor',
-      if (!summary.hasDeliveryFee) 'Delivery',
-    ];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Dimens.spacingSM),
       child: Column(
@@ -1029,12 +798,26 @@ class _MissingFeeRow extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Dimens.spacingXXS),
-          Text(
-            'Missing: ${missing.join(', ')}',
-            style: const TextStyle(
-              color: AppColor.error,
-              fontSize: Dimens.fontSizeCaption,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${summary.transactionCount} transactions',
+                  style: const TextStyle(
+                    color: AppColor.textSecondary,
+                    fontSize: Dimens.fontSizeCaption,
+                  ),
+                ),
+              ),
+              Text(
+                Format.money(summary.pendingAmount),
+                style: const TextStyle(
+                  color: AppColor.error,
+                  fontSize: Dimens.fontSizeCaption,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -23,11 +23,10 @@ Future<void> main() async {
   );
 
   windowManager.waitUntilReadyToShow(options, () async {
-    await windowManager.setMinimizable(true);
-    await windowManager.setResizable(true);
-    await windowManager.setMaximizable(true);
-
     await windowManager.maximize();
+    await windowManager.setMinimizable(false);
+    await windowManager.setResizable(false);
+    await windowManager.setMaximizable(false);
     await windowManager.show();
     await windowManager.focus();
   });
@@ -40,7 +39,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: AppString.title,
+      title: AppString.windowTitle,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.noTransition,
       transitionDuration: Duration.zero,

@@ -14,6 +14,7 @@ import 'package:tkt_pos/features/inventory/presentation/widgets/transaction_acti
 import 'package:tkt_pos/features/inventory/presentation/widgets/driver_actions_menu.dart';
 import 'package:tkt_pos/widgets/page_header.dart';
 import 'package:tkt_pos/utils/format.dart';
+import 'package:tkt_pos/utils/payout_calculator.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 import 'package:tkt_pos/widgets/desktop_shell.dart';
 
@@ -89,15 +90,8 @@ class InventoryPage extends GetView<InventoryController> {
           return const Center(child: Text(AppString.noResults));
         }
 
-        final selectedId = controller.selectedDriverId.value;
-        final selectedDriver = filteredDrivers.firstWhere(
-          (driver) => driver.id == selectedId,
-          orElse: () => filteredDrivers.first,
-        );
-
-        return _InventoryMasterDetail(
+        return _InventoryTabbedContent(
           drivers: filteredDrivers,
-          selectedDriver: selectedDriver,
           controller: controller,
         );
       }),
@@ -135,6 +129,447 @@ class _DesktopToolbar extends StatelessWidget {
   }
 }
 
+class _InventoryTabbedContent extends StatelessWidget {
+  const _InventoryTabbedContent({
+    required this.drivers,
+    required this.controller,
+  });
+
+  final List<Driver> drivers;
+  final InventoryController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColor.white,
+              border: Border.all(color: AppColor.border),
+              borderRadius: BorderRadius.circular(Dimens.radiusXS),
+            ),
+            child: const TabBar(
+              isScrollable: true,
+              tabs: [
+                Tab(text: 'Transactions'),
+                Tab(text: 'Drivers'),
+              ],
+            ),
+          ),
+          const SizedBox(height: Dimens.spacingSM),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _AllTransactionsTable(drivers: drivers, controller: controller),
+                Obx(() {
+                  final selectedId = controller.selectedDriverId.value;
+                  final selectedDriver = drivers.firstWhere(
+                    (driver) => driver.id == selectedId,
+                    orElse: () => drivers.first,
+                  );
+
+                  return _InventoryMasterDetail(
+                    drivers: drivers,
+                    selectedDriver: selectedDriver,
+                    controller: controller,
+                  );
+                }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DriverTransactionGroup {
+  const _DriverTransactionGroup({
+    required this.driver,
+    required this.transactions,
+  });
+
+  final Driver driver;
+  final List<DbTransaction> transactions;
+}
+
+class _AllTransactionsTable extends StatelessWidget {
+  const _AllTransactionsTable({
+    required this.drivers,
+    required this.controller,
+  });
+
+  final List<Driver> drivers;
+  final InventoryController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final groups = <_DriverTransactionGroup>[
+        for (final driver in drivers)
+          if (controller.filteredTransactionsForDriver(driver.id).isNotEmpty)
+            _DriverTransactionGroup(
+              driver: driver,
+              transactions: controller.filteredTransactionsForDriver(driver.id),
+            ),
+      ];
+
+      groups.sort((a, b) {
+        final dateCompare = b.driver.date.compareTo(a.driver.date);
+        if (dateCompare != 0) return dateCompare;
+        return a.driver.name.compareTo(b.driver.name);
+      });
+
+      if (groups.isEmpty) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColor.card,
+            border: Border.all(color: AppColor.border),
+            borderRadius: BorderRadius.circular(Dimens.radiusXS),
+          ),
+          child: const Center(
+            child: Text(
+              AppString.noResults,
+              style: TextStyle(color: AppColor.textSecondary),
+            ),
+          ),
+        );
+      }
+
+      return ListView.separated(
+        padding: EdgeInsets.zero,
+        itemCount: groups.length,
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: Dimens.spacingSM),
+        itemBuilder: (context, index) => _AllTransactionsGroupSection(
+          group: groups[index],
+          controller: controller,
+        ),
+      );
+    });
+  }
+}
+
+class _AllTransactionsGroupSection extends StatelessWidget {
+  const _AllTransactionsGroupSection({
+    required this.group,
+    required this.controller,
+  });
+
+  final _DriverTransactionGroup group;
+  final InventoryController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final totalCharges = group.transactions.fold<double>(
+      0,
+      (sum, transaction) => sum + transaction.charges,
+    );
+    final paidAmount = group.transactions.fold<double>(
+      0,
+      (sum, transaction) =>
+          sum + (_isPaymentPaid(transaction) ? transaction.charges : 0),
+    );
+    final pendingAmount = group.transactions.fold<double>(
+      0,
+      (sum, transaction) =>
+          sum + (_isPaymentPaid(transaction) ? 0 : transaction.charges),
+    );
+    final pendingClaimedAmount = group.transactions.fold<double>(
+      0,
+      (sum, transaction) =>
+          sum +
+          (!_isPaymentPaid(transaction) && transaction.pickedUp
+              ? transaction.charges
+              : 0),
+    );
+    final pendingUnclaimedAmount = group.transactions.fold<double>(
+      0,
+      (sum, transaction) =>
+          sum +
+          (!_isPaymentPaid(transaction) && !transaction.pickedUp
+              ? transaction.charges
+              : 0),
+    );
+    final claimedCount = group.transactions
+        .where((transaction) => transaction.pickedUp)
+        .length;
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        border: Border.all(color: AppColor.border),
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Dimens.spacingMD,
+              vertical: Dimens.spacingSM,
+            ),
+            decoration: const BoxDecoration(
+              color: AppColor.card,
+              border: Border(bottom: BorderSide(color: AppColor.border)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${group.driver.name}  •  ${Format.date(group.driver.date)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColor.textPrimary,
+                          fontSize: Dimens.fontSizeBody,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: Dimens.spacingSM),
+                    _PayoutStatusBadge(isPaidOut: group.driver.paidOut),
+                  ],
+                ),
+                const SizedBox(height: Dimens.spacingSM),
+                Wrap(
+                  spacing: Dimens.spacingMD,
+                  runSpacing: Dimens.spacingXS,
+                  children: [
+                    _GroupMetric(
+                      label: 'Transactions',
+                      value: '${group.transactions.length}',
+                    ),
+                    _GroupMetric(
+                      label: 'Claimed',
+                      value: '$claimedCount/${group.transactions.length}',
+                    ),
+                    _GroupMetric(
+                      label: AppString.colCharges,
+                      value: Format.money(totalCharges),
+                      alignRight: true,
+                    ),
+                    _GroupMetric(
+                      label: 'Payment Paid',
+                      value: Format.money(paidAmount),
+                      alignRight: true,
+                    ),
+                    _GroupMetric(
+                      label: 'Payment Pending',
+                      value: Format.money(pendingAmount),
+                      alignRight: true,
+                    ),
+                    _GroupMetric(
+                      label: 'Pending Claimed',
+                      value: Format.money(pendingClaimedAmount),
+                      alignRight: true,
+                    ),
+                    _GroupMetric(
+                      label: 'Pending Unclaimed',
+                      value: Format.money(pendingUnclaimedAmount),
+                      alignRight: true,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          AppDataTable(
+            table: DataTable(
+              columnSpacing: 16,
+              horizontalMargin: 12,
+              dataRowMinHeight: 42,
+              dataRowMaxHeight: 42,
+              showCheckboxColumn: false,
+              columns: const [
+                DataColumn(label: Text(AppString.colNo)),
+                DataColumn(label: Text(AppString.colCustomerName)),
+                DataColumn(label: Text(AppString.colPhone)),
+                DataColumn(label: Text(AppString.colParcelType)),
+                DataColumn(label: Text(AppString.colNumber)),
+                DataColumn(label: Text(AppString.colCharges)),
+                DataColumn(label: Text(AppString.colPaymentStatus)),
+                DataColumn(label: Text(AppString.colCashAdvance)),
+                DataColumn(label: Text(AppString.colPickedUp)),
+                DataColumn(label: Text(AppString.colComment)),
+                DataColumn(label: SizedBox.shrink()),
+              ],
+              rows: [
+                for (final entry in group.transactions.asMap().entries)
+                  _groupTransactionDataRow(
+                    context: context,
+                    index: entry.key + 1,
+                    driver: group.driver,
+                    transaction: entry.value,
+                    controller: controller,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+bool _isPaymentPaid(DbTransaction transaction) {
+  return transaction.paymentStatus == AppString.paymentPaid ||
+      transaction.paymentStatus == AppString.paymentPaidLegacy ||
+      transaction.paymentStatus == AppString.paymentPaidAltMm;
+}
+
+class _GroupMetric extends StatelessWidget {
+  const _GroupMetric({
+    required this.label,
+    required this.value,
+    this.alignRight = false,
+  });
+
+  final String label;
+  final String value;
+  final bool alignRight;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 116,
+      child: Column(
+        crossAxisAlignment: alignRight
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColor.textSecondary,
+              fontSize: Dimens.fontSizeCaption,
+            ),
+          ),
+          const SizedBox(height: Dimens.spacingMicro),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColor.textPrimary,
+              fontSize: Dimens.fontSizeBody,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+DataRow _groupTransactionDataRow({
+  required BuildContext context,
+  required int index,
+  required Driver driver,
+  required DbTransaction transaction,
+  required InventoryController controller,
+}) {
+  void openDetails() => showViewTransactionDialog(context, transaction);
+
+  return DataRow(
+    cells: [
+      DataCell(Text('$index'), onTap: openDetails),
+      DataCell(
+        SizedBox(
+          width: 170,
+          child: Text(
+            transaction.customerName ?? '-',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        onTap: openDetails,
+      ),
+      DataCell(Text(transaction.phone), onTap: openDetails),
+      DataCell(
+        SizedBox(
+          width: AppTableWidths.parcelType,
+          child: Text(
+            transaction.parcelType,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        onTap: openDetails,
+      ),
+      DataCell(Text(transaction.number), onTap: openDetails),
+      DataCell(
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(Format.money(transaction.charges)),
+        ),
+        onTap: openDetails,
+      ),
+      DataCell(Text(transaction.paymentStatus), onTap: openDetails),
+      DataCell(
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(Format.money(transaction.cashAdvance)),
+        ),
+        onTap: openDetails,
+      ),
+      DataCell(
+        Center(
+          child:
+              !controller.canClaimTransaction(
+                transaction: transaction,
+                driver: driver,
+              )
+              ? const Icon(Icons.check, color: AppColor.success)
+              : fluent.Button(
+                  onPressed: () => showClaimTransactionDialog(
+                    context,
+                    controller,
+                    transaction,
+                  ),
+                  child: const Text('Claim'),
+                ),
+        ),
+      ),
+      DataCell(
+        SizedBox(
+          width: 180,
+          child: Text(
+            (transaction.comment?.trim().isNotEmpty ?? false)
+                ? transaction.comment!.trim()
+                : '-',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        onTap: openDetails,
+      ),
+      DataCell(
+        Align(
+          alignment: Alignment.centerRight,
+          child: TransactionActionsMenu(
+            transaction: transaction,
+            driverId: driver.id,
+            driver: driver,
+            controller: controller,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 class _InventoryMasterDetail extends StatelessWidget {
   const _InventoryMasterDetail({
     required this.drivers,
@@ -152,7 +587,7 @@ class _InventoryMasterDetail extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          width: 420,
+          width: 300,
           child: _DriversTable(
             drivers: drivers,
             selectedDriverId: selectedDriver.id,
@@ -198,6 +633,10 @@ class _DriversTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void selectDriver(Driver driver) {
+      controller.selectedDriverId.value = driver.id;
+    }
+
     return AppDataTable(
       table: DataTable(
         columnSpacing: 12,
@@ -205,16 +644,13 @@ class _DriversTable extends StatelessWidget {
         showCheckboxColumn: false,
         columns: const [
           DataColumn(label: Text(AppString.colDriver)),
-          DataColumn(label: Text('Txn')),
-          DataColumn(label: Text(AppString.colCharges)),
           DataColumn(label: Text('Status')),
         ],
         rows: [
           for (final driver in drivers)
             DataRow(
               selected: driver.id == selectedDriverId,
-              onSelectChanged: (_) =>
-                  controller.selectedDriverId.value = driver.id,
+              onSelectChanged: (_) => selectDriver(driver),
               cells: [
                 DataCell(
                   SizedBox(
@@ -241,23 +677,12 @@ class _DriversTable extends StatelessWidget {
                       ],
                     ),
                   ),
+                  onTap: () => selectDriver(driver),
                 ),
                 DataCell(
-                  Text(
-                    '${controller.filteredTransactionsForDriver(driver.id).length}',
-                  ),
+                  _CompactStatus(isPaidOut: driver.paidOut),
+                  onTap: () => selectDriver(driver),
                 ),
-                DataCell(
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      Format.money(
-                        controller.totalChargesForDriver(driver.id) ?? 0,
-                      ),
-                    ),
-                  ),
-                ),
-                DataCell(_CompactStatus(isPaidOut: driver.paidOut)),
               ],
             ),
         ],
@@ -274,59 +699,122 @@ class _DetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locked = driver.paidOut;
+    final lockedMessage = driver.paidOutAt == null
+        ? 'Paid out - reopen to edit'
+        : 'Paid out ${Format.dateTime12(driver.paidOutAt!)} - reopen to edit';
+
     return Container(
-      height: 52,
+      height: 64,
       padding: const EdgeInsets.symmetric(horizontal: Dimens.spacingSM),
       decoration: BoxDecoration(
         color: AppColor.white,
         borderRadius: BorderRadius.circular(Dimens.radiusXS),
-        border: Border.all(color: AppColor.border),
+        border: Border.all(
+          color: locked
+              ? AppColor.success.withValues(alpha: 0.35)
+              : AppColor.border,
+        ),
       ),
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              '${driver.name}  •  ${Format.date(driver.date)}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: Dimens.fontSizeSubtitle,
-                fontWeight: FontWeight.w700,
-                color: AppColor.textPrimary,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${driver.name}  •  ${Format.date(driver.date)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: Dimens.fontSizeSubtitle,
+                    fontWeight: FontWeight.w700,
+                    color: AppColor.textPrimary,
+                  ),
+                ),
+                if (locked) ...[
+                  const SizedBox(height: Dimens.spacingMicro),
+                  _LockedHint(message: lockedMessage),
+                ],
+              ],
+            ),
+          ),
+          Tooltip(
+            message: locked
+                ? 'Reopen payout before adding transactions.'
+                : AppString.addTransaction,
+            child: fluent.Button(
+              onPressed: controller.canAddTransaction(driver)
+                  ? () =>
+                        showAddTransactionDialog(context, controller, driver.id)
+                  : null,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, size: 16),
+                  SizedBox(width: Dimens.spacingXXS),
+                  Text(AppString.addTransaction),
+                ],
               ),
             ),
           ),
-          fluent.Button(
-            onPressed: controller.canAddTransaction(driver)
-                ? () => showAddTransactionDialog(context, controller, driver.id)
-                : null,
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.add, size: 16),
-                SizedBox(width: Dimens.spacingXXS),
-                Text(AppString.addTransaction),
-              ],
-            ),
-          ),
           const SizedBox(width: Dimens.spacingXS),
-          fluent.Button(
-            onPressed: controller.canEditDriverFees(driver)
-                ? () => showEditDriverFeesDialog(context, controller, driver)
-                : null,
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.price_change_outlined, size: 16),
-                SizedBox(width: Dimens.spacingXXS),
-                Text('Edit fees'),
-              ],
+          Tooltip(
+            message: locked
+                ? 'Reopen payout before editing fees.'
+                : 'Edit room, labor, and delivery fees',
+            child: fluent.Button(
+              onPressed: controller.canEditDriverFees(driver)
+                  ? () => showEditDriverFeesDialog(context, controller, driver)
+                  : null,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.price_change_outlined, size: 16),
+                  SizedBox(width: Dimens.spacingXXS),
+                  Text('Edit fees'),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: Dimens.spacingXS),
           DriverActionsMenu(driver: driver, controller: controller),
         ],
       ),
+    );
+  }
+}
+
+class _LockedHint extends StatelessWidget {
+  const _LockedHint({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.lock_outline,
+          size: 13,
+          color: AppColor.success.withValues(alpha: 0.95),
+        ),
+        const SizedBox(width: Dimens.spacingXXS),
+        Flexible(
+          child: Text(
+            message,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: AppColor.success.withValues(alpha: 0.95),
+              fontSize: Dimens.fontSizeCaption,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -340,18 +828,7 @@ class _DriverSummaryStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rows = controller.filteredTransactionsForDriver(driver.id);
-    final totalCharges = rows.fold<double>(0, (sum, t) => sum + t.charges);
-    final totalAdvance = rows.fold<double>(0, (sum, t) => sum + t.cashAdvance);
-    final roomFee = driver.roomFee ?? 0;
-    final laborFee = driver.laborFee ?? 0;
-    final deliveryFee = driver.deliveryFee ?? 0;
-    final currentPayoutAmount = totalCharges - roomFee - laborFee - deliveryFee;
-    final displayPaidOutAmount = driver.paidOut
-        ? (driver.paidOutAmount ?? currentPayoutAmount)
-        : currentPayoutAmount;
-    final paidOutDifference = driver.paidOut
-        ? currentPayoutAmount - (driver.paidOutAmount ?? currentPayoutAmount)
-        : 0.0;
+    final payout = PayoutCalculator.forDriver(driver, rows);
 
     return Container(
       height: 74,
@@ -365,27 +842,28 @@ class _DriverSummaryStrip extends StatelessWidget {
         children: [
           _SummaryCell(
             label: AppString.driverTotalCharges,
-            value: Format.money(totalCharges),
+            value: Format.money(payout.totalCharges),
           ),
           _SummaryCell(
-            label: AppString.colCashAdvance,
-            value: Format.money(totalAdvance),
+            label: 'Payment Pending',
+            value: Format.money(payout.paymentPending),
+            subValue: 'Payable base',
           ),
           _SummaryCell(
             label: AppString.driverRoomFee,
-            value: Format.money(roomFee),
+            value: Format.money(payout.roomFee),
           ),
           _SummaryCell(
             label: AppString.driverLaborFee,
-            value: Format.money(laborFee),
+            value: Format.money(payout.laborFee),
           ),
           _SummaryCell(
             label: AppString.driverDeliveryFee,
-            value: Format.money(deliveryFee),
+            value: Format.money(payout.deliveryFee),
           ),
           _SummaryCell(
             label: AppString.driverPaidOutAmount,
-            value: Format.money(displayPaidOutAmount),
+            value: Format.money(payout.displayedPaidOutAmount),
             subValue: driver.paidOutAt == null
                 ? (driver.paidOut ? 'Snapshot saved' : 'Current')
                 : Format.dateTime12(driver.paidOutAt!),
@@ -393,10 +871,10 @@ class _DriverSummaryStrip extends StatelessWidget {
           if (driver.paidOut)
             _SummaryCell(
               label: 'Difference',
-              value: Format.money(paidOutDifference),
-              valueColor: paidOutDifference == 0
+              value: Format.money(payout.difference),
+              valueColor: payout.difference == 0
                   ? AppColor.textPrimary
-                  : paidOutDifference > 0
+                  : payout.difference > 0
                   ? AppColor.error
                   : AppColor.success,
             )
@@ -499,6 +977,51 @@ class _CompactStatus extends StatelessWidget {
   }
 }
 
+class _PayoutStatusBadge extends StatelessWidget {
+  const _PayoutStatusBadge({required this.isPaidOut});
+
+  final bool isPaidOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isPaidOut ? AppColor.success : AppColor.warning;
+    final foreground = isPaidOut ? AppColor.success : const Color(0xFF7A4F00);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimens.spacingMD,
+        vertical: Dimens.spacingXS,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isPaidOut ? 0.14 : 0.24),
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: color.withValues(alpha: 0.70)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isPaidOut ? Icons.check_circle_outline : Icons.schedule,
+            size: 16,
+            color: foreground,
+          ),
+          const SizedBox(width: Dimens.spacingXXS),
+          Text(
+            isPaidOut ? 'Paid Out' : 'Pending Payout',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: foreground,
+              fontSize: Dimens.fontSizeBody,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DriverTransactionsTable extends StatefulWidget {
   const _DriverTransactionsTable({
     required this.controller,
@@ -513,6 +1036,16 @@ class _DriverTransactionsTable extends StatefulWidget {
 }
 
 class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
+  static const double _noWidth = 24;
+  static const double _customerWidth = 112;
+  static const double _phoneWidth = 92;
+  static const double _parcelTypeWidth = 88;
+  static const double _numberWidth = 48;
+  static const double _chargesWidth = 78;
+  static const double _paymentStatusWidth = 76;
+  static const double _cashAdvanceWidth = 78;
+  static const double _pickedUpWidth = 70;
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -531,62 +1064,65 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
           widget.controller.searchQuery.value.trim().isEmpty;
       final headerStyle = AppTextStyles.tableHeader;
       final cellStyle = AppTextStyles.tableCell;
-      final double roomFee = driverInfo?.roomFee ?? 0;
-      final double laborFee = driverInfo?.laborFee ?? 0;
-      final double deliveryFee = driverInfo?.deliveryFee ?? 0;
-      final totalCharges = rows.fold<double>(0, (s, t) => s + t.charges);
-      final totalAdvance = rows.fold<double>(0, (s, t) => s + t.cashAdvance);
-      final double totalDeductions = roomFee + laborFee + deliveryFee;
-      final double currentPayoutAmount = totalCharges - totalDeductions;
-      final double displayedPaidOutAmount = (driverInfo?.paidOut ?? false)
-          ? (driverInfo?.paidOutAmount ?? currentPayoutAmount)
-          : currentPayoutAmount;
-      final double paidOutDifference = (driverInfo?.paidOut ?? false)
-          ? currentPayoutAmount -
-                (driverInfo?.paidOutAmount ?? currentPayoutAmount)
-          : 0;
+      final payout = driverInfo == null
+          ? null
+          : PayoutCalculator.forDriver(driverInfo, rows);
+      final totalCharges =
+          payout?.totalCharges ?? rows.fold<double>(0, (s, t) => s + t.charges);
+      final pendingPayment = payout?.paymentPending ?? 0;
+      final paidPayment = payout?.paymentPaid ?? 0;
+      final totalCashAdvance = payout?.cashAdvance ?? 0;
+
+      DataRow buildAmountRow({
+        required String label,
+        required double amount,
+        bool deduction = false,
+        bool emphasized = false,
+        Color? valueColor,
+      }) {
+        final style = (emphasized ? headerStyle : cellStyle).copyWith(
+          fontWeight: emphasized ? FontWeight.w800 : FontWeight.w600,
+          color: valueColor ?? AppColor.textPrimary,
+        );
+        final amountText = deduction
+            ? '- ${Format.money(amount)}'
+            : Format.money(amount);
+
+        return DataRow(
+          cells: [
+            const DataCell(SizedBox()), // No
+            DataCell(
+              Padding(
+                padding: const EdgeInsets.only(left: Dimens.spacingMD),
+                child: Text(label, style: style),
+              ),
+            ),
+            const DataCell(SizedBox()), // Phone
+            const DataCell(SizedBox()), // Parcel type
+            const DataCell(SizedBox()), // Number
+            DataCell(
+              SizedBox(
+                width: _chargesWidth,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(amountText, style: style),
+                ),
+              ),
+            ),
+            const DataCell(SizedBox()), // Payment status
+            const DataCell(SizedBox()), // Cash advance
+            const DataCell(SizedBox()), // Picked up
+            const DataCell(SizedBox()), // Actions
+          ],
+        );
+      }
+
       List<DataRow> buildFeeRows(Driver? info) {
         final feeRows = <DataRow>[];
         void addFee(String label, double? amount) {
           if (amount == null || amount <= 0) return;
           feeRows.add(
-            DataRow(
-              cells: [
-                const DataCell(SizedBox()), // No
-                DataCell(
-                  Padding(
-                    padding: const EdgeInsets.only(left: Dimens.spacingMD),
-                    child: Text(
-                      label,
-                      style: cellStyle.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-                const DataCell(SizedBox()), // Phone placeholder
-                const DataCell(SizedBox()), // Parcel type
-                const DataCell(SizedBox()), // Number
-                DataCell(
-                  SizedBox(
-                    width: AppTableWidths.charges,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        '- ${Format.money(amount)}',
-                        style: headerStyle.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColor.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const DataCell(SizedBox()), // Payment status
-                const DataCell(SizedBox()), // Cash advance
-                const DataCell(SizedBox()), // Picked up
-                const DataCell(SizedBox()), // Collect time
-                const DataCell(SizedBox()), // Actions
-              ],
-            ),
+            buildAmountRow(label: label, amount: amount, deduction: true),
           );
         }
 
@@ -596,49 +1132,64 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
         return feeRows;
       }
 
+      final displayedPaidOutAmount = payout?.displayedPaidOutAmount ?? 0;
+      final paidOutDifference = payout?.difference ?? 0;
+
       return AppDataTable(
         table: DataTable(
-          columnSpacing: 16,
-          horizontalMargin: 12,
+          columnSpacing: 8,
+          horizontalMargin: 8,
+          dataRowMinHeight: 40,
+          dataRowMaxHeight: 40,
           columns: [
             DataColumn(
-              label: Padding(
-                padding: const EdgeInsets.only(left: Dimens.spacingMD),
-                child: Text(AppString.colNo, style: headerStyle),
-              ),
-            ),
-            DataColumn(
-              label: Center(
-                child: Text(AppString.colCustomerName, style: headerStyle),
-              ),
-            ),
-            DataColumn(
+              columnWidth: const FixedColumnWidth(_noWidth),
               label: SizedBox(
-                width: AppTableWidths.phone,
+                width: _noWidth,
+                child: Center(child: Text(AppString.colNo, style: headerStyle)),
+              ),
+            ),
+            DataColumn(
+              columnWidth: const FixedColumnWidth(_customerWidth),
+              label: SizedBox(
+                width: _customerWidth,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(AppString.colCustomerName, style: headerStyle),
+                ),
+              ),
+            ),
+            DataColumn(
+              columnWidth: const FixedColumnWidth(_phoneWidth),
+              label: SizedBox(
+                width: _phoneWidth,
                 child: Center(
                   child: Text(AppString.colPhone, style: headerStyle),
                 ),
               ),
             ),
             DataColumn(
+              columnWidth: const FixedColumnWidth(_parcelTypeWidth),
               label: SizedBox(
-                width: AppTableWidths.parcelType,
+                width: _parcelTypeWidth,
                 child: Center(
                   child: Text(AppString.colParcelType, style: headerStyle),
                 ),
               ),
             ),
             DataColumn(
+              columnWidth: const FixedColumnWidth(_numberWidth),
               label: SizedBox(
-                width: AppTableWidths.number,
+                width: _numberWidth,
                 child: Center(
                   child: Text(AppString.colNumber, style: headerStyle),
                 ),
               ),
             ),
             DataColumn(
+              columnWidth: const FixedColumnWidth(_chargesWidth),
               label: SizedBox(
-                width: AppTableWidths.charges,
+                width: _chargesWidth,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(AppString.colCharges, style: headerStyle),
@@ -646,16 +1197,18 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               ),
             ),
             DataColumn(
+              columnWidth: const FixedColumnWidth(_paymentStatusWidth),
               label: SizedBox(
-                width: AppTableWidths.paymentStatus,
+                width: _paymentStatusWidth,
                 child: Center(
                   child: Text(AppString.colPaymentStatus, style: headerStyle),
                 ),
               ),
             ),
             DataColumn(
+              columnWidth: const FixedColumnWidth(_cashAdvanceWidth),
               label: SizedBox(
-                width: AppTableWidths.cashAdvance,
+                width: _cashAdvanceWidth,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(AppString.colCashAdvance, style: headerStyle),
@@ -663,23 +1216,19 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               ),
             ),
             DataColumn(
+              columnWidth: const FixedColumnWidth(_pickedUpWidth),
               label: SizedBox(
-                width: AppTableWidths.pickedUp,
+                width: _pickedUpWidth,
                 child: Center(
                   child: Text(AppString.colPickedUp, style: headerStyle),
                 ),
               ),
             ),
-            DataColumn(
-              label: SizedBox(
-                width: AppTableWidths.collectTime,
-                child: Center(
-                  child: Text(AppString.colCollectTime, style: headerStyle),
-                ),
-              ),
-            ),
             // Actions
-            const DataColumn(label: SizedBox.shrink()),
+            const DataColumn(
+              columnWidth: FixedColumnWidth(48),
+              label: SizedBox.shrink(),
+            ),
           ],
           rows: [
             ...rows.asMap().entries.map((e) {
@@ -689,22 +1238,37 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               return DataRow(
                 cells: [
                   DataCell(
-                    Padding(
-                      padding: const EdgeInsets.only(left: Dimens.spacingMD),
-                      child: Text(idx.toString(), style: cellStyle),
+                    SizedBox(
+                      width: _noWidth,
+                      child: Center(
+                        child: Text(idx.toString(), style: cellStyle),
+                      ),
                     ),
                     onTap: openDetails,
                   ),
                   DataCell(
-                    Text(t.customerName ?? '-', style: cellStyle),
+                    SizedBox(
+                      width: _customerWidth,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          t.customerName ?? '-',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: cellStyle,
+                        ),
+                      ),
+                    ),
                     onTap: openDetails,
                   ),
                   DataCell(
                     SizedBox(
-                      width: AppTableWidths.phone,
+                      width: _phoneWidth,
                       child: Center(
                         child: Text(
                           t.phone,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: cellStyle,
                           textAlign: TextAlign.center,
                         ),
@@ -714,10 +1278,12 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                   DataCell(
                     SizedBox(
-                      width: AppTableWidths.parcelType,
+                      width: _parcelTypeWidth,
                       child: Center(
                         child: Text(
                           t.parcelType,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: cellStyle,
                           textAlign: TextAlign.center,
                         ),
@@ -727,10 +1293,12 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                   DataCell(
                     SizedBox(
-                      width: AppTableWidths.number,
+                      width: _numberWidth,
                       child: Center(
                         child: Text(
                           t.number,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: cellStyle,
                           textAlign: TextAlign.center,
                         ),
@@ -740,11 +1308,13 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                   DataCell(
                     SizedBox(
-                      width: AppTableWidths.charges,
+                      width: _chargesWidth,
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Text(
                           Format.money(t.charges),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: cellStyle,
                           textAlign: TextAlign.right,
                         ),
@@ -754,10 +1324,12 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                   DataCell(
                     SizedBox(
-                      width: AppTableWidths.paymentStatus,
+                      width: _paymentStatusWidth,
                       child: Center(
                         child: Text(
                           t.paymentStatus,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: cellStyle,
                           textAlign: TextAlign.center,
                         ),
@@ -767,11 +1339,13 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                   DataCell(
                     SizedBox(
-                      width: AppTableWidths.cashAdvance,
+                      width: _cashAdvanceWidth,
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Text(
                           Format.money(t.cashAdvance),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: cellStyle,
                           textAlign: TextAlign.right,
                         ),
@@ -781,7 +1355,7 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                   ),
                   DataCell(
                     SizedBox(
-                      width: AppTableWidths.pickedUp,
+                      width: _pickedUpWidth,
                       child: Center(
                         child:
                             !widget.controller.canClaimTransaction(
@@ -789,35 +1363,16 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                               driver: driverInfo,
                             )
                             ? const Icon(Icons.check, color: AppColor.success)
-                            : OutlinedButton(
+                            : fluent.Button(
                                 onPressed: () => showClaimTransactionDialog(
                                   context,
                                   widget.controller,
                                   t,
                                 ),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: Dimens.spacingSM,
-                                    vertical: Dimens.spacingXS,
-                                  ),
-                                ),
                                 child: const Text('Claim'),
                               ),
                       ),
                     ),
-                  ),
-                  DataCell(
-                    SizedBox(
-                      width: AppTableWidths.collectTime,
-                      child: Center(
-                        child: Text(
-                          t.pickedUp ? Format.dateTime12(t.updatedAt) : '-',
-                          style: cellStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    onTap: openDetails,
                   ),
                   DataCell(
                     Align(
@@ -834,102 +1389,33 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
               );
             }),
             if (showSummaryRow) ...[
-              DataRow(
-                cells: [
-                  const DataCell(SizedBox()), // No
-                  DataCell(
-                    Padding(
-                      padding: const EdgeInsets.only(left: Dimens.spacingMD),
-                      child: Text(
-                        AppString.driverTotalCharges,
-                        style: headerStyle.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ), // Name
-                  const DataCell(SizedBox()), // Phone placeholder
-                  const DataCell(SizedBox()), // Parcel type
-                  const DataCell(SizedBox()), // Number
-                  DataCell(
-                    SizedBox(
-                      width: AppTableWidths.charges,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          Format.money(totalCharges),
-                          style: headerStyle.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColor.textPrimary,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const DataCell(SizedBox()), // Payment status
-                  DataCell(
-                    SizedBox(
-                      width: AppTableWidths.cashAdvance,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          Format.money(totalAdvance),
-                          style: headerStyle.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColor.textPrimary,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const DataCell(SizedBox()), // Picked up
-                  const DataCell(SizedBox()), // Collect time
-                  const DataCell(SizedBox()), // Actions
-                ],
+              buildAmountRow(
+                label: AppString.driverTotalCharges,
+                amount: totalCharges,
+                emphasized: true,
               ),
-              ...buildFeeRows(driverInfo),
-              if (totalDeductions > 0 && totalCharges > 0)
-                DataRow(
-                  cells: [
-                    const DataCell(SizedBox()), // No
-                    DataCell(
-                      Padding(
-                        padding: const EdgeInsets.only(left: Dimens.spacingMD),
-                        child: Text(
-                          'Paid out amount',
-                          style: headerStyle.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const DataCell(SizedBox()), // Phone placeholder
-                    const DataCell(SizedBox()), // Parcel type
-                    const DataCell(SizedBox()), // Number
-                    DataCell(
-                      SizedBox(
-                        width: AppTableWidths.charges,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            Format.money(displayedPaidOutAmount),
-                            style: headerStyle.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColor.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const DataCell(SizedBox()), // Payment status
-                    const DataCell(SizedBox()), // Cash advance
-                    const DataCell(SizedBox()), // Picked up
-                    const DataCell(SizedBox()), // Collect time
-                    const DataCell(SizedBox()), // Actions
-                  ],
+              if (paidPayment > 0)
+                buildAmountRow(
+                  label: AppString.paymentPaid,
+                  amount: paidPayment,
+                  deduction: true,
                 ),
+              buildAmountRow(
+                label: AppString.paymentPending,
+                amount: pendingPayment,
+                emphasized: true,
+              ),
+              if (totalCashAdvance > 0)
+                buildAmountRow(
+                  label: AppString.colCashAdvance,
+                  amount: totalCashAdvance,
+                ),
+              ...buildFeeRows(driverInfo),
+              buildAmountRow(
+                label: 'Paid out amount',
+                amount: displayedPaidOutAmount,
+                emphasized: true,
+              ),
               if ((driverInfo?.paidOut ?? false) &&
                   driverInfo?.paidOutAt != null)
                 DataRow(
@@ -954,88 +1440,17 @@ class _DriverTransactionsTableState extends State<_DriverTransactionsTable> {
                     const DataCell(SizedBox()),
                     const DataCell(SizedBox()),
                     const DataCell(SizedBox()),
-                    const DataCell(SizedBox()),
                   ],
                 ),
               if ((driverInfo?.paidOut ?? false) && paidOutDifference != 0)
-                DataRow(
-                  cells: [
-                    const DataCell(SizedBox()),
-                    DataCell(
-                      Padding(
-                        padding: const EdgeInsets.only(left: Dimens.spacingMD),
-                        child: Text(
-                          'Difference after edits',
-                          style: headerStyle.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const DataCell(SizedBox()),
-                    const DataCell(SizedBox()),
-                    const DataCell(SizedBox()),
-                    DataCell(
-                      SizedBox(
-                        width: AppTableWidths.charges,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            Format.money(paidOutDifference),
-                            style: headerStyle.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: paidOutDifference > 0
-                                  ? AppColor.error
-                                  : AppColor.success,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const DataCell(SizedBox()),
-                    const DataCell(SizedBox()),
-                    const DataCell(SizedBox()),
-                    const DataCell(SizedBox()),
-                    const DataCell(SizedBox()),
-                  ],
+                buildAmountRow(
+                  label: 'Difference after edits',
+                  amount: paidOutDifference,
+                  emphasized: true,
+                  valueColor: paidOutDifference > 0
+                      ? AppColor.error
+                      : AppColor.success,
                 ),
-              DataRow(
-                cells: [
-                  DataCell(
-                    Padding(
-                      padding: const EdgeInsets.only(left: Dimens.spacingMD),
-                      child: Text(
-                        AppString.paidOutStatusLabel,
-                        style: headerStyle.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  DataCell(
-                    Text(
-                      (driverInfo?.paidOut ?? false)
-                          ? AppString.paidOutStatusPaidMm
-                          : AppString.paidOutStatusPendingMm,
-                      style: cellStyle.copyWith(
-                        color: (driverInfo?.paidOut ?? false)
-                            ? AppColor.success
-                            : AppColor.error,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const DataCell(SizedBox()),
-                  const DataCell(SizedBox()),
-                  const DataCell(SizedBox()),
-                  const DataCell(SizedBox()),
-                  const DataCell(SizedBox()),
-                  const DataCell(SizedBox()),
-                  const DataCell(SizedBox()),
-                  const DataCell(SizedBox()),
-                  const DataCell(SizedBox()),
-                ],
-              ),
             ],
           ],
         ),

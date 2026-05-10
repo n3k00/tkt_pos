@@ -200,15 +200,41 @@ class _PaneHeader extends StatelessWidget {
           const _BrandMark(),
           const fluent.SizedBox(width: Dimens.spacingSM),
           fluent.Expanded(
-            child: fluent.Text(
-              AppString.title,
-              maxLines: 1,
-              overflow: fluent.TextOverflow.ellipsis,
-              style: const fluent.TextStyle(
-                fontSize: Dimens.fontSizeBody,
-                fontWeight: fluent.FontWeight.w700,
-                color: AppColor.textPrimary,
-              ),
+            child: fluent.Wrap(
+              crossAxisAlignment: fluent.WrapCrossAlignment.center,
+              spacing: Dimens.spacingXS,
+              runSpacing: Dimens.spacingXXS,
+              children: [
+                fluent.Text(
+                  AppString.title,
+                  maxLines: 1,
+                  overflow: fluent.TextOverflow.ellipsis,
+                  style: const fluent.TextStyle(
+                    fontSize: Dimens.fontSizeBody,
+                    fontWeight: fluent.FontWeight.w700,
+                    color: AppColor.textPrimary,
+                  ),
+                ),
+                fluent.Container(
+                  padding: const fluent.EdgeInsets.symmetric(
+                    horizontal: Dimens.spacingXS,
+                    vertical: 2,
+                  ),
+                  decoration: fluent.BoxDecoration(
+                    color: AppColor.primary.withValues(alpha: 0.12),
+                    borderRadius: fluent.BorderRadius.circular(Dimens.radiusXS),
+                    border: fluent.Border.all(color: AppColor.primaryLight),
+                  ),
+                  child: const fluent.Text(
+                    AppString.releaseLabel,
+                    style: fluent.TextStyle(
+                      fontSize: Dimens.fontSizeCaption,
+                      fontWeight: fluent.FontWeight.w700,
+                      color: AppColor.primaryDark,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -231,7 +257,14 @@ class _BrandMark extends StatelessWidget {
         border: fluent.Border.all(color: AppColor.primaryLight),
       ),
       child: const fluent.Center(
-        child: Icon(Icons.point_of_sale, color: AppColor.primaryDark, size: 20),
+        child: fluent.Text(
+          'B5',
+          style: fluent.TextStyle(
+            color: AppColor.primaryDark,
+            fontWeight: fluent.FontWeight.w800,
+            fontSize: 14,
+          ),
+        ),
       ),
     );
   }

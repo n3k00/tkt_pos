@@ -31,6 +31,9 @@ class TransactionActionsMenu extends StatelessWidget {
       transaction: transaction,
       driver: driver,
     );
+    final lockReason = driver?.paidOut == true
+        ? 'Reopen payout before editing.'
+        : null;
 
     return GlassPopupMenuButton<String>(
       tooltip: 'Transaction actions',
@@ -42,20 +45,30 @@ class TransactionActionsMenu extends StatelessWidget {
         PopupMenuItem(
           enabled: canEdit,
           value: 'edit',
-          child: const _MenuRow(icon: Icons.edit_outlined, label: 'Edit'),
+          child: Tooltip(
+            message: canEdit ? 'Edit transaction' : lockReason ?? 'Unavailable',
+            child: _MenuRow(
+              icon: Icons.edit_outlined,
+              label: 'Edit',
+              reason: canEdit ? null : lockReason,
+              enabled: canEdit,
+            ),
+          ),
         ),
         PopupMenuItem(
           enabled: canDelete,
           value: 'delete',
-          child: Row(
-            children: [
-              const Icon(Icons.delete_outline, size: 18, color: AppColor.error),
-              const SizedBox(width: Dimens.spacingXS),
-              Text(
-                'Delete',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
+          child: Tooltip(
+            message: canDelete
+                ? 'Delete transaction'
+                : lockReason ?? 'Unavailable',
+            child: _MenuRow(
+              icon: Icons.delete_outline,
+              label: 'Delete',
+              reason: canDelete ? null : lockReason,
+              enabled: canDelete,
+              color: AppColor.error,
+            ),
           ),
         ),
       ],
@@ -89,17 +102,48 @@ class TransactionActionsMenu extends StatelessWidget {
 }
 
 class _MenuRow extends StatelessWidget {
-  const _MenuRow({required this.icon, required this.label});
+  const _MenuRow({
+    required this.icon,
+    required this.label,
+    this.reason,
+    this.enabled = true,
+    this.color,
+  });
+
   final IconData icon;
   final String label;
+  final String? reason;
+  final bool enabled;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor = enabled
+        ? (color ?? AppColor.textPrimary)
+        : AppColor.textMuted;
     return Row(
       children: [
-        Icon(icon, size: 18),
+        Icon(icon, size: 18, color: effectiveColor),
         const SizedBox(width: Dimens.spacingXS),
-        Text(label),
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(color: effectiveColor)),
+              if (reason != null)
+                Text(
+                  reason!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColor.textMuted,
+                    fontSize: Dimens.fontSizeCaption,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }

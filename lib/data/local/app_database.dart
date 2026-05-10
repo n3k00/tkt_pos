@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:sqlite3/sqlite3.dart' as sqlite;
 import 'tables/app_settings.dart';
 import 'tables/driver_payout_history.dart';
 import 'tables/driver_profiles.dart';
@@ -18,6 +19,7 @@ import 'daos/trip_dao.dart';
 part 'app_database.g.dart';
 
 // Tables are now split into separate files under tables/
+const int _currentSchemaVersion = 19;
 
 @DriftDatabase(
   tables: [
@@ -41,7 +43,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => _instance;
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => _currentSchemaVersion;
 
   // Migrations: create new tables when upgrading from v1
   @override
@@ -49,6 +51,7 @@ class AppDatabase extends _$AppDatabase {
     onCreate: (m) async {
       // Create all Drift-managed tables (including trip_main & trip_manifests)
       await m.createAll();
+      await _ensureDriverProfileNameUniqueIndex();
     },
     onUpgrade: (m, from, to) async {
       if (from < 6) {
@@ -113,6 +116,10 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(driverPayoutHistory);
         }
       }
+      if (from < 19) {
+        await _dedupeDriverProfiles();
+        await _ensureDriverProfileNameUniqueIndex();
+      }
     },
   );
 
@@ -134,12 +141,8 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     String? phone,
   }) async {
-    final normalized = name.trim();
-    final existing =
-        await (select(driverProfiles)
-              ..where((p) => p.name.equals(normalized))
-              ..limit(1))
-            .getSingleOrNull();
+    final normalized = _normalizeDriverProfileName(name);
+    final existing = await _findDriverProfileByNormalizedName(normalized);
     if (existing != null) return existing.id;
 
     return into(driverProfiles).insert(
@@ -165,14 +168,21 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<int> insertDriverProfile({required String name, String? phone}) {
-    return into(driverProfiles).insert(
-      DriverProfilesCompanion.insert(
-        name: name.trim(),
-        phone: Value(
-          phone == null || phone.trim().isEmpty ? null : phone.trim(),
+    final normalized = _normalizeDriverProfileName(name);
+    return transaction(() async {
+      final duplicate = await _findDriverProfileByNormalizedName(normalized);
+      if (duplicate != null) {
+        throw StateError('Driver profile name already exists.');
+      }
+      return into(driverProfiles).insert(
+        DriverProfilesCompanion.insert(
+          name: normalized,
+          phone: Value(
+            phone == null || phone.trim().isEmpty ? null : phone.trim(),
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Future<bool> updateDriverProfile({
@@ -180,11 +190,16 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     String? phone,
     required bool active,
-  }) {
+  }) async {
+    final normalized = _normalizeDriverProfileName(name);
+    final duplicate = await _findDriverProfileByNormalizedName(normalized);
+    if (duplicate != null && duplicate.id != id) {
+      throw StateError('Driver profile name already exists.');
+    }
     return update(driverProfiles).replace(
       DriverProfile(
         id: id,
-        name: name.trim(),
+        name: normalized,
         phone: phone == null || phone.trim().isEmpty ? null : phone.trim(),
         active: active,
       ),
@@ -584,6 +599,87 @@ WHERE profile_id IS NULL
 ''');
   }
 
+  String _normalizeDriverProfileName(String name) => name.trim();
+
+  Future<DriverProfile?> _findDriverProfileByNormalizedName(
+    String normalizedName,
+  ) async {
+    final rows = await customSelect(
+      '''
+SELECT *
+FROM driver_profiles
+WHERE lower(trim(name)) = lower(trim(?))
+LIMIT 1
+''',
+      variables: [Variable<String>(normalizedName)],
+      readsFrom: {driverProfiles},
+    ).get();
+    if (rows.isEmpty) return null;
+    return driverProfiles.map(rows.first.data);
+  }
+
+  Future<void> _dedupeDriverProfiles() async {
+    if (!await _tableExists('driver_profiles')) return;
+    await transaction(() async {
+      final duplicates = await customSelect(
+        '''
+SELECT lower(trim(name)) AS normalized_name, MIN(id) AS canonical_id
+FROM driver_profiles
+WHERE trim(name) != ''
+GROUP BY lower(trim(name))
+HAVING COUNT(*) > 1
+''',
+        readsFrom: {driverProfiles},
+      ).get();
+
+      for (final row in duplicates) {
+        final normalizedName = row.data['normalized_name'] as String?;
+        final canonicalId = row.data['canonical_id'] as int?;
+        if (normalizedName == null || canonicalId == null) continue;
+
+        final duplicateRows = await customSelect(
+          '''
+SELECT id
+FROM driver_profiles
+WHERE lower(trim(name)) = ?
+  AND id != ?
+''',
+          variables: [
+            Variable<String>(normalizedName),
+            Variable<int>(canonicalId),
+          ],
+          readsFrom: {driverProfiles},
+        ).get();
+
+        for (final duplicateRow in duplicateRows) {
+          final duplicateId = duplicateRow.data['id'] as int?;
+          if (duplicateId == null) continue;
+          await customStatement(
+            '''
+UPDATE drivers
+SET profile_id = ?
+WHERE profile_id = ?
+''',
+            [canonicalId, duplicateId],
+          );
+          await customStatement(
+            'DELETE FROM driver_profiles WHERE id = ?',
+            [duplicateId],
+          );
+        }
+      }
+    });
+  }
+
+  Future<void> _ensureDriverProfileNameUniqueIndex() async {
+    await customStatement(
+      '''
+CREATE UNIQUE INDEX IF NOT EXISTS idx_driver_profiles_name_normalized
+ON driver_profiles(lower(trim(name)))
+''',
+    );
+  }
+
   Future<void> _copyTripMainData(String legacyName) async {
     final columns = await _getColumnNames(legacyName);
     if (!columns.contains('id')) {
@@ -683,6 +779,44 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final Directory dir = await getApplicationSupportDirectory();
     final File file = File(p.join(dir.path, 'app.db'));
+    await _backupBeforeMigrationIfNeeded(file, dir);
     return NativeDatabase.createInBackground(file);
   });
+}
+
+Future<void> _backupBeforeMigrationIfNeeded(
+  File dbFile,
+  Directory appDir,
+) async {
+  if (!await dbFile.exists()) return;
+  final stat = await dbFile.stat();
+  if (stat.size == 0) return;
+
+  sqlite.Database? rawDb;
+  try {
+    rawDb = sqlite.sqlite3.open(dbFile.path);
+    final result = rawDb.select('PRAGMA user_version');
+    if (result.isEmpty) return;
+    final userVersion = result.first.values.first as int;
+    if (userVersion >= _currentSchemaVersion) return;
+
+    final backupsDir = Directory(p.join(appDir.path, 'backups', 'migrations'));
+    if (!await backupsDir.exists()) {
+      await backupsDir.create(recursive: true);
+    }
+    final ts = DateTime.now()
+        .toIso8601String()
+        .replaceAll(':', '-')
+        .replaceAll('.', '-');
+    final backupPath = p.join(
+      backupsDir.path,
+      'app-before-v$userVersion-to-v$_currentSchemaVersion-$ts.db',
+    );
+    rawDb.execute("VACUUM INTO '${backupPath.replaceAll("'", "''")}'");
+  } catch (_) {
+    // Do not block app startup. A failed safety backup should not prevent
+    // Drift from attempting the migration.
+  } finally {
+    rawDb?.dispose();
+  }
 }

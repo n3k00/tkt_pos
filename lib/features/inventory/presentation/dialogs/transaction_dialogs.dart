@@ -8,6 +8,7 @@ import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_co
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/utils/format.dart';
+import 'package:tkt_pos/utils/money_input.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/widgets/app_snackbar.dart';
 import 'package:tkt_pos/widgets/desktop_form_dialog.dart';
@@ -56,8 +57,12 @@ class _EditTransactionDialogState extends State<_EditTransactionDialog> {
     _phoneCtrl = TextEditingController(text: t.phone);
     _parcelCtrl = TextEditingController(text: t.parcelType);
     _numberCtrl = TextEditingController(text: t.number);
-    _chargesCtrl = TextEditingController(text: t.charges.toString());
-    _cashAdvanceCtrl = TextEditingController(text: t.cashAdvance.toString());
+    _chargesCtrl = TextEditingController(
+      text: MoneyInput.formatInitial(t.charges),
+    );
+    _cashAdvanceCtrl = TextEditingController(
+      text: MoneyInput.formatInitial(t.cashAdvance),
+    );
     _paymentStatus = t.paymentStatus;
   }
 
@@ -86,9 +91,13 @@ class _EditTransactionDialogState extends State<_EditTransactionDialog> {
           phone: drift.Value(_phoneCtrl.text.trim()),
           parcelType: drift.Value(_parcelCtrl.text.trim()),
           number: drift.Value(_numberCtrl.text.trim()),
-          charges: drift.Value(_parseMoney(_chargesCtrl.text)),
+          charges: drift.Value(
+            MoneyInput.parseRequiredKyatAsDouble(_chargesCtrl.text),
+          ),
           paymentStatus: drift.Value(_paymentStatus),
-          cashAdvance: drift.Value(_parseMoney(_cashAdvanceCtrl.text)),
+          cashAdvance: drift.Value(
+            MoneyInput.parseOptionalKyatAsDouble(_cashAdvanceCtrl.text),
+          ),
           pickedUp: drift.Value(t.pickedUp),
           comment: const drift.Value.absent(),
           driverId: drift.Value(t.driverId),
@@ -244,12 +253,9 @@ class _TransactionFormBody extends StatelessWidget {
                     controller: chargesCtrl,
                     labelText: AppString.colCharges,
                     prefixIcon: Icons.attach_money,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
-                    ],
+                    keyboardType: TextInputType.number,
+                    inputFormatters: MoneyInput.inputFormatters,
+                    validator: MoneyInput.validateRequiredKyat,
                   ),
                 ),
                 const SizedBox(width: Dimens.spacingSM),
@@ -281,12 +287,9 @@ class _TransactionFormBody extends StatelessWidget {
                     controller: cashAdvanceCtrl,
                     labelText: cashAdvanceLabel,
                     prefixIcon: Icons.savings_outlined,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
-                    ],
+                    keyboardType: TextInputType.number,
+                    inputFormatters: MoneyInput.inputFormatters,
+                    validator: MoneyInput.validateOptionalKyat,
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => onSubmit(),
                   ),
@@ -390,118 +393,118 @@ String? _nullableTrimmed(String value) {
   return trimmed.isEmpty ? null : trimmed;
 }
 
-double _parseMoney(String value) => double.tryParse(value.trim()) ?? 0.0;
-
 Future<void> showViewTransactionDialog(
   BuildContext context,
   DbTransaction t,
 ) async {
-  String fmtMoney(double v) => Format.money(v);
-  String fmtDateTime12(DateTime d) => Format.dateTime12(d);
-
   await showDialog(
     context: context,
     builder: (ctx) {
-      return fluent.ContentDialog(
-        constraints: const BoxConstraints(maxWidth: 600),
-        title: const Text(AppString.dialogTransactionDetails),
-        content: Material(
-          type: MaterialType.transparency,
-          child: SizedBox(
-            width: 520,
-            child: SingleChildScrollView(
+      void close() => Navigator.of(ctx).pop();
+      final customer = (t.customerName?.trim().isNotEmpty ?? false)
+          ? t.customerName!.trim()
+          : '-';
+      final comment = (t.comment?.trim().isNotEmpty ?? false)
+          ? t.comment!.trim()
+          : '-';
+
+      return DesktopDialogShortcuts(
+        onCancel: close,
+        onSubmit: close,
+        child: fluent.ContentDialog(
+          constraints: const BoxConstraints(maxWidth: 760),
+          title: Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  AppString.dialogTransactionDetails,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              _TransactionStatusBadge(
+                label: t.pickedUp ? 'Claimed' : 'Unclaimed',
+                color: t.pickedUp ? AppColor.success : AppColor.warning,
+              ),
+            ],
+          ),
+          content: Material(
+            type: MaterialType.transparency,
+            child: SizedBox(
+              width: 680,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(Dimens.spacingMD),
-                    decoration: BoxDecoration(
-                      color: Theme.of(ctx).colorScheme.surfaceContainerHighest
-                          .withValues(alpha: 0.35),
-                      borderRadius: Dimens.borderRadiusInput,
-                      border: Border.all(
-                        color: Theme.of(ctx).colorScheme.outlineVariant,
-                      ),
-                    ),
-                    child: Column(
+                  DesktopFormSection(
+                    title: 'Transaction',
+                    child: _TransactionDetailGrid(
                       children: [
-                        _ClaimInfoRow(
-                          icon: Icons.person_outline,
+                        _TransactionDetailField(
                           label: 'Customer',
-                          value: t.customerName?.trim().isEmpty ?? true
-                              ? '-'
-                              : t.customerName!,
+                          value: customer,
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
-                        _ClaimInfoRow(
-                          icon: Icons.phone_outlined,
+                        _TransactionDetailField(
                           label: AppString.colPhone,
                           value: t.phone,
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
-                        _ClaimInfoRow(
-                          icon: Icons.inventory_2_outlined,
+                        _TransactionDetailField(
                           label: AppString.colParcelType,
                           value: t.parcelType,
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
-                        _ClaimInfoRow(
-                          icon: Icons.numbers,
+                        _TransactionDetailField(
                           label: AppString.colNumber,
                           value: t.number,
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
-                        _ClaimInfoRow(
-                          icon: Icons.attach_money,
+                        _TransactionDetailField(
                           label: AppString.colCharges,
-                          value: fmtMoney(t.charges),
+                          value: Format.money(t.charges),
+                          alignRight: true,
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
-                        _ClaimInfoRow(
-                          icon: Icons.account_balance_wallet_outlined,
+                        _TransactionDetailField(
                           label: AppString.colCashAdvance,
-                          value: fmtMoney(t.cashAdvance),
+                          value: Format.money(t.cashAdvance),
+                          alignRight: true,
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
-                        _ClaimInfoRow(
-                          icon: Icons.payments_outlined,
+                        _TransactionDetailField(
                           label: AppString.colPaymentStatus,
                           value: t.paymentStatus,
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
-                        _ClaimInfoRow(
-                          icon: Icons.check_circle_outline,
+                        _TransactionDetailField(
                           label: AppString.dialogPickedUp,
                           value: t.pickedUp ? 'Yes' : 'No',
                         ),
-                        const SizedBox(height: Dimens.spacingXSPlus),
-                        _ClaimInfoRow(
-                          icon: Icons.schedule,
+                        _TransactionDetailField(
                           label: 'Collect Time',
-                          value: t.pickedUp ? fmtDateTime12(t.updatedAt) : '-',
+                          value: t.pickedUp
+                              ? Format.dateTime12(t.updatedAt)
+                              : '-',
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: Dimens.spacingMD),
-                  Text(
-                    AppString.dialogComment,
-                    style: Theme.of(ctx).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: Dimens.spacingMicro),
-                  Container(
-                    padding: const EdgeInsets.all(Dimens.spacingSM),
-                    decoration: BoxDecoration(
-                      borderRadius: Dimens.borderRadiusInput,
-                      border: Border.all(color: Theme.of(ctx).dividerColor),
-                    ),
-                    child: Text(
-                      (t.comment?.trim().isNotEmpty ?? false)
-                          ? t.comment!
-                          : '-',
-                      style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
-                        color: AppColor.textPrimary,
+                  DesktopFormSection(
+                    title: AppString.dialogComment,
+                    child: Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(minHeight: 72),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Dimens.spacingSM,
+                        vertical: Dimens.spacingXS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColor.white,
+                        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+                        border: Border.all(color: AppColor.border),
+                      ),
+                      child: Text(
+                        comment,
+                        style: const TextStyle(
+                          color: AppColor.textPrimary,
+                          fontSize: Dimens.fontSizeBody,
+                          height: 1.35,
+                        ),
                       ),
                     ),
                   ),
@@ -509,16 +512,129 @@ Future<void> showViewTransactionDialog(
               ),
             ),
           ),
+          actions: [
+            fluent.FilledButton(
+              onPressed: close,
+              child: const Text(AppString.dialogClose),
+            ),
+          ],
         ),
-        actions: [
-          fluent.Button(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(AppString.dialogClose),
-          ),
-        ],
       );
     },
   );
+}
+
+class _TransactionDetailGrid extends StatelessWidget {
+  const _TransactionDetailGrid({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemWidth = constraints.maxWidth >= 560
+            ? (constraints.maxWidth - Dimens.spacingMD) / 2
+            : constraints.maxWidth;
+
+        return Wrap(
+          spacing: Dimens.spacingMD,
+          runSpacing: Dimens.spacingSM,
+          children: [
+            for (final child in children)
+              SizedBox(width: itemWidth, child: child),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _TransactionDetailField extends StatelessWidget {
+  const _TransactionDetailField({
+    required this.label,
+    required this.value,
+    this.alignRight = false,
+  });
+
+  final String label;
+  final String value;
+  final bool alignRight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 56),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimens.spacingSM,
+        vertical: Dimens.spacingXS,
+      ),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: AppColor.border),
+      ),
+      child: Column(
+        crossAxisAlignment: alignRight
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColor.textSecondary,
+              fontSize: Dimens.fontSizeCaption,
+            ),
+          ),
+          const SizedBox(height: Dimens.spacingMicro),
+          Text(
+            value.isEmpty ? '-' : value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: alignRight ? TextAlign.right : TextAlign.left,
+            style: const TextStyle(
+              color: AppColor.textPrimary,
+              fontSize: Dimens.fontSizeBody,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TransactionStatusBadge extends StatelessWidget {
+  const _TransactionStatusBadge({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimens.spacingSM,
+        vertical: Dimens.spacingXXS,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(Dimens.radiusXS),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: Dimens.fontSizeCaption,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> showClaimTransactionDialog(
@@ -528,205 +644,170 @@ Future<void> showClaimTransactionDialog(
 ) async {
   final commentCtrl = TextEditingController();
   final formKey = GlobalKey<FormState>();
-  await showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (ctx) {
-      bool isSubmitting = false;
-      return StatefulBuilder(
-        builder: (ctx, setState) {
-          return PopScope(
-            canPop: false,
-            child: fluent.ContentDialog(
-              constraints: const BoxConstraints(maxWidth: 520),
-              title: const Text(AppString.dialogClaimTransaction),
-              content: Material(
-                type: MaterialType.transparency,
-                child: SizedBox(
-                  width: 440,
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(Dimens.spacingSM),
-                          decoration: BoxDecoration(
-                            color: Theme.of(ctx)
-                                .colorScheme
-                                .surfaceContainerHighest
-                                .withValues(alpha: 0.4),
-                            borderRadius: Dimens.borderRadiusInput,
-                            border: Border.all(
-                              color: Theme.of(ctx).colorScheme.outlineVariant,
+  try {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        bool isSubmitting = false;
+        final customer = (t.customerName?.trim().isNotEmpty ?? false)
+            ? t.customerName!.trim()
+            : '-';
+
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            Future<void> submit() async {
+              if (!formKey.currentState!.validate()) return;
+              setState(() => isSubmitting = true);
+              try {
+                await controller.claimTransaction(
+                  tx: t,
+                  comment: commentCtrl.text.trim(),
+                );
+                if (ctx.mounted) Navigator.of(ctx).pop();
+              } catch (_) {
+                if (ctx.mounted) {
+                  setState(() => isSubmitting = false);
+                }
+                rethrow;
+              }
+            }
+
+            return PopScope(
+              canPop: !isSubmitting,
+              child: fluent.ContentDialog(
+                constraints: const BoxConstraints(maxWidth: 720),
+                title: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        AppString.dialogClaimTransaction,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    _TransactionStatusBadge(
+                      label: 'Unclaimed',
+                      color: AppColor.warning,
+                    ),
+                  ],
+                ),
+                content: Material(
+                  type: MaterialType.transparency,
+                  child: SizedBox(
+                    width: 640,
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          DesktopFormSection(
+                            title: 'Transaction',
+                            child: _TransactionDetailGrid(
+                              children: [
+                                _TransactionDetailField(
+                                  label: 'Customer',
+                                  value: customer,
+                                ),
+                                _TransactionDetailField(
+                                  label: AppString.colPhone,
+                                  value: t.phone,
+                                ),
+                                _TransactionDetailField(
+                                  label: AppString.colParcelType,
+                                  value: t.parcelType,
+                                ),
+                                _TransactionDetailField(
+                                  label: AppString.colNumber,
+                                  value: t.number,
+                                ),
+                                _TransactionDetailField(
+                                  label: AppString.colCharges,
+                                  value: Format.money(t.charges),
+                                  alignRight: true,
+                                ),
+                                _TransactionDetailField(
+                                  label: AppString.colCashAdvance,
+                                  value: Format.money(t.cashAdvance),
+                                  alignRight: true,
+                                ),
+                                _TransactionDetailField(
+                                  label: AppString.colPaymentStatus,
+                                  value: t.paymentStatus,
+                                ),
+                              ],
                             ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _ClaimInfoRow(
-                                icon: Icons.person_outline,
-                                label: 'Customer',
-                                value: t.customerName?.trim().isEmpty ?? true
-                                    ? '-'
-                                    : t.customerName!,
+                          const SizedBox(height: Dimens.spacingMD),
+                          DesktopFormSection(
+                            title: AppString.dialogComment,
+                            child: TextFormField(
+                              controller: commentCtrl,
+                              maxLines: 4,
+                              textInputAction: TextInputAction.done,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Comment is required';
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Who claimed it or note...',
+                                border: OutlineInputBorder(
+                                  borderRadius: Dimens.borderRadiusInput,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: Dimens.borderRadiusInput,
+                                  borderSide: const BorderSide(
+                                    color: AppColor.border,
+                                  ),
+                                ),
+                                isDense: true,
                               ),
-                              const SizedBox(height: Dimens.spacingMicro),
-                              _ClaimInfoRow(
-                                icon: Icons.phone_outlined,
-                                label: AppString.colPhone,
-                                value: t.phone,
-                              ),
-                              const SizedBox(height: Dimens.spacingMicro),
-                              _ClaimInfoRow(
-                                icon: Icons.inventory_2_outlined,
-                                label: 'Parcel',
-                                value: t.parcelType,
-                              ),
-                              const SizedBox(height: Dimens.spacingMicro),
-                              _ClaimInfoRow(
-                                icon: Icons.numbers,
-                                label: AppString.colNumber,
-                                value: t.number,
-                              ),
-                              const SizedBox(height: Dimens.spacingMicro),
-                              _ClaimInfoRow(
-                                icon: Icons.attach_money,
-                                label: AppString.colCharges,
-                                value: Format.money(t.charges),
-                              ),
-                              const SizedBox(height: Dimens.spacingMicro),
-                              _ClaimInfoRow(
-                                icon: Icons.payments_outlined,
-                                label: AppString.colPaymentStatus,
-                                value: t.paymentStatus,
-                              ),
-                              const SizedBox(height: Dimens.spacingMicro),
-                              _ClaimInfoRow(
-                                icon: Icons.account_balance_wallet_outlined,
-                                label: AppString.colCashAdvance,
-                                value: Format.money(t.cashAdvance),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: Dimens.spacingMD),
-                        TextFormField(
-                          controller: commentCtrl,
-                          maxLines: 3,
-                          textInputAction: TextInputAction.done,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Comment is required';
-                            }
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            labelText: AppString.dialogComment,
-                            helperText: 'Explain who claimed or any note.',
-                            prefixIcon: const Icon(Icons.edit_note_outlined),
-                            border: OutlineInputBorder(
-                              borderRadius: Dimens.borderRadiusInput,
                             ),
-                            isDense: true,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              actions: [
-                fluent.Button(
-                  onPressed: isSubmitting
-                      ? null
-                      : () => Navigator.of(ctx).pop(),
-                  child: const Text(AppString.dialogCancel),
-                ),
-                fluent.FilledButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          if (!formKey.currentState!.validate()) {
-                            return;
-                          }
-                          setState(() => isSubmitting = true);
-                          try {
-                            await controller.claimTransaction(
-                              tx: t,
-                              comment: commentCtrl.text.trim(),
-                            );
-                            // ignore: use_build_context_synchronously
-                            Navigator.of(ctx).pop();
-                          } finally {
-                            if (ctx.mounted) {
-                              setState(() => isSubmitting = false);
-                            }
-                          }
-                        },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (isSubmitting)
-                        const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      else
-                        const Icon(Icons.check_circle_outline, size: 16),
-                      const SizedBox(width: Dimens.spacingXXS),
-                      const Text(AppString.dialogConfirmClaim),
-                    ],
+                actions: [
+                  fluent.Button(
+                    onPressed: isSubmitting
+                        ? null
+                        : () => Navigator.of(ctx).pop(),
+                    child: const Text(AppString.dialogCancel),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
-  );
-}
-
-class _ClaimInfoRow extends StatelessWidget {
-  const _ClaimInfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(width: Dimens.spacingXS),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.labelSmall),
-              const SizedBox(height: 3),
-              Text(
-                value.isEmpty ? '-' : value,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                  fluent.FilledButton(
+                    onPressed: isSubmitting ? null : submit,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isSubmitting)
+                          const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        else
+                          const Icon(Icons.check_circle_outline, size: 16),
+                        const SizedBox(width: Dimens.spacingXXS),
+                        const Text(AppString.dialogConfirmClaim),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            );
+          },
+        );
+      },
     );
+  } finally {
+    commentCtrl.dispose();
   }
 }
 
@@ -785,7 +866,8 @@ Future<bool?> confirmDeleteTransaction(
 ) async {
   final controller = TextEditingController();
   String value = '';
-  return showDialog<bool>(
+  try {
+    return await showDialog<bool>(
     context: context,
     builder: (ctx) {
       return StatefulBuilder(
@@ -808,7 +890,7 @@ Future<bool?> confirmDeleteTransaction(
                     ),
                     const SizedBox(height: Dimens.spacingSM),
                     Text(
-                      'Transaction: No ${t.number} — Customer: ${t.customerName ?? '-'}',
+                      'Transaction: No ${t.number} | Customer: ${t.customerName ?? '-'}',
                       style: const TextStyle(color: AppColor.textSecondary),
                     ),
                     const SizedBox(height: Dimens.spacingSM),
@@ -860,7 +942,10 @@ Future<bool?> confirmDeleteTransaction(
         },
       );
     },
-  );
+    );
+  } finally {
+    controller.dispose();
+  }
 }
 
 Future<void> showAddTransactionDialog(
@@ -922,9 +1007,11 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
         phone: _phoneCtrl.text.trim(),
         parcelType: _parcelCtrl.text.trim(),
         number: _numberCtrl.text.trim(),
-        charges: _parseMoney(_chargesCtrl.text),
+        charges: MoneyInput.parseRequiredKyatAsDouble(_chargesCtrl.text),
         paymentStatus: _paymentStatus,
-        cashAdvance: _parseMoney(_cashAdvanceCtrl.text),
+        cashAdvance: MoneyInput.parseOptionalKyatAsDouble(
+          _cashAdvanceCtrl.text,
+        ),
         pickedUp: false,
         comment: null,
       );

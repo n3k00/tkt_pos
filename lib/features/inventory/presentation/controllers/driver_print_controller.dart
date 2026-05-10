@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:drift/drift.dart' as drift;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:get/get.dart';
@@ -16,15 +16,243 @@ import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_co
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/utils/payout_calculator.dart';
+
+Future<Uint8List> _buildDriverSlipPdf(Map<String, dynamic> snapshot) {
+  final converter = ZawGyiConverter();
+  String zg(String value) => converter.unicodeToZawGyi(value);
+  String pdfText(String? value, {int maxChars = 36}) {
+    final normalized = (value ?? '-').replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (normalized.isEmpty) return '-';
+    if (normalized.characters.length <= maxChars) return normalized;
+    return '${normalized.characters.take(maxChars - 1).toString()}…';
+  }
+
+  final fontBytes = snapshot['fontBytes'] as Uint8List;
+  final pdfTheme = pw.ThemeData.withFont(
+    base: pw.Font.ttf(fontBytes.buffer.asByteData()),
+    bold: pw.Font.ttf(fontBytes.buffer.asByteData()),
+    italic: pw.Font.ttf(fontBytes.buffer.asByteData()),
+  );
+
+  final doc = pw.Document();
+  final headerStyle = pw.TextStyle(
+    fontSize: Dimens.fontSizeTitle,
+    fontWeight: pw.FontWeight.bold,
+  );
+  final subtitleStyle = pw.TextStyle(
+    fontSize: Dimens.fontSizeCaption,
+    fontWeight: pw.FontWeight.bold,
+  );
+  final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
+
+  final driverName = snapshot['driverName'] as String;
+  final driverDate = snapshot['driverDate'] as String;
+  final totalCharges = snapshot['totalCharges'] as double;
+  final totalChargesPaid = snapshot['totalChargesPaid'] as double;
+  final totalChargesPending = snapshot['totalChargesPending'] as double;
+  final totalCashAdvance = snapshot['totalCashAdvance'] as double;
+  final roomFeeValue = snapshot['roomFeeValue'] as double;
+  final laborFeeValue = snapshot['laborFeeValue'] as double;
+  final deliveryFeeValue = snapshot['deliveryFeeValue'] as double;
+  final netAmount = snapshot['netAmount'] as double;
+  final paidOut = snapshot['paidOut'] as bool;
+
+  final rawTransactions =
+      (snapshot['transactions'] as List<dynamic>).cast<Map<String, dynamic>>();
+  final dataRows = rawTransactions.asMap().entries.map((entry) {
+    final index = entry.key + 1;
+    final tx = entry.value;
+    return <String>[
+      zg('$index'),
+      zg(pdfText(tx['customerName'] as String?, maxChars: 20)),
+      zg(pdfText(tx['phone'] as String, maxChars: 16)),
+      zg(pdfText(tx['parcelType'] as String, maxChars: 18)),
+      zg(pdfText(tx['number'] as String, maxChars: 10)),
+      zg(tx['charges'] as String),
+      zg(tx['paymentStatus'] as String),
+      zg(tx['cashAdvance'] as String),
+      zg(''),
+      zg(pdfText(tx['comment'] as String?, maxChars: 24)),
+    ];
+  }).toList(growable: false);
+
+  List<List<String>> summaryRows() {
+    final rows = <List<String>>[];
+
+    void addAmountRow(String label, double amount, {bool deduction = false}) {
+      rows.add([
+        zg(''),
+        zg(label),
+        zg(''),
+        zg(''),
+        zg(''),
+        zg(deduction ? '- ${Format.money(amount)}' : Format.money(amount)),
+        zg(''),
+        zg(''),
+        zg(''),
+        zg(''),
+      ]);
+    }
+
+    addAmountRow('Total Charges', totalCharges);
+    if (totalChargesPaid > 0) {
+      addAmountRow(AppString.paymentPaid, totalChargesPaid, deduction: true);
+    }
+    addAmountRow(AppString.paymentPending, totalChargesPending);
+    if (totalCashAdvance > 0) {
+      addAmountRow(AppString.colCashAdvance, totalCashAdvance);
+    }
+
+    void addDeductionRow(String label, double amount) {
+      if (amount <= 0) return;
+      addAmountRow(label, amount, deduction: true);
+    }
+
+    addDeductionRow('Room Fee', roomFeeValue);
+    addDeductionRow('Labor Fee', laborFeeValue);
+    addDeductionRow('Delivery Fee', deliveryFeeValue);
+
+    rows.addAll([
+      [
+        zg(''),
+        zg('Paid Out Amount'),
+        zg(''),
+        zg(''),
+        zg(''),
+        zg(Format.money(netAmount)),
+        zg(''),
+        zg(''),
+        zg(''),
+        zg(''),
+      ],
+      [
+        zg(''),
+        zg(AppString.paidOutStatusLabel),
+        zg(
+          paidOut
+              ? AppString.paidOutStatusPaidMm
+              : AppString.paidOutStatusPendingMm,
+        ),
+        zg(''),
+        zg(''),
+        zg(''),
+        zg(''),
+        zg(''),
+        zg(''),
+        zg(''),
+      ],
+    ]);
+    return rows;
+  }
+
+  final headers = [
+    AppString.colNo,
+    AppString.colCustomerName,
+    AppString.colPhone,
+    AppString.colParcelType,
+    AppString.colNumber,
+    AppString.colCharges,
+    AppString.colPaymentStatus,
+    AppString.colCashAdvance,
+    'Signed',
+    AppString.colComment,
+  ].map(zg).toList(growable: false);
+
+  const chunkSize = 13;
+  final dataChunks = <List<List<String>>>[];
+  for (var i = 0; i < dataRows.length; i += chunkSize) {
+    dataChunks.add(
+      dataRows.sublist(
+        i,
+        i + chunkSize > dataRows.length ? dataRows.length : i + chunkSize,
+      ),
+    );
+  }
+  if (dataChunks.isEmpty) {
+    dataChunks.add(<List<String>>[]);
+  }
+  final summary = summaryRows();
+
+  for (var i = 0; i < dataChunks.length; i++) {
+    final chunk = List<List<String>>.from(dataChunks[i]);
+    final isLast = i == dataChunks.length - 1;
+    if (isLast) {
+      chunk.addAll(summary);
+    }
+
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4.landscape,
+        margin: const pw.EdgeInsets.all(Dimens.spacingXL),
+        theme: pdfTheme,
+        maxPages: 100,
+        build: (context) => [
+          pw.Text(zg('Incoming Parcel Slip'), style: headerStyle),
+          pw.SizedBox(height: 12),
+          pw.Row(
+            children: [
+              pw.Expanded(
+                child: pw.Text(
+                  zg('Driver: ${pdfText(driverName, maxChars: 24)}'),
+                  style: subtitleStyle,
+                ),
+              ),
+              pw.Text(zg('Date: $driverDate'), style: subtitleStyle),
+            ],
+          ),
+          pw.SizedBox(height: 24),
+          pw.TableHelper.fromTextArray(
+            headers: headers,
+            data: chunk,
+            headerStyle: bold,
+            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+            cellAlignment: pw.Alignment.centerLeft,
+            cellStyle: const pw.TextStyle(fontSize: 10),
+            cellAlignments: {
+              5: pw.Alignment.centerRight,
+              7: pw.Alignment.centerRight,
+            },
+            columnWidths: {
+              0: const pw.FixedColumnWidth(30),
+              2: const pw.FixedColumnWidth(90),
+              4: const pw.FixedColumnWidth(70),
+              5: const pw.FixedColumnWidth(80),
+              7: const pw.FixedColumnWidth(90),
+              8: const pw.FixedColumnWidth(70),
+            },
+          ),
+          if (!isLast)
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text(
+                zg('Continued on next page...'),
+                style: const pw.TextStyle(fontSize: 10),
+              ),
+            ),
+        ],
+        footer: (context) => pw.Align(
+          alignment: pw.Alignment.centerRight,
+          child: pw.Text(
+            zg('Page ${i + 1} / ${dataChunks.length}'),
+            style: const pw.TextStyle(fontSize: 10),
+          ),
+        ),
+      ),
+    );
+  }
+
+  return doc.save();
+}
 
 class DriverPrintController extends GetxController {
   DriverPrintController(this.driverId);
 
   final int driverId;
   final AppDatabase _db = AppDatabase();
-  final ZawGyiConverter _zgConverter = ZawGyiConverter();
 
   final RxBool isLoading = true.obs;
+  final RxBool isPrinting = false.obs;
   final Rxn<Driver> driver = Rxn<Driver>();
   final RxList<DbTransaction> transactions = <DbTransaction>[].obs;
   final RxBool paidOut = false.obs;
@@ -93,20 +321,39 @@ class DriverPrintController extends GetxController {
     }
   }
 
-  double get totalChargesPending => transactions
-      .where((t) => t.paymentStatus.trim() == AppString.paymentPending)
-      .fold<double>(0, (sum, t) => sum + t.charges);
+  PayoutBreakdown get payoutBreakdown {
+    final currentDriver = driver.value;
+    return PayoutCalculator.forDriver(
+      currentDriver ??
+          Driver(
+            id: driverId,
+            date: DateTime.now(),
+            name: '',
+            paidOut: paidOut.value,
+          ),
+      transactions,
+      roomFee: roomFeeValue,
+      laborFee: laborFeeValue,
+      deliveryFee: deliveryFeeValue,
+      paidOut: paidOut.value,
+    );
+  }
 
-  double get totalCashAdvance =>
-      transactions.fold<double>(0, (sum, t) => sum + t.cashAdvance);
+  double get totalChargesPending => payoutBreakdown.paymentPending;
+
+  double get totalCharges => payoutBreakdown.totalCharges;
+
+  double get totalChargesPaid => payoutBreakdown.paymentPaid;
+
+  double get totalCashAdvance => payoutBreakdown.cashAdvance;
 
   double get roomFeeValue => roomFee.value;
   double get laborFeeValue => laborFee.value;
   double get deliveryFeeValue => deliveryFee.value;
 
-  double get totalDeductions => roomFeeValue + laborFeeValue + deliveryFeeValue;
+  double get totalDeductions => payoutBreakdown.totalFees;
 
-  double get netAmount => totalChargesPending - totalDeductions;
+  double get netAmount => payoutBreakdown.currentPayable;
 
   void _ensureFeeDefaults() {
     void ensure(TextEditingController ctrl) {
@@ -160,224 +407,35 @@ class DriverPrintController extends GetxController {
 
   Future<Uint8List> _buildPdfBytes(Driver currentDriver) async {
     final fontData = await rootBundle.load('assets/fonts/ZAWGYI_ONE.TTF');
-    final unicodeFont = pw.Font.ttf(fontData);
-    final pdfTheme = pw.ThemeData.withFont(
-      base: unicodeFont,
-      bold: unicodeFont,
-      italic: unicodeFont,
-    );
-
-    final doc = pw.Document();
-    final headerStyle = pw.TextStyle(
-      fontSize: Dimens.fontSizeTitle,
-      fontWeight: pw.FontWeight.bold,
-    );
-    final subtitleStyle = pw.TextStyle(
-      fontSize: Dimens.fontSizeCaption,
-      fontWeight: pw.FontWeight.bold,
-    );
-    final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
-
-    List<List<String>> buildDataRows() {
-      final rows = <List<String>>[];
-      for (final entry in transactions.asMap().entries) {
-        final index = entry.key + 1;
-        final t = entry.value;
-        rows.add([
-          _zg('$index'),
-          _zg(t.customerName ?? '-'),
-          _zg(t.phone),
-          _zg(t.parcelType),
-          _zg(t.number),
-          _zg(Format.money(t.charges)),
-          _zg(t.paymentStatus),
-          _zg(Format.money(t.cashAdvance)),
-          _zg(''),
-          _zg(t.comment ?? '-'),
-        ]);
-      }
-      return rows;
-    }
-
-    List<List<String>> summaryRows() {
-      final rows = <List<String>>[
-        [
-          _zg(''),
-          _zg('Total Charges (Pending)'),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg(Format.money(totalChargesPending)),
-          _zg(''),
-          _zg(Format.money(totalCashAdvance)),
-          _zg(''),
-          _zg(''),
-        ],
-      ];
-
-      void addDeductionRow(String label, double amount) {
-        if (amount <= 0) return;
-        rows.add([
-          _zg(''),
-          _zg(label),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg('-${Format.money(amount)}'),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-        ]);
-      }
-
-      addDeductionRow('Room Fee', roomFeeValue);
-      addDeductionRow('Labor Fee', laborFeeValue);
-      addDeductionRow('Delivery Fee', deliveryFeeValue);
-
-      rows.addAll([
-        [
-          _zg(''),
-          _zg('Paid Out Amount'),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg(Format.money(netAmount)),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-        ],
-        [
-          _zg(''),
-          _zg(AppString.paidOutStatusLabel),
-          _zg(
-            paidOut.value
-                ? AppString.paidOutStatusPaidMm
-                : AppString.paidOutStatusPendingMm,
-          ),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-          _zg(''),
-        ],
-      ]);
-      return rows;
-    }
-
-    final headers = [
-      AppString.colNo,
-      AppString.colCustomerName,
-      AppString.colPhone,
-      AppString.colParcelType,
-      AppString.colNumber,
-      AppString.colCharges,
-      AppString.colPaymentStatus,
-      AppString.colCashAdvance,
-      'Signed',
-      AppString.colComment,
-    ].map(_zg).toList();
-
-    final chunkSize = 13;
-    final dataRows = buildDataRows();
-    final dataChunks = <List<List<String>>>[];
-    for (var i = 0; i < dataRows.length; i += chunkSize) {
-      dataChunks.add(
-        dataRows.sublist(
-          i,
-          i + chunkSize > dataRows.length ? dataRows.length : i + chunkSize,
-        ),
-      );
-    }
-    if (dataChunks.isEmpty) {
-      dataChunks.add([]);
-    }
-    final summary = summaryRows();
-
-    for (var i = 0; i < dataChunks.length; i++) {
-      final chunk = dataChunks[i];
-      final isLast = i == dataChunks.length - 1;
-      if (isLast) {
-        chunk.addAll(summary);
-      }
-
-      doc.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4.landscape,
-          margin: const pw.EdgeInsets.all(Dimens.spacingXL),
-          theme: pdfTheme,
-          build: (context) => [
-            pw.Padding(
-              padding: const pw.EdgeInsets.all(Dimens.spacingXL),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(_zg('Incoming Parcel Slip'), style: headerStyle),
-                  pw.SizedBox(height: 12),
-                  pw.Row(
-                    children: [
-                      pw.Expanded(
-                        child: pw.Text(
-                          _zg('Driver: ${currentDriver.name}'),
-                          style: subtitleStyle,
-                        ),
-                      ),
-                      pw.Text(
-                        _zg('Date: ${Format.date(currentDriver.date)}'),
-                        style: subtitleStyle,
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 24),
-                  pw.TableHelper.fromTextArray(
-                    headers: headers,
-                    data: chunk,
-                    headerStyle: bold,
-                    headerDecoration: const pw.BoxDecoration(
-                      color: PdfColors.grey300,
-                    ),
-                    cellAlignment: pw.Alignment.centerLeft,
-                    cellStyle: const pw.TextStyle(fontSize: 10),
-                    cellAlignments: {
-                      5: pw.Alignment.centerRight,
-                      7: pw.Alignment.centerRight,
-                    },
-                    columnWidths: {
-                      0: const pw.FixedColumnWidth(30),
-                      2: const pw.FixedColumnWidth(90),
-                      4: const pw.FixedColumnWidth(70),
-                      5: const pw.FixedColumnWidth(80),
-                      7: const pw.FixedColumnWidth(90),
-                      8: const pw.FixedColumnWidth(70),
-                    },
-                  ),
-                  if (!isLast)
-                    pw.Align(
-                      alignment: pw.Alignment.centerRight,
-                      child: pw.Text(
-                        _zg('Continued on next page...'),
-                        style: const pw.TextStyle(fontSize: 10),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-          footer: (context) => pw.Align(
-            alignment: pw.Alignment.centerRight,
-            child: pw.Text(
-              _zg('Page ${context.pageNumber} / ${context.pagesCount}'),
-              style: const pw.TextStyle(fontSize: 10),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return doc.save();
+    final snapshot = <String, dynamic>{
+      'fontBytes': fontData.buffer.asUint8List(),
+      'driverName': currentDriver.name,
+      'driverDate': Format.date(currentDriver.date),
+      'totalCharges': totalCharges,
+      'totalChargesPaid': totalChargesPaid,
+      'totalChargesPending': totalChargesPending,
+      'totalCashAdvance': totalCashAdvance,
+      'roomFeeValue': roomFeeValue,
+      'laborFeeValue': laborFeeValue,
+      'deliveryFeeValue': deliveryFeeValue,
+      'netAmount': netAmount,
+      'paidOut': paidOut.value,
+      'transactions': transactions
+          .map(
+            (t) => <String, dynamic>{
+              'customerName': t.customerName,
+              'phone': t.phone,
+              'parcelType': t.parcelType,
+              'number': t.number,
+              'charges': Format.money(t.charges),
+              'paymentStatus': t.paymentStatus,
+              'cashAdvance': Format.money(t.cashAdvance),
+              'comment': t.comment,
+            },
+          )
+          .toList(growable: false),
+    };
+    return compute(_buildDriverSlipPdf, snapshot);
   }
 
   Future<void> _openPdfOnWindows(Uint8List bytes) async {
@@ -391,21 +449,25 @@ class DriverPrintController extends GetxController {
 
   Future<void> printSlip() async {
     final currentDriver = driver.value;
-    if (currentDriver == null) return;
+    if (currentDriver == null || isPrinting.value) return;
 
     _ensureFeeDefaults();
-
-    final bytes = await _buildPdfBytes(currentDriver);
-    if (Platform.isWindows) {
-      await _openPdfOnWindows(bytes);
-    } else {
-      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => bytes);
+    isPrinting.value = true;
+    try {
+      final bytes = await _buildPdfBytes(currentDriver);
+      if (Platform.isWindows) {
+        await _openPdfOnWindows(bytes);
+      } else {
+        await Printing.layoutPdf(
+          onLayout: (PdfPageFormat format) async => bytes,
+        );
+      }
+    } finally {
+      isPrinting.value = false;
     }
   }
 
   void setPaidOut(bool value) {
     paidOut.value = value;
   }
-
-  String _zg(String value) => _zgConverter.unicodeToZawGyi(value);
 }

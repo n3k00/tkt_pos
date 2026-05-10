@@ -100,7 +100,7 @@ void main() {
   );
 
   test(
-    'driver totals include all charges but paid out only includes paid rows',
+    'driver totals include all charges but payout uses only pending rows',
     () async {
       final driverId = await _insertDriver(db);
       await _insertTransaction(
@@ -113,6 +113,7 @@ void main() {
         db,
         driverId: driverId,
         charges: 800,
+        cashAdvance: 50,
         paymentStatus: AppString.paymentPending,
       );
 
@@ -120,6 +121,10 @@ void main() {
 
       expect(controller.totalChargesForDriver(driverId), 2000);
       expect(controller.paidOutAmountForDriver(driverId), 1200);
+      expect(controller.pendingPaymentAmountForDriver(driverId), 800);
+
+      final driver = await db.getDriverById(driverId);
+      expect(controller.currentPayoutAmountForDriver(driver!), 850);
     },
   );
 

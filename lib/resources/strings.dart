@@ -1,6 +1,8 @@
 class AppString {
   // App title
   static const String title = 'Thein Kha Thu POS';
+  static const String releaseLabel = 'Beta 5';
+  static const String windowTitle = 'Thein Kha Thu POS Beta 5';
 
   // Common
   static const String home = 'Home';
@@ -102,9 +104,11 @@ class AppString {
   static const String noTripMainRecords = 'No records in Trip Main.';
 
   // Payment statuses
-  static const String paymentPending = 'Pending';
-  static const String paymentPaid = 'Paid';
-  static const String paymentPaidAltMm = 'ငွေရှင်းပြီး';
+  static const String paymentPending = 'ငွေတောင်းရန်';
+  static const String paymentPaid = 'ငွေရှင်းပြီး';
+  static const String paymentPendingLegacy = 'Pending';
+  static const String paymentPaidLegacy = 'Paid';
+  static const String paymentPaidAltMm = paymentPaid;
 
   // Zawgyi/PDF output source strings. Keep these as Unicode and convert only
   // at the output boundary where Zawgyi is required.

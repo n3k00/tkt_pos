@@ -9,7 +9,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 class SettingsController extends GetxController {
   final AppDatabase db = AppDatabase();
 
-  final RxBool compactTable = false.obs;
   final RxString appVersion = ''.obs;
   final RxInt selectedCategoryIndex = 0.obs;
   final RxBool databaseBusy = false.obs;
@@ -17,7 +16,6 @@ class SettingsController extends GetxController {
   final RxList<DriverProfile> driverProfiles = <DriverProfile>[].obs;
   final RxBool driverProfilesBusy = false.obs;
 
-  void setCompactTable(bool v) => compactTable.value = v;
   void selectCategory(int index) => selectedCategoryIndex.value = index;
   void setDatabaseStatus(String value) => databaseStatus.value = value;
   void setDatabaseBusy(bool value) => databaseBusy.value = value;
@@ -94,24 +92,6 @@ class SettingsController extends GetxController {
   }) async {
     await db.setDriverProfileActive(id: profile.id, active: active);
     await loadDriverProfiles();
-  }
-
-  // On true, the database connection has been closed and the caller must exit
-  // or restart the app before doing any more database work.
-  Future<bool> restoreLatestBackup() async {
-    final dir = await getApplicationSupportDirectory();
-    final backupsDir = Directory(p.join(dir.path, 'backups'));
-    if (!await backupsDir.exists()) return false;
-    final files = backupsDir
-        .listSync()
-        .whereType<File>()
-        .where((f) => f.path.toLowerCase().endsWith('.db'))
-        .toList();
-    if (files.isEmpty) return false;
-    files.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
-    final latest = files.first;
-    final ok = await AppDatabase.restoreFromBackup(latest.path) != null;
-    return ok;
   }
 
   // Pick a .db file and replace the current database with it.

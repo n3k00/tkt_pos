@@ -1,12 +1,12 @@
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_controller.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/resources/strings.dart';
+import 'package:tkt_pos/utils/money_input.dart';
 import 'package:tkt_pos/widgets/desktop_form_dialog.dart';
 
 Future<void> showEditDriverFeesDialog(
@@ -15,18 +15,18 @@ Future<void> showEditDriverFeesDialog(
   Driver driver,
 ) async {
   final roomFeeController = TextEditingController(
-    text: (driver.roomFee ?? 0).toStringAsFixed(0),
+    text: MoneyInput.formatInitial(driver.roomFee ?? 0),
   );
   final laborFeeController = TextEditingController(
-    text: (driver.laborFee ?? 0).toStringAsFixed(0),
+    text: MoneyInput.formatInitial(driver.laborFee ?? 0),
   );
   final deliveryFeeController = TextEditingController(
-    text: (driver.deliveryFee ?? 0).toStringAsFixed(0),
+    text: MoneyInput.formatInitial(driver.deliveryFee ?? 0),
   );
   final formKey = GlobalKey<FormState>();
 
   double parseAmount(TextEditingController controller) {
-    return double.tryParse(controller.text.trim()) ?? 0;
+    return MoneyInput.parseOptionalKyatAsDouble(controller.text);
   }
 
   try {
@@ -195,7 +195,7 @@ Future<void> showAddDriverDialog(
     return;
   }
 
-  DriverProfile selectedProfile = profiles.first;
+  DriverProfile? selectedProfile = profiles.first;
   DateTime date = DateTime.now();
   final formKey = GlobalKey<FormState>();
   await showDialog(
@@ -209,8 +209,8 @@ Future<void> showAddDriverDialog(
             Navigator.of(ctx).pop();
             await controller.addDriver(
               date: date,
-              profileId: selectedProfile.id,
-              name: selectedProfile.name,
+              profileId: selectedProfile!.id,
+              name: selectedProfile!.name,
             );
           }
 
@@ -238,9 +238,7 @@ Future<void> showAddDriverDialog(
                 selectedProfile: selectedProfile,
                 date: date,
                 onProfileChanged: (profile) {
-                  if (profile != null) {
-                    setState(() => selectedProfile = profile);
-                  }
+                  setState(() => selectedProfile = profile);
                 },
                 onPickDate: () async {
                   final picked = await showDatePicker(
@@ -335,18 +333,14 @@ class _FeeTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+      keyboardType: TextInputType.number,
+      inputFormatters: MoneyInput.inputFormatters,
       decoration: InputDecoration(
         labelText: labelText,
         border: OutlineInputBorder(borderRadius: Dimens.borderRadiusInput),
         isDense: true,
       ),
-      validator: (value) {
-        final text = value?.trim() ?? '';
-        if (text.isEmpty) return null;
-        return double.tryParse(text) == null ? 'Invalid amount' : null;
-      },
+      validator: MoneyInput.validateOptionalKyat,
     );
   }
 }
@@ -361,7 +355,7 @@ class _AddDriverProfileFormFields extends StatelessWidget {
   });
 
   final List<DriverProfile> profiles;
-  final DriverProfile selectedProfile;
+  final DriverProfile? selectedProfile;
   final DateTime date;
   final ValueChanged<DriverProfile?> onProfileChanged;
   final VoidCallback onPickDate;
@@ -373,23 +367,99 @@ class _AddDriverProfileFormFields extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: DropdownButtonFormField<DriverProfile>(
-              initialValue: selectedProfile,
-              isExpanded: true,
-              decoration: InputDecoration(
-                labelText: 'Driver profile',
-                prefixIcon: const Icon(Icons.person_outline),
-                border: OutlineInputBorder(
-                  borderRadius: Dimens.borderRadiusInput,
-                ),
-                isDense: true,
-              ),
-              items: [
-                for (final profile in profiles)
-                  DropdownMenuItem(value: profile, child: Text(profile.name)),
-              ],
-              onChanged: onProfileChanged,
-              validator: (value) => value == null ? 'Required' : null,
+            child: Autocomplete<DriverProfile>(
+              initialValue: TextEditingValue(text: selectedProfile?.name ?? ''),
+              displayStringForOption: (profile) => profile.name,
+              optionsBuilder: (value) {
+                final query = value.text.trim().toLowerCase();
+                if (query.isEmpty) return profiles;
+                final matches = profiles
+                    .where((profile) {
+                      final name = profile.name.toLowerCase();
+                      final phone = (profile.phone ?? '').toLowerCase();
+                      return name.contains(query) || phone.contains(query);
+                    })
+                    .toList(growable: false);
+                if (matches.isEmpty) return [_noDriverProfileResult];
+                return matches;
+              },
+              onSelected: (profile) {
+                if (profile.id < 0) return;
+                onProfileChanged(profile);
+              },
+              fieldViewBuilder:
+                  (context, textController, focusNode, onFieldSubmitted) {
+                    return TextFormField(
+                      controller: textController,
+                      focusNode: focusNode,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        labelText: 'Driver profile',
+                        helperText: 'Type to search active drivers',
+                        prefixIcon: const Icon(Icons.person_search_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: Dimens.borderRadiusInput,
+                        ),
+                        isDense: true,
+                      ),
+                      onChanged: (value) {
+                        final normalized = value.trim().toLowerCase();
+                        DriverProfile? match;
+                        for (final profile in profiles) {
+                          if (profile.name.toLowerCase() == normalized) {
+                            match = profile;
+                            break;
+                          }
+                        }
+                        onProfileChanged(match);
+                      },
+                      onFieldSubmitted: (_) => onFieldSubmitted(),
+                      validator: (_) =>
+                          selectedProfile == null ? 'Select a driver' : null,
+                    );
+                  },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxHeight: 260,
+                        maxWidth: 360,
+                      ),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final profile = options.elementAt(index);
+                          if (profile.id < 0) {
+                            return const ListTile(
+                              dense: true,
+                              enabled: false,
+                              leading: Icon(Icons.search_off_outlined),
+                              title: Text('No active driver found'),
+                              subtitle: Text(
+                                'Create or activate a driver in Settings > Drivers.',
+                              ),
+                            );
+                          }
+                          return ListTile(
+                            dense: true,
+                            leading: const Icon(Icons.person_outline),
+                            title: Text(profile.name),
+                            subtitle: profile.phone == null
+                                ? null
+                                : Text(profile.phone!),
+                            onTap: () => onSelected(profile),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(width: Dimens.spacingSM),
@@ -418,3 +488,9 @@ String _formatDriverDate(DateTime date) {
   final yyyy = date.year.toString().padLeft(4, '0');
   return '$dd/$mm/$yyyy';
 }
+
+const DriverProfile _noDriverProfileResult = DriverProfile(
+  id: -1,
+  name: 'No active driver found',
+  active: false,
+);

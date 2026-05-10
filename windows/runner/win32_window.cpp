@@ -144,15 +144,21 @@ bool Win32Window::Create(const std::wstring& title,
     return false;
   }
 
-  // Remove minimize box from the window style to disable minimizing
+  // Keep the POS window maximized. Disabling these styles prevents users from
+  // restoring, resizing, or minimizing the app into layouts smaller than the
+  // supported desktop workspace.
   LONG_PTR style = GetWindowLongPtr(window, GWL_STYLE);
-  style &= ~WS_MINIMIZEBOX;
+  style &= ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME);
   SetWindowLongPtr(window, GWL_STYLE, style);
+  SetWindowPos(window, nullptr, 0, 0, 0, 0,
+               SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 
-  // Disable "Minimize" item in the system menu
   HMENU sysMenu = GetSystemMenu(window, FALSE);
   if (sysMenu) {
     EnableMenuItem(sysMenu, SC_MINIMIZE, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
+    EnableMenuItem(sysMenu, SC_MAXIMIZE, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
+    EnableMenuItem(sysMenu, SC_RESTORE, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
+    EnableMenuItem(sysMenu, SC_SIZE, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
   }
 
   UpdateTheme(window);
@@ -192,8 +198,10 @@ Win32Window::MessageHandler(HWND hwnd,
                             LPARAM const lparam) noexcept {
   switch (message) {
     case WM_SYSCOMMAND:
-      // Block minimize requests from title bar, system menu or hotkeys
-      if ((wparam & 0xFFF0) == SC_MINIMIZE) {
+      // Block window commands that would move the app out of maximized layout.
+      if ((wparam & 0xFFF0) == SC_MINIMIZE ||
+          (wparam & 0xFFF0) == SC_RESTORE ||
+          (wparam & 0xFFF0) == SC_SIZE) {
         return 0;
       }
       break;

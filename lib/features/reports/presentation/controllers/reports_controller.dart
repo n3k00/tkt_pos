@@ -10,6 +10,7 @@ import 'package:printing/printing.dart';
 import 'package:tkt_pos/data/local/app_database.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
+import 'package:tkt_pos/utils/payout_calculator.dart';
 
 enum ReportGroupMode { driver, paymentStatus }
 
@@ -17,7 +18,6 @@ class ReportsController extends GetxController {
   final AppDatabase db = AppDatabase();
 
   final RxInt currentTabIndex = 0.obs; // legacy
-  final RxString search = ''.obs;
   final Rx<DateTime> selectedDate = Rx<DateTime>(DateTime.now());
   final Rx<DateTime> startDate = Rx<DateTime>(_dayStart(DateTime.now()));
   final Rx<DateTime> endDate = Rx<DateTime>(_dayStart(DateTime.now()));
@@ -67,7 +67,6 @@ class ReportsController extends GetxController {
     currentTabIndex.value = index;
   }
 
-  void setSearch(String v) => search.value = v;
   void setDate(DateTime d) {
     selectedDate.value = d;
     startDate.value = _dayStart(d);
@@ -110,25 +109,7 @@ class ReportsController extends GetxController {
 
   void setGroupMode(ReportGroupMode mode) => groupMode.value = mode;
 
-  List<DbTransaction> get filtered {
-    final q = search.value.trim().toLowerCase();
-    final src = all;
-
-    if (q.isEmpty) return src;
-    return src
-        .where((t) {
-          final f = <String?>[
-            t.customerName,
-            t.phone,
-            t.parcelType,
-            t.number,
-            t.paymentStatus,
-            driverNameFor(t.driverId),
-          ];
-          return f.any((s) => (s ?? '').toLowerCase().contains(q));
-        })
-        .toList(growable: false);
-  }
+  List<DbTransaction> get filtered => all;
 
   double get totalChargesAll => filtered.fold(0.0, (s, t) => s + t.charges);
   double get totalChargesPending => filtered
@@ -185,6 +166,8 @@ class ReportsController extends GetxController {
       .where((item) => item.row.action == 'mark_paid_out')
       .fold(0.0, (sum, item) => sum + (item.row.newPaidOutAmount ?? 0));
 
+  List<PayoutHistoryReportItem> get filteredPayoutHistory => payoutHistory;
+
   List<PayoutDriverSummary> get payoutDifferenceSummaries {
     return payoutSummaries
         .where((summary) => summary.driver.paidOut && summary.difference != 0)
@@ -192,14 +175,8 @@ class ReportsController extends GetxController {
   }
 
   List<PayoutDriverSummary> get payoutSummaries {
-    final q = search.value.trim().toLowerCase();
-    final drivers = q.isEmpty
-        ? payoutDrivers
-        : payoutDrivers
-              .where((driver) => driver.name.toLowerCase().contains(q))
-              .toList(growable: false);
     final summaries = [
-      for (final driver in drivers)
+      for (final driver in payoutDrivers)
         PayoutDriverSummary.from(
           driver,
           payoutTransactionsByDriver[driver.id] ?? const <DbTransaction>[],
@@ -220,6 +197,12 @@ class ReportsController extends GetxController {
   List<PayoutDriverSummary> get feeMissingSummaries {
     return payoutSummaries
         .where((summary) => summary.hasMissingFee)
+        .toList(growable: false);
+  }
+
+  List<PayoutDriverSummary> get payoutPendingSummaries {
+    return payoutSummaries
+        .where((summary) => !summary.driver.paidOut)
         .toList(growable: false);
   }
 
@@ -295,6 +278,55 @@ class ReportsController extends GetxController {
       utf8.encode(buffer.toString()),
       mimeType: 'text/csv',
       name: 'report.csv',
+    ).saveTo(location.path);
+    return location.path;
+  }
+
+  Future<String?> exportPayoutHistoryCsv() async {
+    final location = await fs.getSaveLocation(
+      suggestedName: 'tkt-pos-payout-history-${_rangeFileStamp()}.csv',
+      acceptedTypeGroups: const [
+        fs.XTypeGroup(label: 'CSV', extensions: ['csv']),
+      ],
+    );
+    if (location == null) return null;
+
+    final buffer = StringBuffer();
+    buffer.writeln(
+      [
+        'Time',
+        'Driver',
+        'Driver Date',
+        'Action',
+        'Before',
+        'After',
+        'Before Amount',
+        'After Amount',
+        'Before Paid At',
+        'After Paid At',
+      ].map(_csv).join(','),
+    );
+    for (final item in filteredPayoutHistory) {
+      final row = item.row;
+      buffer.writeln(
+        [
+          Format.dateTime12(row.changedAt),
+          item.driver?.name ?? 'Unknown',
+          item.driver == null ? '-' : Format.date(item.driver!.date),
+          payoutHistoryActionLabel(row.action),
+          paidStateLabel(row.previousPaidOut),
+          paidStateLabel(row.newPaidOut),
+          _moneyOrEmpty(row.previousPaidOutAmount),
+          _moneyOrEmpty(row.newPaidOutAmount),
+          _dateTimeOrEmpty(row.previousPaidOutAt),
+          _dateTimeOrEmpty(row.newPaidOutAt),
+        ].map(_csv).join(','),
+      );
+    }
+    await fs.XFile.fromData(
+      utf8.encode(buffer.toString()),
+      mimeType: 'text/csv',
+      name: 'payout-history.csv',
     ).saveTo(location.path);
     return location.path;
   }
@@ -433,6 +465,7 @@ class ReportsController extends GetxController {
     if (s.toLowerCase() == 'pending') return true;
     // AppString constant (may differ by encoding on some setups)
     if (s == AppString.paymentPending) return true;
+    if (s == AppString.paymentPendingLegacy) return true;
     return false;
   }
 
@@ -440,6 +473,7 @@ class ReportsController extends GetxController {
     final s = status.trim();
     if (s.toLowerCase() == 'paid') return true;
     if (s == AppString.paymentPaid) return true;
+    if (s == AppString.paymentPaidLegacy) return true;
     if (s == AppString.paymentPaidAltMm) {
       return true; // alternative MM wording commonly used
     }
@@ -453,6 +487,24 @@ class ReportsController extends GetxController {
   }
 }
 
+String payoutHistoryActionLabel(String action) {
+  switch (action) {
+    case 'mark_paid_out':
+      return 'Mark paid out';
+    case 'reopen_payout':
+      return 'Reopen payout';
+    default:
+      return action;
+  }
+}
+
+String paidStateLabel(bool value) => value ? 'Paid' : 'Pending';
+
+String _moneyOrEmpty(double? value) => value == null ? '' : Format.money(value);
+
+String _dateTimeOrEmpty(DateTime? value) =>
+    value == null ? '' : Format.dateTime12(value);
+
 class PayoutHistoryReportItem {
   const PayoutHistoryReportItem({required this.row, required this.driver});
 
@@ -465,7 +517,10 @@ class PayoutDriverSummary {
     required this.driver,
     required this.transactionCount,
     required this.totalCharges,
+    required this.paymentPaid,
+    required this.paymentPending,
     required this.cashAdvance,
+    required this.totalFees,
     required this.currentPayable,
     required this.paidOutAmount,
     required this.difference,
@@ -474,7 +529,10 @@ class PayoutDriverSummary {
   final Driver driver;
   final int transactionCount;
   final double totalCharges;
+  final double paymentPaid;
+  final double paymentPending;
   final double cashAdvance;
+  final double totalFees;
   final double currentPayable;
   final double paidOutAmount;
   final double difference;
@@ -489,32 +547,19 @@ class PayoutDriverSummary {
     Driver driver,
     List<DbTransaction> transactions,
   ) {
-    final totalCharges = transactions.fold<double>(
-      0,
-      (sum, transaction) => sum + transaction.charges,
-    );
-    final cashAdvance = transactions.fold<double>(
-      0,
-      (sum, transaction) => sum + transaction.cashAdvance,
-    );
-    final deductions =
-        (driver.roomFee ?? 0) +
-        (driver.laborFee ?? 0) +
-        (driver.deliveryFee ?? 0);
-    final currentPayable = totalCharges - deductions;
-    final paidOutAmount = driver.paidOut
-        ? driver.paidOutAmount ?? currentPayable
-        : 0.0;
-    final difference = driver.paidOut ? currentPayable - paidOutAmount : 0.0;
+    final breakdown = PayoutCalculator.forDriver(driver, transactions);
 
     return PayoutDriverSummary(
       driver: driver,
       transactionCount: transactions.length,
-      totalCharges: totalCharges,
-      cashAdvance: cashAdvance,
-      currentPayable: currentPayable,
-      paidOutAmount: paidOutAmount,
-      difference: difference,
+      totalCharges: breakdown.totalCharges,
+      paymentPaid: breakdown.paymentPaid,
+      paymentPending: breakdown.paymentPending,
+      cashAdvance: breakdown.cashAdvance,
+      totalFees: breakdown.totalFees,
+      currentPayable: breakdown.currentPayable,
+      paidOutAmount: driver.paidOut ? breakdown.displayedPaidOutAmount : 0,
+      difference: breakdown.difference,
     );
   }
 }
