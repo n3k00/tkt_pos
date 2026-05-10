@@ -41,12 +41,10 @@ class ReportsController extends GetxController {
     final end = _dayStart(endDate.value).add(const Duration(days: 1));
     await _loadPayoutDrivers(start, end);
     await _loadPayoutHistory(start, end);
-    var list = await db.getReportedTransactions(start, end);
-    if (list.isEmpty) {
-      // Backfill once for this day from picked-up transactions, then reload
-      await _backfillRange(start, end);
-      list = await db.getReportedTransactions(start, end);
-    }
+    // Backfill before loading so partially migrated report ranges still include
+    // older picked-up transactions that do not yet have report rows.
+    await _backfillRange(start, end);
+    final list = await db.getReportedTransactions(start, end);
     all.assignAll(list);
 
     // fetch driver names for displayed rows in one query

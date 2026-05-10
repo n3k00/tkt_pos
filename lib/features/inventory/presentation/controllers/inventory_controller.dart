@@ -236,11 +236,13 @@ class InventoryController extends GetxController {
     required int id,
     required DateTime date,
     required String name,
+    int? profileId,
   }) async {
-    final profileId = await db.getOrCreateDriverProfile(name: name);
+    final resolvedProfileId =
+        profileId ?? await db.getOrCreateDriverProfile(name: name);
     await (db.update(db.drivers)..where((d) => d.id.equals(id))).write(
       DriversCompanion(
-        profileId: drift.Value(profileId),
+        profileId: drift.Value(resolvedProfileId),
         date: drift.Value(date),
         name: drift.Value(name),
       ),

@@ -487,7 +487,7 @@ Future<void> _showDriverProfileDialog(
                 if (!context.mounted) return;
                 AppSnackBars.show(
                   context,
-                  message: 'Failed to save driver: $e',
+                  message: _driverProfileSaveErrorMessage(e),
                   type: AppSnackbarType.error,
                 );
               }
@@ -564,6 +564,14 @@ Future<void> _showDriverProfileDialog(
   }
 }
 
+String _driverProfileSaveErrorMessage(Object error) {
+  final message = error.toString();
+  if (message.contains('Driver profile name already exists')) {
+    return 'Driver profile name already exists.';
+  }
+  return 'Failed to save driver profile.';
+}
+
 class _AboutSettings extends StatelessWidget {
   const _AboutSettings({required this.controller});
 
@@ -575,7 +583,7 @@ class _AboutSettings extends StatelessWidget {
       title: 'Application',
       child: Column(
         children: [
-          const _InfoRow(label: 'App', value: 'TKT POS - Inventory Demo'),
+          const _InfoRow(label: 'App', value: AppString.windowTitle),
           const Divider(height: 1, color: AppColor.border),
           Obx(
             () => _InfoRow(
@@ -585,6 +593,8 @@ class _AboutSettings extends StatelessWidget {
                   : controller.appVersion.value,
             ),
           ),
+          const Divider(height: 1, color: AppColor.border),
+          const _InfoRow(label: 'Release', value: AppString.releaseLabel),
         ],
       ),
     );

@@ -107,67 +107,98 @@ Future<void> showEditDriverDialog(
   InventoryController controller,
   Driver driver,
 ) async {
-  final nameController = TextEditingController(text: driver.name);
-  DateTime date = driver.date;
-  final formKey = GlobalKey<FormState>();
-  try {
+  final profiles = await controller.activeDriverProfiles();
+  if (!context.mounted) return;
+  if (profiles.isEmpty) {
     await showDialog(
       context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setState) {
-            Future<void> save() async {
-              if (!formKey.currentState!.validate()) return;
-              await controller.updateDriver(
-                id: driver.id,
-                date: date,
-                name: nameController.text.trim(),
-              );
-              if (ctx.mounted) Navigator.of(ctx).pop();
-            }
-
-            return DesktopFormDialog(
-              onCancel: () => Navigator.of(ctx).pop(),
-              onSubmit: save,
-              maxWidth: 680,
-              contentWidth: 600,
-              title: const Text(AppString.dialogEditDriver),
-              actions: [
-                fluent.Button(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text(AppString.dialogCancel),
-                ),
-                fluent.FilledButton(
-                  onPressed: save,
-                  child: const Text(AppString.dialogSave),
-                ),
-              ],
-              child: Form(
-                key: formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: _DriverFormFields(
-                  nameController: nameController,
-                  date: date,
-                  onSubmit: save,
-                  onPickDate: () async {
-                    final picked = await showDatePicker(
-                      context: ctx,
-                      initialDate: date,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) setState(() => date = picked);
-                  },
-                ),
-              ),
-            );
-          },
-        );
-      },
+      builder: (ctx) => fluent.ContentDialog(
+        title: const Text('No active drivers'),
+        content: const Text(
+          'Create an active driver profile in Settings > Drivers before editing this daily driver entry.',
+        ),
+        actions: [
+          fluent.FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
-  } finally {
-    nameController.dispose();
+    return;
   }
+
+  DriverProfile? selectedProfile;
+  for (final profile in profiles) {
+    if (profile.id == driver.profileId ||
+        profile.name.toLowerCase() == driver.name.trim().toLowerCase()) {
+      selectedProfile = profile;
+      break;
+    }
+  }
+  selectedProfile ??= profiles.first;
+  DateTime date = driver.date;
+  final formKey = GlobalKey<FormState>();
+  await showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (ctx, setState) {
+          Future<void> save() async {
+            if (!formKey.currentState!.validate()) return;
+            await controller.updateDriver(
+              id: driver.id,
+              date: date,
+              profileId: selectedProfile!.id,
+              name: selectedProfile!.name,
+            );
+            if (ctx.mounted) Navigator.of(ctx).pop();
+          }
+
+          return DesktopFormDialog(
+            onCancel: () => Navigator.of(ctx).pop(),
+            onSubmit: save,
+            maxWidth: 680,
+            contentWidth: 600,
+            title: const Text(AppString.dialogEditDriver),
+            actions: [
+              fluent.Button(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text(AppString.dialogCancel),
+              ),
+              fluent.FilledButton(
+                onPressed: save,
+                child: const Text(AppString.dialogSave),
+              ),
+            ],
+            child: Form(
+              key: formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: _AddDriverProfileFormFields(
+                profiles: profiles,
+                selectedProfile: selectedProfile,
+                date: date,
+                onProfileChanged: (profile) {
+                  setState(() => selectedProfile = profile);
+                  formKey.currentState?.validate();
+                },
+                onPickDate: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: date,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) setState(() => date = picked);
+                },
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }
 
 Future<void> showAddDriverDialog(
@@ -239,6 +270,7 @@ Future<void> showAddDriverDialog(
                 date: date,
                 onProfileChanged: (profile) {
                   setState(() => selectedProfile = profile);
+                  formKey.currentState?.validate();
                 },
                 onPickDate: () async {
                   final picked = await showDatePicker(
@@ -256,71 +288,6 @@ Future<void> showAddDriverDialog(
       );
     },
   );
-}
-
-class _DriverFormFields extends StatelessWidget {
-  const _DriverFormFields({
-    required this.nameController,
-    required this.date,
-    required this.onPickDate,
-    required this.onSubmit,
-  });
-
-  final TextEditingController nameController;
-  final DateTime date;
-  final VoidCallback onPickDate;
-  final VoidCallback onSubmit;
-
-  @override
-  Widget build(BuildContext context) {
-    return DesktopFormSection(
-      title: 'Driver',
-      child: Row(
-        children: [
-          Expanded(
-            child: TextFormField(
-              controller: nameController,
-              autofocus: true,
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => onSubmit(),
-              decoration: InputDecoration(
-                labelText: AppString.dialogDriverNameHint,
-                prefixIcon: const Icon(Icons.person_outline),
-                border: OutlineInputBorder(
-                  borderRadius: Dimens.borderRadiusInput,
-                ),
-                isDense: true,
-              ),
-              validator: (v) => (v == null || v.trim().isEmpty)
-                  ? AppString.dialogDriverNameRequired
-                  : null,
-            ),
-          ),
-          const SizedBox(width: Dimens.spacingSM),
-          Expanded(
-            child: ListTile(
-              dense: true,
-              shape: RoundedRectangleBorder(
-                borderRadius: Dimens.borderRadiusInput,
-                side: const BorderSide(color: AppColor.border),
-              ),
-              title: const Text(AppString.dialogDateLabel),
-              subtitle: Text(_formatDate(date)),
-              trailing: const Icon(Icons.calendar_month_outlined),
-              onTap: onPickDate,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final dd = date.day.toString().padLeft(2, '0');
-    final mm = date.month.toString().padLeft(2, '0');
-    final yyyy = date.year.toString().padLeft(4, '0');
-    return '$dd/$mm/$yyyy';
-  }
 }
 
 class _FeeTextField extends StatelessWidget {
@@ -403,19 +370,17 @@ class _AddDriverProfileFormFields extends StatelessWidget {
                         isDense: true,
                       ),
                       onChanged: (value) {
-                        final normalized = value.trim().toLowerCase();
-                        DriverProfile? match;
-                        for (final profile in profiles) {
-                          if (profile.name.toLowerCase() == normalized) {
-                            match = profile;
-                            break;
-                          }
-                        }
-                        onProfileChanged(match);
+                        onProfileChanged(
+                          _findDriverProfileMatch(profiles, value),
+                        );
                       },
                       onFieldSubmitted: (_) => onFieldSubmitted(),
-                      validator: (_) =>
-                          selectedProfile == null ? 'Select a driver' : null,
+                      validator: (value) {
+                        final profile =
+                            selectedProfile ??
+                            _findDriverProfileMatch(profiles, value ?? '');
+                        return profile == null ? 'Select a driver' : null;
+                      },
                     );
                   },
               optionsViewBuilder: (context, onSelected, options) {
@@ -487,6 +452,20 @@ String _formatDriverDate(DateTime date) {
   final mm = date.month.toString().padLeft(2, '0');
   final yyyy = date.year.toString().padLeft(4, '0');
   return '$dd/$mm/$yyyy';
+}
+
+DriverProfile? _findDriverProfileMatch(
+  List<DriverProfile> profiles,
+  String value,
+) {
+  final normalized = value.trim().toLowerCase();
+  if (normalized.isEmpty) return null;
+  for (final profile in profiles) {
+    if (profile.name.trim().toLowerCase() == normalized) {
+      return profile;
+    }
+  }
+  return null;
 }
 
 const DriverProfile _noDriverProfileResult = DriverProfile(

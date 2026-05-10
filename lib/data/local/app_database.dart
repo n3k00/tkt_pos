@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite;
@@ -448,7 +449,10 @@ class AppDatabase extends _$AppDatabase {
       // Close current connection to release file lock (especially on Windows)
       try {
         await AppDatabase().close();
-      } catch (_) {}
+      } catch (e, stackTrace) {
+        debugPrint('Restore close failed: $e');
+        debugPrintStack(stackTrace: stackTrace);
+      }
       // small delay to allow background isolate to release handles
       await Future.delayed(const Duration(milliseconds: 500));
 
@@ -463,10 +467,15 @@ class AppDatabase extends _$AppDatabase {
             await bakFile.delete();
           }
           await dbFile.rename(bakFile.path);
-        } catch (_) {
+        } catch (e, stackTrace) {
+          debugPrint('Restore rename-to-backup failed: $e');
+          debugPrintStack(stackTrace: stackTrace);
           try {
             await dbFile.delete();
-          } catch (_) {}
+          } catch (deleteError, deleteStackTrace) {
+            debugPrint('Restore delete-existing-db failed: $deleteError');
+            debugPrintStack(stackTrace: deleteStackTrace);
+          }
         }
       }
 
@@ -475,16 +484,23 @@ class AppDatabase extends _$AppDatabase {
       if (await tmpFile.exists()) {
         try {
           await tmpFile.delete();
-        } catch (_) {}
+        } catch (e, stackTrace) {
+          debugPrint('Restore temp cleanup failed: $e');
+          debugPrintStack(stackTrace: stackTrace);
+        }
       }
       await src.copy(tmpFile.path);
       try {
         await tmpFile.rename(dbFile.path);
-      } catch (_) {
+      } catch (e, stackTrace) {
+        debugPrint('Restore temp rename failed: $e');
+        debugPrintStack(stackTrace: stackTrace);
         try {
           await tmpFile.copy(dbFile.path);
           await tmpFile.delete();
-        } catch (_) {
+        } catch (copyError, copyStackTrace) {
+          debugPrint('Restore temp copy fallback failed: $copyError');
+          debugPrintStack(stackTrace: copyStackTrace);
           return null;
         }
       }
@@ -493,10 +509,15 @@ class AppDatabase extends _$AppDatabase {
       if (await bakFile.exists()) {
         try {
           await bakFile.delete();
-        } catch (_) {}
+        } catch (e, stackTrace) {
+          debugPrint('Restore backup cleanup failed: $e');
+          debugPrintStack(stackTrace: stackTrace);
+        }
       }
       return dbFile.path;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Restore failed: $e');
+      debugPrintStack(stackTrace: stackTrace);
       return null;
     }
   }
@@ -813,7 +834,9 @@ Future<void> _backupBeforeMigrationIfNeeded(
       'app-before-v$userVersion-to-v$_currentSchemaVersion-$ts.db',
     );
     rawDb.execute("VACUUM INTO '${backupPath.replaceAll("'", "''")}'");
-  } catch (_) {
+  } catch (e, stackTrace) {
+    debugPrint('Pre-migration backup failed: $e');
+    debugPrintStack(stackTrace: stackTrace);
     // Do not block app startup. A failed safety backup should not prevent
     // Drift from attempting the migration.
   } finally {

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -122,7 +123,10 @@ class SettingsController extends GetxController {
         if (!headerStr.startsWith('SQLite format 3')) {
           return 'Selected file is not a valid SQLite database.';
         }
-      } catch (_) {}
+      } catch (e, stackTrace) {
+        debugPrint('Restore header validation failed: $e');
+        debugPrintStack(stackTrace: stackTrace);
+      }
 
       final replaced = await AppDatabase.restoreFromBackup(src.path);
       if (replaced == null) {
@@ -131,7 +135,9 @@ class SettingsController extends GetxController {
           final dir = await getApplicationSupportDirectory();
           final dst = p.join(dir.path, 'app.db');
           return 'Failed to replace database. Destination: $dst';
-        } catch (_) {
+        } catch (e, stackTrace) {
+          debugPrint('Restore destination lookup failed: $e');
+          debugPrintStack(stackTrace: stackTrace);
           return 'Failed to replace database.';
         }
       }
@@ -139,11 +145,5 @@ class SettingsController extends GetxController {
     } catch (e) {
       return 'Error: $e';
     }
-  }
-
-  // Backwards-compatible boolean wrapper (unused by UI after update)
-  Future<bool> restoreFromFileReplace() async {
-    final msg = await restoreFromFileReplaceWithMessage();
-    return msg == null;
   }
 }
