@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tkt_pos/features/inventory/presentation/controllers/driver_print_controller.dart';
 import 'package:tkt_pos/resources/colors.dart';
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/resources/table_widths.dart';
 import 'package:tkt_pos/utils/format.dart';
+import 'package:tkt_pos/utils/money_input.dart';
 import 'package:tkt_pos/widgets/app_data_table.dart';
 import 'package:tkt_pos/resources/dimens.dart';
 import 'package:tkt_pos/resources/shapes.dart';
@@ -19,6 +19,7 @@ class DriverPrintPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetX<DriverPrintController>(
       init: DriverPrintController(driverId),
+      global: false,
       builder: (controller) {
         final driver = controller.driver.value;
         final transactions = controller.transactions;
@@ -590,8 +591,8 @@ class _FeesEditor extends StatelessWidget {
       return TextField(
         controller: textController,
         enabled: !controller.paidOut.value,
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: MoneyInput.inputFormatters,
+        keyboardType: TextInputType.number,
         decoration: decoration(label, icon),
       );
     }
@@ -696,11 +697,24 @@ class _FeesEditor extends StatelessWidget {
                       AppString.colCashAdvance,
                       controller.totalCashAdvance,
                     ),
-                  amountPreview(
-                    'Total Fees',
-                    controller.totalDeductions,
-                    deduction: true,
-                  ),
+                  if (controller.roomFeeValue > 0)
+                    amountPreview(
+                      'Room Fee',
+                      controller.roomFeeValue,
+                      deduction: true,
+                    ),
+                  if (controller.laborFeeValue > 0)
+                    amountPreview(
+                      'Labor Fee',
+                      controller.laborFeeValue,
+                      deduction: true,
+                    ),
+                  if (controller.deliveryFeeValue > 0)
+                    amountPreview(
+                      'Delivery Fee',
+                      controller.deliveryFeeValue,
+                      deduction: true,
+                    ),
                   const Divider(height: Dimens.spacingLG),
                   amountPreview('Paid Out Amount', controller.netAmount),
                 ],

@@ -16,6 +16,7 @@ import 'package:tkt_pos/features/inventory/presentation/controllers/inventory_co
 import 'package:tkt_pos/resources/strings.dart';
 import 'package:tkt_pos/utils/format.dart';
 import 'package:tkt_pos/resources/dimens.dart';
+import 'package:tkt_pos/utils/money_input.dart';
 import 'package:tkt_pos/utils/payout_calculator.dart';
 
 Future<Uint8List> _buildDriverSlipPdf(Map<String, dynamic> snapshot) {
@@ -58,24 +59,28 @@ Future<Uint8List> _buildDriverSlipPdf(Map<String, dynamic> snapshot) {
   final netAmount = snapshot['netAmount'] as double;
   final paidOut = snapshot['paidOut'] as bool;
 
-  final rawTransactions =
-      (snapshot['transactions'] as List<dynamic>).cast<Map<String, dynamic>>();
-  final dataRows = rawTransactions.asMap().entries.map((entry) {
-    final index = entry.key + 1;
-    final tx = entry.value;
-    return <String>[
-      zg('$index'),
-      zg(pdfText(tx['customerName'] as String?, maxChars: 20)),
-      zg(pdfText(tx['phone'] as String, maxChars: 16)),
-      zg(pdfText(tx['parcelType'] as String, maxChars: 18)),
-      zg(pdfText(tx['number'] as String, maxChars: 10)),
-      zg(tx['charges'] as String),
-      zg(tx['paymentStatus'] as String),
-      zg(tx['cashAdvance'] as String),
-      zg(''),
-      zg(pdfText(tx['comment'] as String?, maxChars: 24)),
-    ];
-  }).toList(growable: false);
+  final rawTransactions = (snapshot['transactions'] as List<dynamic>)
+      .cast<Map<String, dynamic>>();
+  final dataRows = rawTransactions
+      .asMap()
+      .entries
+      .map((entry) {
+        final index = entry.key + 1;
+        final tx = entry.value;
+        return <String>[
+          zg('$index'),
+          zg(pdfText(tx['customerName'] as String?, maxChars: 20)),
+          zg(pdfText(tx['phone'] as String, maxChars: 16)),
+          zg(pdfText(tx['parcelType'] as String, maxChars: 18)),
+          zg(pdfText(tx['number'] as String, maxChars: 10)),
+          zg(tx['charges'] as String),
+          zg(tx['paymentStatus'] as String),
+          zg(tx['cashAdvance'] as String),
+          zg(''),
+          zg(pdfText(tx['comment'] as String?, maxChars: 24)),
+        ];
+      })
+      .toList(growable: false);
 
   List<List<String>> summaryRows() {
     final rows = <List<String>>[];
@@ -266,6 +271,7 @@ class DriverPrintController extends GetxController {
   final RxDouble roomFee = 0.0.obs;
   final RxDouble laborFee = 0.0.obs;
   final RxDouble deliveryFee = 0.0.obs;
+  bool _syncingFeeFields = false;
 
   @override
   void onInit() {
@@ -288,14 +294,14 @@ class DriverPrintController extends GetxController {
   }
 
   void _onFeesChanged() {
+    if (_syncingFeeFields) return;
     roomFee.value = _parse(roomFeeCtrl.text);
     laborFee.value = _parse(laborFeeCtrl.text);
     deliveryFee.value = _parse(deliveryFeeCtrl.text);
   }
 
   double _parse(String value) {
-    final parsed = double.tryParse(value.trim());
-    return parsed ?? 0;
+    return MoneyInput.parseOptionalKyatAsDouble(value);
   }
 
   Future<void> _load() async {
@@ -306,18 +312,27 @@ class DriverPrintController extends GetxController {
       if (d != null) {
         final txs = await _db.getTransactionsByDriver(driverId);
         transactions.assignAll(txs);
-        roomFee.value = d.roomFee ?? 0;
-        laborFee.value = d.laborFee ?? 0;
-        deliveryFee.value = d.deliveryFee ?? 0;
-        roomFeeCtrl.text = roomFee.value.toStringAsFixed(0);
-        laborFeeCtrl.text = laborFee.value.toStringAsFixed(0);
-        deliveryFeeCtrl.text = deliveryFee.value.toStringAsFixed(0);
+        _syncFeeFieldsFromDriver(d);
         paidOut.value = d.paidOut;
       } else {
         transactions.clear();
       }
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void _syncFeeFieldsFromDriver(Driver currentDriver) {
+    _syncingFeeFields = true;
+    try {
+      roomFee.value = currentDriver.roomFee ?? 0;
+      laborFee.value = currentDriver.laborFee ?? 0;
+      deliveryFee.value = currentDriver.deliveryFee ?? 0;
+      roomFeeCtrl.text = MoneyInput.formatInitial(roomFee.value);
+      laborFeeCtrl.text = MoneyInput.formatInitial(laborFee.value);
+      deliveryFeeCtrl.text = MoneyInput.formatInitial(deliveryFee.value);
+    } finally {
+      _syncingFeeFields = false;
     }
   }
 

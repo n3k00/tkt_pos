@@ -1,8 +1,8 @@
 class AppString {
   // App title
   static const String title = 'Thein Kha Thu POS';
-  static const String releaseLabel = 'Beta 5';
-  static const String windowTitle = 'Thein Kha Thu POS Beta 5';
+  static const String releaseLabel = 'Beta 5.1';
+  static const String windowTitle = 'Thein Kha Thu POS Beta 5.1';
 
   // Common
   static const String home = 'Home';
